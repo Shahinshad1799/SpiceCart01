@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spice Market - Authentic Flavors</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#cd4e18",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211611",
+                        "secondary": "#B89F73", // Muted Gold for stars
+                        "forest": "#4C5E4E", // Forest Green for accents
+                    },
+                    fontFamily: {
+                        "display": ["Epilogue", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+<%- include("../partials/header", { title: "Home" }) %>
+<main class="flex-1">
+<section class="relative px-6 py-12 lg:px-20 xl:px-40 lg:py-20">
+<div class="mx-auto max-w-[1280px]">
+<div class="flex flex-col-reverse lg:flex-row gap-12 items-center">
+<div class="flex-1 flex flex-col gap-6 items-start text-left lg:pr-10 z-10">
+<div class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary uppercase tracking-wide">
+<span class="size-2 rounded-full bg-primary animate-pulse"></span>
+                                New Harvest
+                            </div>
+<h1 class="text-4xl lg:text-6xl font-black leading-[1.1] tracking-tight text-[#181311] dark:text-white">
+                                Awaken Your Senses with <span class="text-primary">Authentic Flavors</span>
+</h1>
+<p class="text-lg text-[#5C4D46] dark:text-[#A8A29E] font-body leading-relaxed max-w-xl">
+                                Hand-sourced, single-origin spices delivered fresh from the farm to your pantry. Experience the true taste of nature with our curated collections.
+                            </p>
+<div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-2">
+<button class="h-12 px-8 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition-transform active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-primary/30">
+                                    Explore Collection
+                                    <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<button class="h-12 px-8 rounded-lg bg-white dark:bg-[#2C201A] border border-[#E6E0DC] dark:border-[#3E302A] hover:border-primary text-[#181311] dark:text-white font-bold transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+                                    Our Story
+                                </button>
+</div>
+</div>
+<div class="flex-1 w-full relative group">
+<div class="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-transparent rounded-[2rem] blur-2xl opacity-50 dark:opacity-20"></div>
+<div class="relative w-full aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl bg-[#f4f1f0] dark:bg-[#2C201A]">
+<img alt="Close up of various colorful spices in wooden spoons on a textured surface" class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB57wCUrHqr1bJmfsAcPDN36yftPiNGg_lN0dXp5CwzuwTN2q9nXcYjuDAD8U8jw-mb-HqA7c_5aaTAk-jWY4fuJ8xk1vlZEIt2TS52byXQ-bstINyZRG86-YLqnPCBjrce9UpzfHWeouglKIqmIYqlRLWK-TF6tFN9h6ONx2u656HR6hQ431otQgZ5zNb2uqszjnmIeuVc9-HhhnmyjiVN0jRlR9M999Pxj30WMGYPKn-ii-cIClGUGza5nhp2nchgI8nHOS0OIpU"/>
+</div>
+<div class="absolute -bottom-6 -left-6 lg:bottom-8 lg:-left-8 bg-white dark:bg-[#2C201A] p-4 rounded-xl shadow-xl border border-[#f4f1f0] dark:border-[#3E302A] flex items-center gap-4 animate-bounce-slow">
+<div class="bg-[#FDF2EC] dark:bg-primary/20 p-3 rounded-full text-primary">
+<span class="material-symbols-outlined">eco</span>
+</div>
+<div>
+<p class="font-bold text-sm">100% Organic</p>
+<p class="text-xs text-[#886e63]">Certified Sources</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="px-6 py-12 lg:px-20 xl:px-40 bg-white dark:bg-[#1A120E]">
+<div class="mx-auto max-w-[1280px]">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl lg:text-3xl font-bold text-[#181311] dark:text-white">Explore Categories</h2>
+<a class="text-primary font-bold hover:underline flex items-center gap-1" href="#">
+                            View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+<a class="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 dark:bg-[#2C201A]" href="#">
+<img alt="" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Assorted blended spice powders in earthy tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGeTGxcBAHUr_eIldaMTMj98Q73qqWGnWDn9bB6O52XNHFh38Psn-a0S4rcnhJ8V0G5YanyrtUTO7eN5r8Sb-VMU_05Rama_GeVpDbzwAERxYYAsTKIbDs-mWQc6r4aCAQOS4LnDfP4HlyXQRFxfe3MbV6KpKpkjM08svitc1hveECRQryTcExFo7j6UK-kNZZmd6mPAorisUUsQeuehJVdUQeT7aXu1OnlluAJ_L8EuD_30EJlDbxc1N3D-CKswsfXHI--6uXCEk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
+<h3 class="text-white text-lg font-bold">Signature Blends</h3>
+<p class="text-white/80 text-xs font-body opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">Curated for perfection</p>
+</div>
+</a>
+<a class="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 dark:bg-[#2C201A]" href="#">
+<img alt="" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Close up of whole spices like cinnamon sticks and star anise" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd3Xu7S2sitvbp_EBJsRyxataKV_463ubW3Nq8KQ1XFZPLem6UjFilpFMNhDCO_IW-ZFy6SZPuabGdsrsFuxjmhJOCKs4GVKxaxMsvfdfUWA5BYIyg5PObamyuzERDY-NrH0Vwiw3qjdinn21IIB59BqyHt-ka985LV26OugQ0Sh_NhHP9B0jxmTIl0icnQVDtN5YRlY6BuPbVTbBbY2j73Ofu5qDYmOmxAfzvq21oh-7EocbrSeGAaF396BlwZ6JBoyWrEObiizk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
+<h3 class="text-white text-lg font-bold">Whole Spices</h3>
+<p class="text-white/80 text-xs font-body opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">Pure &amp; Unprocessed</p>
+</div>
+</a>
+<a class="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 dark:bg-[#2C201A]" href="#">
+<img alt="" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Red hot chili peppers and powder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3riWgA_sE4IHq5QhcnhhQ8ge_apaMsgan-w-HAz5RHvXolGXW7sgQfiWOPd3Wxx6ZcsTYKidnyKV8Ia5Ltr7yk5QekoCBdy23r2eNircRNxkwjW8SuR_MqZeebAshcFUbYrC65OrCtj-N6keVGjB-DLVPVYWVUz_U2iK-sOVz7YuyoPltd4amtjqt3D15N5323FJoEeVP6xEMtLFCacRRan5MqIbnqbaBFioSWCqUVwQ62eoYyb9MBkCq2NorcevySRll4gqFuZI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
+<h3 class="text-white text-lg font-bold">Chilies &amp; Peppers</h3>
+<p class="text-white/80 text-xs font-body opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">Add some heat</p>
+</div>
+</a>
+<a class="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 dark:bg-[#2C201A]" href="#">
+<img alt="" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Vanilla pods and baking spices on a surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcjbAdOFFQXs_4aVRqjdcMXZFhcJ_3LK2TbAme7vRuBJpFMbLxomRoRicOenn2cDGfpwI2K_FbtTCnIfX0KZMuGZLKdjQEvK2WIEuzaPePmE_golMHubSbkBqSO2BS2JGM42XcJOcruLAcRPhAA1Ie_L9cKvevstZxtqJuJFRFcYStWM1dk7Qz7FID_JP13dex2OmVzYBTAiEywbzGQAdCBV3Z_ShIpqTs5f1YG3lYvxGxnavtP98CRqTYuOVKskBiOsOvVMdLEew"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
+<h3 class="text-white text-lg font-bold">Baking Essentials</h3>
+<p class="text-white/80 text-xs font-body opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">Sweet &amp; Aromatic</p>
+</div>
+</a>
+</div>
+</div>
+</section>
+<section class="px-6 py-16 lg:px-20 xl:px-40 bg-[#F5F0EB] dark:bg-background-dark/50">
+<div class="mx-auto max-w-[1280px]">
+<div class="text-center mb-12">
+<span class="text-primary font-bold tracking-widest text-sm uppercase">Just Arrived</span>
+<h2 class="text-3xl lg:text-4xl font-bold text-[#181311] dark:text-white mt-2">Fresh From The Market</h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+<div class="group flex flex-col gap-4">
+<div class="relative aspect-square bg-white dark:bg-[#2C201A] rounded-2xl overflow-hidden shadow-sm transition-shadow hover:shadow-lg">
+<div class="absolute top-3 left-3 bg-forest text-white text-xs font-bold px-2 py-1 rounded">Organic</div>
+<img alt="" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500" data-alt="Glass jar of smoked paprika powder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfNeZG-k-CoNzLwoM6OvsyUikdzz0KXlvT6b89iXGVcD2LUTuALALypdMJiCmCUcgq9jEqjfaG2ufVEOsnJkGP-kA7wIuf9dkbXCJR2mowOZPrQL8Ky61W_Zk5yHvn0EffyG3kUCe9midR5Lf4zG7D6taAtTT9gxlYC4fs6UZF0J7NNDrfk7mPu4xClDxIZiHf2_sNdy10WztfNbXdsKjtksXHfyN6kkR-CH1MAw2JZV3K7fOkWQnm8UycBjRM2xFbDdYBs7JVnTM"/>
+<button class="absolute bottom-3 right-3 size-10 bg-white dark:bg-[#3E302A] dark:text-white text-primary rounded-full shadow-md flex items-center justify-center translate-y-16 group-hover:translate-y-0 transition-transform duration-300 hover:bg-primary hover:text-white">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+</button>
+</div>
+<div>
+<h3 class="text-lg font-bold text-[#181311] dark:text-white group-hover:text-primary transition-colors">Smoked Paprika</h3>
+<p class="text-[#886e63] dark:text-[#9CA3AF] text-sm font-body mb-2">Spain • 50g</p>
+<p class="text-primary font-bold text-lg">$12.00</p>
+</div>
+</div>
+<div class="group flex flex-col gap-4">
+<div class="relative aspect-square bg-white dark:bg-[#2C201A] rounded-2xl overflow-hidden shadow-sm transition-shadow hover:shadow-lg">
+<img alt="" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500" data-alt="Small bowl of Sumac spice powder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz3eaQBEGbBnMJumNbbpHnmD2syd5-NaujzTzcOwT6wYi7zjwO2NdA8Pkd2Vz2rtzESgydhp9IPhnMPvV_ns2L4FrIUsKOwPBKMWtYdco5AaO2KbD7mUsMu4W70EZpy0z05GqaogvGU9FTuzqm3mGtdSCO9lf-i7mN2ORyZFOnfz1yn4_op8bOz6IeMbQKtj3-6at-TdvJB7zttqXU8WJCsGwrne6SRi8pl5KE2GItMjlGaF0gXeniOmfldXahFiPyVTvTJan_crg"/>
+<button class="absolute bottom-3 right-3 size-10 bg-white dark:bg-[#3E302A] dark:text-white text-primary rounded-full shadow-md flex items-center justify-center translate-y-16 group-hover:translate-y-0 transition-transform duration-300 hover:bg-primary hover:text-white">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+</button>
+</div>
+<div>
+<h3 class="text-lg font-bold text-[#181311] dark:text-white group-hover:text-primary transition-colors">Royal Sumac</h3>
+<p class="text-[#886e63] dark:text-[#9CA3AF] text-sm font-body mb-2">Turkey • 40g</p>
+<p class="text-primary font-bold text-lg">$9.50</p>
+</div>
+</div>
+<div class="group flex flex-col gap-4">
+<div class="relative aspect-square bg-white dark:bg-[#2C201A] rounded-2xl overflow-hidden shadow-sm transition-shadow hover:shadow-lg">
+<div class="absolute top-3 left-3 bg-secondary text-white text-xs font-bold px-2 py-1 rounded">Bestseller</div>
+<img alt="" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500" data-alt="Cinnamon sticks tied together" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeHYxGNu8nBhlnQY1lcUJoao6wwCF3-KVZZgfGxGBBs4bOcd7Puz37p1XMXXoFVOp6xnZGpwsyNAV8cqm7XdFfn_ZU6rKuQ7yRe_TTmYRW96emYKq-glRsFVG4NGfpu3PXfRAW3KZeN3htU4V4hLLKE6uPQxFKsMrAzibd27dH2EuGOuKybnzfrpQvTLM9sNhAtaetvKzwhbijUZ5hAYLSI6RgBMmbvaZbfOAJhB6aILnOreigEPD8w1jJnWJM_cJgVB289Fc1Qaw"/>
+<button class="absolute bottom-3 right-3 size-10 bg-white dark:bg-[#3E302A] dark:text-white text-primary rounded-full shadow-md flex items-center justify-center translate-y-16 group-hover:translate-y-0 transition-transform duration-300 hover:bg-primary hover:text-white">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+</button>
+</div>
+<div>
+<h3 class="text-lg font-bold text-[#181311] dark:text-white group-hover:text-primary transition-colors">Ceylon Cinnamon</h3>
+<p class="text-[#886e63] dark:text-[#9CA3AF] text-sm font-body mb-2">Sri Lanka • 6 sticks</p>
+<p class="text-primary font-bold text-lg">$14.00</p>
+</div>
+</div>
+<div class="group flex flex-col gap-4">
+<div class="relative aspect-square bg-white dark:bg-[#2C201A] rounded-2xl overflow-hidden shadow-sm transition-shadow hover:shadow-lg">
+<img alt="" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500" data-alt="Saffron threads in a pile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDX50FEKKWyjOZ6niHtZJrE8OJrZctwFQa-HwW9EToU_by8NFLkcb48iecHRRqFdDMs6lW59BeBrMBPJQlSNyWWTS93cm5YY3iJTNdDo6ZX-bqKXj6-sMC3rGjvTUkJ38Rch2Ai3Jk2KIlIHmSBIHjZffImUGez9iE41M405SKegcQmYk1ofQvrY8NTvPbxpHI3DSVxMDtF1HwAyvq-vDStF8HLKPxjZRCevIsh4nRLxsqI8PM1RfiG2mJel3-Atb7LRgCC_wrKXi4"/>
+<button class="absolute bottom-3 right-3 size-10 bg-white dark:bg-[#3E302A] dark:text-white text-primary rounded-full shadow-md flex items-center justify-center translate-y-16 group-hover:translate-y-0 transition-transform duration-300 hover:bg-primary hover:text-white">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+</button>
+</div>
+<div>
+<h3 class="text-lg font-bold text-[#181311] dark:text-white group-hover:text-primary transition-colors">Premium Saffron</h3>
+<p class="text-[#886e63] dark:text-[#9CA3AF] text-sm font-body mb-2">Iran • 2g</p>
+<p class="text-primary font-bold text-lg">$35.00</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="px-6 py-20 lg:px-20 xl:px-40 bg-white dark:bg-[#1A120E]">
+<div class="mx-auto max-w-[1280px]">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div>
+<span class="text-primary font-bold tracking-widest text-sm uppercase">Community Love</span>
+<h2 class="text-3xl lg:text-4xl font-bold mt-2 mb-8 text-[#181311] dark:text-white">What our chefs say</h2>
+<div class="relative p-8 rounded-2xl bg-[#f8f6f6] dark:bg-[#2C201A] border border-transparent dark:border-[#3E302A]">
+<span class="material-symbols-outlined absolute top-6 left-6 text-4xl text-[#D6CFC7] dark:text-[#3E302A] z-0">format_quote</span>
+<div class="relative z-10">
+<div class="flex gap-1 mb-4 text-secondary">
+<span class="material-symbols-outlined fill-current" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined fill-current" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined fill-current" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined fill-current" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined fill-current" style="font-variation-settings: 'FILL' 1">star</span>
+</div>
+<p class="text-lg lg:text-xl font-body italic text-[#4A4A4A] dark:text-[#D1D5DB] mb-6">
+                                        "The aroma when I opened the jar was incredible. Nothing like store-bought. You can truly taste the difference in freshness and potency."
+                                    </p>
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-full bg-gray-300 overflow-hidden">
+<img alt="" class="w-full h-full object-cover" data-alt="Portrait of a smiling woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl-aGfZ8oQuV44VqPbS0CK2zYKZrgcjfAHgSWSk1DSMMbAzpkRd4Euu3-y-QgNhX6xZ3sBfWmB0Z-TJdxZUvoe6aR_6SghOURAycGq9xwmyyKuBNTMofd_gO5rBaqyDNKEAcg9kI6XL0sal9Y1JWuKI4jTEf_k8T8ZNHALTxGdY3JfuscgZ44s7t_PGvL3tvl1DhmsxlPLHiEqT9XgQoPu0OU_irZgT0WtlGri1hvcxmhfBxS9QTCMkLbtND4z1add7bvSRN7-Hk4"/>
+</div>
+<div>
+<p class="font-bold text-[#181311] dark:text-white">Sarah Jenkins</p>
+<p class="text-sm text-[#886e63]">Home Chef</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-2 mt-6 justify-center lg:justify-start">
+<button class="size-10 rounded-full border border-[#E6E0DC] flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="size-10 rounded-full border border-[#E6E0DC] flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="relative h-full min-h-[400px] rounded-2xl overflow-hidden group">
+<img alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Richly colored spices in a dark wooden bowl setup" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUIWBWulpXFANZEOcYmZ_31c5gAQzcejD0AH6ro-HM_5x0dMwCPD_LvOH8-es1W76XXqMZmmrYto0IisGo5vLmApGP9QSEb6WA-F67o5SofMmL05wDPw9S7r95OKCMkmHeI2PnonWHKLwXbZ_vXC8QspHgDVx_hkw-1MHCSD2oDXyCNUBFh3Fu3PmSxaQ0ajlWK9ngtJD6HCtBPsD4_uEB5j2rtUdmzI046GzOmhezYxrg7AEr908MiF1oubouj1myjU-cS5lBgTc"/>
+<div class="absolute inset-0 bg-forest/90 opacity-95"></div>
+<div class="relative h-full flex flex-col items-center justify-center text-center p-8 lg:p-12">
+<span class="material-symbols-outlined text-white text-5xl mb-4">mail</span>
+<h3 class="text-2xl lg:text-3xl font-bold text-white mb-2">Join the Spice Club</h3>
+<p class="text-white/80 font-body mb-8 max-w-sm">Get weekly recipes, exclusive discounts, and spice pairing guides delivered to your inbox.</p>
+<div class="w-full max-w-sm flex flex-col gap-3">
+<input class="w-full h-12 px-4 rounded-lg border-none focus:ring-2 focus:ring-primary bg-white/10 text-white placeholder:text-white/60" placeholder="Your email address" type="email"/>
+<button class="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors">
+                                         Subscribe Now
+                                     </button>
+</div>
+<p class="text-white/40 text-xs mt-4">We respect your privacy. Unsubscribe anytime.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<%- include("../partials/footer") %>
+</div>
+<script>
+  function toggleProfileMenu() {
+    document.getElementById("profileDropdown").classList.toggle("hidden");
+  }
+
+  // Close when clicking outside
+  document.addEventListener("click", function (event) {
+    const dropdown = document.getElementById("profileDropdown");
+    const button = event.target.closest("button");
+
+    if (!event.target.closest("#profileDropdown") && 
+        !event.target.closest("button[onclick='toggleProfileMenu()']")) {
+      dropdown.classList.add("hidden");
+    }
+  });
+</script>
+
+</body></html>

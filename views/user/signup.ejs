@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spice Market - Sign Up</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#cd4e18",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211611",
+                        "secondary": "#B89F73", // Muted Gold for stars
+                        "forest": "#4C5E4E", // Forest Green for accents
+                    },
+                    fontFamily: {
+                        "display": ["Epilogue", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+<div class="w-full flex justify-center py-8 lg:py-10">
+<div class="flex items-center gap-2 cursor-pointer">
+<span class="material-symbols-outlined text-primary" style="font-size: 32px;">local_fire_department</span>
+<h2 class="text-2xl lg:text-3xl font-bold tracking-tight text-[#181311] dark:text-white">Spice Market</h2>
+</div>
+</div>
+<main class="flex-1 flex items-start justify-center pb-12 px-6 lg:px-20 xl:px-40">
+<div class="flex w-full max-w-[1080px] bg-white dark:bg-[#2C201A] rounded-2xl overflow-hidden shadow-2xl border border-[#f4f1f0] dark:border-[#3E302A]">
+<div class="w-full lg:w-1/2 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
+<div class="mb-8">
+<h1 class="text-3xl font-bold text-[#181311] dark:text-white mb-2">Create Account</h1>
+<p class="text-[#886e63] dark:text-[#9CA3AF] font-body">Join Spice Market today to unlock exclusive blends and recipes.</p>
+</div>
+<form class="space-y-5" method="post" action="/signup">
+<div class="space-y-1">
+<label class="block text-sm font-bold text-[#181311] dark:text-white" for="full_name">Full Name</label>
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="fullname" id="full_name" placeholder="e.g. Sarah Jenkins" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-bold text-[#181311] dark:text-white" for="email">Email Address</label>
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="email" id="email" placeholder="you@example.com" type="email"/>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-bold text-[#181311] dark:text-white" for="password">Password</label>
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="password" id="password" placeholder="Min. 8 characters" type="password"/>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-bold text-[#181311] dark:text-white" for="confirm_password">Confirm Password</label>
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="confirmpassword" id="confirm_password" placeholder="Re-enter password" type="password"/>
+</div>
+<div class="flex items-start gap-3 mt-2">
+<input class="mt-1 h-4 w-4 rounded border-[#D6CFC7] bg-white text-primary focus:ring-primary focus:ring-offset-0 dark:border-[#3E302A] dark:bg-[#1A120E]" id="terms" type="checkbox"/>
+<label class="text-sm text-[#5C4D46] dark:text-[#A8A29E] font-body" for="terms">
+                                I create an account and agree to the <a class="text-primary hover:underline font-bold" href="#">Terms of Service</a> and <a class="text-primary hover:underline font-bold" href="#">Privacy Policy</a>.
+                            </label>
+</div>
+<button class="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-transform active:scale-95 shadow-lg shadow-primary/30 flex items-center justify-center gap-2 mt-6">
+                            Sign Up
+                            <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</form>
+<div class="mt-8 text-center">
+<p class="text-sm text-[#5C4D46] dark:text-[#A8A29E] font-body">
+                            Already have an account? 
+                            <a class="text-primary font-bold hover:underline ml-1" href="/login" >Log in</a>
+</p>
+</div>
+</div>
+<div class="hidden lg:block w-1/2 relative bg-[#f4f1f0] dark:bg-[#1A120E]">
+<img alt="Spices" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB57wCUrHqr1bJmfsAcPDN36yftPiNGg_lN0dXp5CwzuwTN2q9nXcYjuDAD8U8jw-mb-HqA7c_5aaTAk-jWY4fuJ8xk1vlZEIt2TS52byXQ-bstINyZRG86-YLqnPCBjrce9UpzfHWeouglKIqmIYqlRLWK-TF6tFN9h6ONx2u656HR6hQ431otQgZ5zNb2uqszjnmIeuVc9-HhhnmyjiVN0jRlR9M999Pxj30WMGYPKn-ii-cIClGUGza5nhp2nchgI8nHOS0OIpU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 w-full p-12 text-white">
+<div class="bg-white/20 backdrop-blur-md rounded-xl p-6 border border-white/10 animate-bounce-slow">
+<span class="material-symbols-outlined text-4xl text-primary mb-4">eco</span>
+<h3 class="text-2xl font-bold mb-2">Taste the Authentic</h3>
+<p class="text-white/80 font-body">"The freshness of these spices completely transformed my cooking. I'll never go back to supermarket brands."</p>
+<div class="flex items-center gap-2 mt-4">
+<div class="flex text-secondary text-sm">
+<span class="material-symbols-outlined fill-current text-[18px]" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined fill-current text-[18px]" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined fill-current text-[18px]" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined fill-current text-[18px]" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined fill-current text-[18px]" style="font-variation-settings: 'FILL' 1">star</span>
+</div>
+<span class="text-xs font-bold text-white uppercase tracking-wider">• Trusted by 10k+ Chefs</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-[#211611] text-[#E6E0DC] border-t border-[#3E302A]">
+<div class="px-6 py-16 lg:px-20 xl:px-40 layout-container">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-size: 28px;">local_fire_department</span>
+<h2 class="text-xl font-bold text-white">Spice Market</h2>
+</div>
+<p class="text-[#9CA3AF] text-sm leading-relaxed">
+                            Bringing the world's finest single-origin spices to your kitchen. Ethically sourced, expertly curated.
+                        </p>
+<div class="flex gap-4 mt-2">
+<a class="text-[#9CA3AF] hover:text-white transition-colors" href="#">
+<span class="sr-only">Instagram</span>
+<svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"></path></svg>
+</a>
+<a class="text-[#9CA3AF] hover:text-white transition-colors" href="#">
+<span class="sr-only">Twitter</span>
+<svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"></path></svg>
+</a>
+</div>
+</div>
+<div>
+<h4 class="font-bold text-white mb-6">Shop</h4>
+<ul class="flex flex-col gap-3 text-sm text-[#9CA3AF]">
+<li><a class="hover:text-primary transition-colors" href="#">All Spices</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Signature Blends</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Gift Sets</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">New Arrivals</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-white mb-6">Company</h4>
+<ul class="flex flex-col gap-3 text-sm text-[#9CA3AF]">
+<li><a class="hover:text-primary transition-colors" href="#">Our Story</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Sourcing</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Wholesale</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Contact</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-white mb-6">Contact Us</h4>
+<ul class="flex flex-col gap-3 text-sm text-[#9CA3AF]">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">mail</span>
+                                hello@spicemarket.com
+                            </li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">phone</span>
+                                +1 (555) 123-4567
+                            </li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                                123 Spice Route, Portland, OR
+                            </li>
+</ul>
+</div>
+</div>
+<div class="border-t border-[#3E302A] mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-xs text-[#6B7280]">© 2024 Spice Market. All rights reserved.</p>
+<div class="flex gap-6 text-xs text-[#6B7280]">
+<a class="hover:text-white" href="#">Privacy Policy</a>
+<a class="hover:text-white" href="#">Terms of Service</a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<script>
+  const form = document.getElementById("signupForm");
+  const error = document.getElementById("error");
+
+  form.addEventListener("submit", function (e) {
+    const fullname = form.fullname.value.trim();
+    const email = form.email.value.trim();
+    const password = form.password.value;
+    const confirmpassword = form.confirmpassword.value;
+
+    // clear old error
+    error.textContent = "";
+
+    // 1️⃣ empty fields
+    if (!fullname || !email || !password || !confirm) {
+      e.preventDefault();
+      error.textContent = "All fields are required";
+      return;
+    }
+
+    // 2️⃣ email format
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
+      e.preventDefault();
+      error.textContent = "Invalid email address";
+      return;
+    }
+
+    // 3️⃣ password length
+    if (password.length < 6) {
+      e.preventDefault();
+      error.textContent = "Password must be at least 6 characters";
+      return;
+    }
+
+    // 4️⃣ password match
+    if (password !== confirm) {
+      e.preventDefault();
+      error.textContent = "Passwords do not match";
+      return;
+    }
+
+    // ✅ all good → form submits
+  });
+</script>
+<% if (typeof success !== "undefined") { %>
+<div id="toast"
+     class="fixed bottom-6 right-6 bg-green-600 text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
+            transform translate-y-20 opacity-0 transition-all duration-500">
+  <%= success %>
+</div>
+
+<script>
+  const toast = document.getElementById("toast");
+
+  // Show animation
+  setTimeout(() => {
+    toast.classList.remove("translate-y-20", "opacity-0");
+  }, 100);
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    toast.classList.add("translate-y-20", "opacity-0");
+  }, 3000);
+</script>
+<% } %>
+
+
+<% if (typeof error !== "undefined") { %>
+<div id="toast"
+     class="fixed bottom-6 right-6 bg-red-600 text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
+            transform translate-y-20 opacity-0 transition-all duration-500">
+  <%= error %>
+</div>
+
+<script>
+  const toas = document.getElementById("toast");
+
+  setTimeout(() => {
+    toas.classList.remove("translate-y-20", "opacity-0");
+  }, 100);
+
+  setTimeout(() => {
+    toas.classList.add("translate-y-20", "opacity-0");
+  }, 3000);
+</script>
+<% } %>
+
+
+</body></html>

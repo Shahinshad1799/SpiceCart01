@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SpiceCart Admin Dashboard with Logout</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-brand": "#f97316", // Vibrant Orange
+                        "sidebar-bg": "#ea580c", // Solid, Vibrant Orange (Orange 600)
+                        "active-highlight": "#fb923c", // Warm Saffron (Orange 400) for subtle contrast
+                        "main-bg": "#f8faf9",
+                        "accent-green": "#10b981",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .nav-active {
+    background-color: #d35400;
+    color: white;
+}
+
+    </style>
+</head>
+<body class="bg-main-bg min-h-screen flex text-slate-800 font-display">
+<aside class="w-64 bg-sidebar-bg flex flex-col fixed h-full shadow-xl z-20">
+<div class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-sidebar-bg text-2xl">eco</span>
+</div>
+<span class="text-white text-xl font-extrabold tracking-tight">SpiceCart</span>
+</div>
+</div>
+<nav class="flex-1 px-4 mt-4 space-y-1">
+<a class="nav-active flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="text-orange-50 hover:bg-white/10 hover:text-white flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>Products</span>
+</a>
+<a class="text-orange-50 hover:bg-white/10 hover:text-white flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span>Orders</span>
+</a>
+<a class="text-orange-50 hover:bg-white/10 hover:text-white flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Customers</span>
+</a>
+<a class="text-orange-50 hover:bg-white/10 hover:text-white flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium" href="#">
+<span class="material-symbols-outlined">confirmation_number</span>
+<span>Coupons</span>
+</a>
+<a class="text-orange-50 hover:bg-white/10 hover:text-white flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span>Reports</span>
+</a>
+</nav>
+<div class="p-4 border-t border-orange-700/50">
+<div class="flex items-center justify-between gap-3 px-2 py-3 bg-orange-700/30 rounded-xl">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-orange-800 overflow-hidden border border-orange-400/30 flex-shrink-0">
+<img alt="Admin Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDRvwzJxY9_TOq7TU6nvnZD6CkTu4CNQz4Kt3iCQeppjgsfIIPUQYfbaOvC27s9zG57eXMvJfFqRmVuLMj1qXxYydOcUJ_9RkLAS1ICv_eZJpPcKvsjjE142jHuAn5nxP_2DCYGFdOJIfC2cUbjexi3hAu-xott7aIWAgpvj7VwRAZbo1BMyTAzpZY2UiaX4B7f0t5CnJxWd3G7sfCE6w7LNloNpmHoZRIq-umNG4qH_DbzLAeHIZ1PlLrkH42ZAP-t2ubtensvLo"/>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-white text-xs font-bold truncate">Alex Thorne</span>
+<span class="text-orange-200 text-[10px]">Store Manager</span>
+</div>
+</div>
+<button class="w-8 h-8 flex items-center justify-center text-orange-200 hover:text-white hover:bg-white/10 rounded-lg transition-colors group" title="Logout">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</div>
+</aside>
+<main class="flex-1 ml-64 p-8">
+<header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+<div>
+<h1 class="text-2xl font-extrabold text-slate-900">Dashboard Overview</h1>
+<p class="text-slate-500 text-sm">Welcome back! Here's what's happening with SpiceCart today.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-slate-400 text-lg">calendar_today</span>
+<span class="text-sm font-semibold text-slate-700">Oct 24, 2023 - Oct 31, 2023</span>
+</div>
+<button class="bg-slate-900 text-white px-5 py-2 rounded-lg shadow-sm font-semibold text-sm flex items-center gap-2 hover:bg-slate-800 transition-all">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                Download Report
+            </button>
+</div>
+</header>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<span class="text-accent-green text-xs font-bold bg-green-50 px-2 py-1 rounded-full">+12.5%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">Total Revenue</p>
+<h3 class="text-2xl font-extrabold text-slate-900">$128,430.00</h3>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-orange-50 text-orange-600 rounded-lg">
+<span class="material-symbols-outlined">shopping_bag</span>
+</div>
+<span class="text-accent-green text-xs font-bold bg-green-50 px-2 py-1 rounded-full">+8.2%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">Total Orders</p>
+<h3 class="text-2xl font-extrabold text-slate-900">1,429</h3>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-purple-50 text-purple-600 rounded-lg">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<span class="text-accent-green text-xs font-bold bg-green-50 px-2 py-1 rounded-full">+14.1%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">Total Customers</p>
+<h3 class="text-2xl font-extrabold text-slate-900">852</h3>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-pink-50 text-pink-600 rounded-lg">
+<span class="material-symbols-outlined">style</span>
+</div>
+<span class="text-accent-green text-xs font-bold bg-green-50 px-2 py-1 rounded-full">+2.4%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">Products Count</p>
+<h3 class="text-2xl font-extrabold text-slate-900">486</h3>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+<div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-bold text-lg">Sales Overview</h2>
+<select class="text-sm border-slate-200 rounded-lg focus:ring-primary-brand focus:border-primary-brand">
+<option>Monthly</option>
+<option>Weekly</option>
+</select>
+</div>
+<div class="h-64 w-full bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-center">
+<div class="text-center">
+<span class="material-symbols-outlined text-slate-300 text-5xl">monitoring</span>
+<p class="text-slate-400 text-sm mt-2 font-medium">Sales chart analytics visualization</p>
+</div>
+</div>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+<h2 class="font-bold text-lg mb-6">Low Stock Alerts</h2>
+<div class="space-y-4">
+<div class="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-xl transition-colors">
+<div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAzEpfIfqEWmOJHjNnRyMl9KXYGooI15GfEFGDZWBkP2HrGuHIdnrfLvJEKBcRqj05wFfiwfL2fG2j6a6O-ZqhOCQsK3pOFIz_LvxjbxtFBw4uVcrMncqYr3wbFixL4_WDQf1QMmB0f0wKQlrHkNeca4f0It3WAninibzmMfIJJ6D0n0dIvQaqG5c6UzsUm_fVifASuXzBOIhKAeNb0YtR9fcLfB25_2u30qbMRggEGemSha8U9MBPTBLzGCLiQ5a_EgmJTbC1ajQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold truncate">Organic Turmeric Root</p>
+<p class="text-xs text-slate-500">Only 2 left</p>
+</div>
+<div class="text-right">
+<span class="inline-block px-2 py-1 bg-red-100 text-red-600 text-[10px] font-bold rounded uppercase">Urgent</span>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-xl transition-colors">
+<div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxa_rKnVx0rw6Z1gwKWZI6c1KNhknAC7uD6mHgh8hlnmZNFByH2QqhvmfpirFgsHprqVi9mK4-Wg5GP_M1KSxcz4djze__no6wx5H7LiDe-YtbHeVMuF4ZYZBkTX8nE0y474VXS3G1Z96GCQjUj4CPlRO2YpWqvTWRbjHPEs6dbMs4xemObbNmv5ns0O4FsESiDL0w_VJSy3Is47scwn_PNcv51h-qRdlog7x7xyEUYGjTLqH3icusCItNZxOrVykk_fQ3IgIvFNk"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold truncate">Saffron Threads (A+)</p>
+<p class="text-xs text-slate-500">Only 5 left</p>
+</div>
+<div class="text-right">
+<span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-600 text-[10px] font-bold rounded uppercase">Reorder</span>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-xl transition-colors">
+<div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvOAOZidACGPZkPbfi8pvweKF9RNclmCtT8Xh2uZlNu4E148lKkyvJWJxXX-airY1XlIPOKxP6fZnP0jp9jzKlaluc7cusFsdgzUc2wNytLEbZdlcDGHdjdVqbJxqZpppn2Zht6fS7oZ55orGA7GhBNZvOggxcHzGyP4HvM6xTLwa6pw_oYElopX4DY0YOh-3vLw6ZQBkghAjddty8yTnrzMdQQ8XuhdmwFZ7xZ4h3fE4CXAnPaCqONh699jIQGV_pjGjvtD2Ddu8"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold truncate">Smoked Paprika</p>
+<p class="text-xs text-slate-500">Only 8 left</p>
+</div>
+<div class="text-right">
+<span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-600 text-[10px] font-bold rounded uppercase">Reorder</span>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 text-primary-brand text-sm font-bold hover:bg-orange-50 rounded-lg transition-colors border border-orange-500 border-opacity-20">View All Alerts</button>
+</div>
+</div>
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+<div class="p-6 border-b border-slate-100 flex items-center justify-between">
+<h2 class="font-bold text-lg">Recent Orders</h2>
+<button class="text-sm font-semibold text-slate-500 hover:text-primary-brand">View All Orders</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 border-b border-slate-100">
+<tr>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Order ID</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Customer</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Product</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Amount</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-900">#ORD-9021</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold">JD</div>
+<span class="text-sm text-slate-700">James Dalton</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">Premium Spice Set</td>
+<td class="px-6 py-4 text-sm font-bold">$189.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase">Delivered</span>
+</td>
+<td class="px-6 py-4 text-sm text-right">
+<button class="text-slate-400 hover:text-primary-brand transition-colors"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-900">#ORD-9020</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold">SW</div>
+<span class="text-sm text-slate-700">Sarah Weber</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">Cardamom Pods 500g</td>
+<td class="px-6 py-4 text-sm font-bold">$245.50</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full uppercase">Processing</span>
+</td>
+<td class="px-6 py-4 text-sm text-right">
+<button class="text-slate-400 hover:text-primary-brand transition-colors"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-900">#ORD-9019</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold">MK</div>
+<span class="text-sm text-slate-700">Mike Kostic</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">Cinnamon Sticks</td>
+<td class="px-6 py-4 text-sm font-bold">$110.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-orange-100 text-orange-700 text-[10px] font-bold rounded-full uppercase">Shipped</span>
+</td>
+<td class="px-6 py-4 text-sm text-right">
+<button class="text-slate-400 hover:text-primary-brand transition-colors"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4 text-sm font-bold text-slate-900">#ORD-9018</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold">EL</div>
+<span class="text-sm text-slate-700">Elena Lowe</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">Peppercorn Mix</td>
+<td class="px-6 py-4 text-sm font-bold">$85.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-full uppercase">Cancelled</span>
+</td>
+<td class="px-6 py-4 text-sm text-right">
+<button class="text-slate-400 hover:text-primary-brand transition-colors"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+
+</body></html>
