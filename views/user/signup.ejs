@@ -63,22 +63,23 @@
 <form class="space-y-5" method="post" action="/signup">
 <div class="space-y-1">
 <label class="block text-sm font-bold text-[#181311] dark:text-white" for="full_name">Full Name</label>
-<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="fullname" id="full_name" placeholder="e.g. Sarah Jenkins" type="text"/>
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="fullname" id="full_name" placeholder="e.g. Sarah Jenkins" type="text" required minlength="3"/>
+<p class="text-red-500 text-sm mt-1 hidden" id="fullnameError"></p>
 </div>
 <div class="space-y-1">
 <label class="block text-sm font-bold text-[#181311] dark:text-white" for="email">Email Address</label>
-<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="email" id="email" placeholder="you@example.com" type="email"/>
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="email" id="email" placeholder="you@example.com" type="email" required/>
 </div>
 <div class="space-y-1">
 <label class="block text-sm font-bold text-[#181311] dark:text-white" for="password">Password</label>
-<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="password" id="password" placeholder="Min. 8 characters" type="password"/>
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="password" id="password" placeholder="Min. 8 characters" type="password" required minlength="8"/>
 </div>
 <div class="space-y-1">
 <label class="block text-sm font-bold text-[#181311] dark:text-white" for="confirm_password">Confirm Password</label>
-<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="confirmpassword" id="confirm_password" placeholder="Re-enter password" type="password"/>
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="confirmpassword" id="confirm_password" placeholder="Re-enter password" type="password" required/>
 </div>
 <div class="flex items-start gap-3 mt-2">
-<input class="mt-1 h-4 w-4 rounded border-[#D6CFC7] bg-white text-primary focus:ring-primary focus:ring-offset-0 dark:border-[#3E302A] dark:bg-[#1A120E]" id="terms" type="checkbox"/>
+<input class="mt-1 h-4 w-4 rounded border-[#D6CFC7] bg-white text-primary focus:ring-primary focus:ring-offset-0 dark:border-[#3E302A] dark:bg-[#1A120E]" id="terms" type="checkbox" required/>
 <label class="text-sm text-[#5C4D46] dark:text-[#A8A29E] font-body" for="terms">
                                 I create an account and agree to the <a class="text-primary hover:underline font-bold" href="#">Terms of Service</a> and <a class="text-primary hover:underline font-bold" href="#">Privacy Policy</a>.
                             </label>
@@ -187,92 +188,67 @@
 </footer>
 </div>
 <script>
-  const form = document.getElementById("signupForm");
-  const error = document.getElementById("error");
+const form = document.getElementById("signupForm");
 
-  form.addEventListener("submit", function (e) {
-    const fullname = form.fullname.value.trim();
-    const email = form.email.value.trim();
-    const password = form.password.value;
-    const confirmpassword = form.confirmpassword.value;
+form.addEventListener("submit", function(e) {
 
-    // clear old error
-    error.textContent = "";
+    let isValid = true;
 
-    // 1️⃣ empty fields
-    if (!fullname || !email || !password || !confirm) {
-      e.preventDefault();
-      error.textContent = "All fields are required";
-      return;
+    const fullname = document.getElementById("full_name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirm_password").value;
+    const terms = document.getElementById("terms").checked;
+
+    // Clear previous errors safely
+    document.querySelectorAll(".error-msg").forEach(p => {
+        p.textContent = "";
+        p.classList.add("hidden");
+    });
+
+    // Full Name
+    if (fullname.length < 3) {
+        showError("fullnameError", "Full name must be at least 3 characters.");
+        isValid = false;
     }
 
-    // 2️⃣ email format
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    if (!emailRegex.test(email)) {
-      e.preventDefault();
-      error.textContent = "Invalid email address";
-      return;
+    // Email
+    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/;
+    if (!emailPattern.test(email)) {
+        showError("emailError", "Enter a valid email address.");
+        isValid = false;
     }
 
-    // 3️⃣ password length
-    if (password.length < 6) {
-      e.preventDefault();
-      error.textContent = "Password must be at least 6 characters";
-      return;
+    // Password (strong)
+    const strongPassword = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
+    if (!strongPassword.test(password)) {
+        showError("passwordError",
+          "Password must contain 1 uppercase letter & 1 number.");
+        isValid = false;
     }
 
-    // 4️⃣ password match
-    if (password !== confirm) {
-      e.preventDefault();
-      error.textContent = "Passwords do not match";
-      return;
+    // Confirm Password
+    if (password !== confirmPassword) {
+        showError("confirmPasswordError", "Passwords do not match.");
+        isValid = false;
     }
 
-    // ✅ all good → form submits
-  });
+    // Terms
+    if (!terms) {
+        showError("termsError", "You must accept the terms.");
+        isValid = false;
+    }
+
+    if (!isValid) {
+        e.preventDefault();
+    }
+});
+
+function showError(id, message) {
+    const element = document.getElementById(id);
+    element.textContent = message;
+    element.classList.remove("hidden");
+}
 </script>
-<% if (typeof success !== "undefined") { %>
-<div id="toast"
-     class="fixed bottom-6 right-6 bg-green-600 text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
-            transform translate-y-20 opacity-0 transition-all duration-500">
-  <%= success %>
-</div>
-
-<script>
-  const toast = document.getElementById("toast");
-
-  // Show animation
-  setTimeout(() => {
-    toast.classList.remove("translate-y-20", "opacity-0");
-  }, 100);
-
-  // Hide after 3 seconds
-  setTimeout(() => {
-    toast.classList.add("translate-y-20", "opacity-0");
-  }, 3000);
-</script>
-<% } %>
-
-
-<% if (typeof error !== "undefined") { %>
-<div id="toast"
-     class="fixed bottom-6 right-6 bg-red-600 text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
-            transform translate-y-20 opacity-0 transition-all duration-500">
-  <%= error %>
-</div>
-
-<script>
-  const toas = document.getElementById("toast");
-
-  setTimeout(() => {
-    toas.classList.remove("translate-y-20", "opacity-0");
-  }, 100);
-
-  setTimeout(() => {
-    toas.classList.add("translate-y-20", "opacity-0");
-  }, 3000);
-</script>
-<% } %>
-
 
 </body></html>
