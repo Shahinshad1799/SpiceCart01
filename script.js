@@ -16,6 +16,7 @@ app.use(require("express-session")({
 
 
 
+app.use("/uploads", express.static("uploads"));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -41,7 +42,6 @@ app.use(
 
 app.set("view engine","ejs")
 app.set("views","./views")
-
 
 
 

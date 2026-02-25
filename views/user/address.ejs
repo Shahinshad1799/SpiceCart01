@@ -105,21 +105,25 @@
 <div class="flex flex-col items-center text-center">
 <div class="relative mb-4 group cursor-pointer">
 <div class="size-24 rounded-full overflow-hidden border-4 border-[#F0F3F1] dark:border-[#1A120E] shadow-inner">
-<img alt="Sarah Jenkins" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl-aGfZ8oQuV44VqPbS0CK2zYKZrgcjfAHgSWSk1DSMMbAzpkRd4Euu3-y-QgNhX6xZ3sBfWmB0Z-TJdxZUvoe6aR_6SghOURAycGq9xwmyyKuBNTMofd_gO5rBaqyDNKEAcg9kI6XL0sal9Y1JWuKI4jTEf_k8T8ZNHALTxGdY3JfuscgZ44s7t_PGvL3tvl1DhmsxlPLHiEqT9XgQoPu0OU_irZgT0WtlGri1hvcxmhfBxS9QTCMkLbtND4z1add7bvSRN7-Hk4"/>
+  <img 
+    alt="User"
+    class="w-full h-full object-cover"
+    src="<%= user.profileImage 
+      ? '/uploads/profile/' + user.profileImage 
+      : '/images/default.png' %>"
+  />
 </div>
-<div class="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-<span class="material-symbols-outlined text-white">camera_alt</span>
+
 </div>
-<button class="absolute bottom-0 right-0 bg-white dark:bg-[#3E302A] p-1.5 rounded-full shadow-md text-primary hover:text-primary/80 transition-colors border border-[#E6E0DC] dark:border-[#3E302A]">
-<span class="material-symbols-outlined text-sm">edit</span>
-</button>
-</div>
-<h3 class="text-xl font-bold text-[#181311] dark:text-white">Sarah Jenkins</h3>
-<p class="text-sm text-[#886e63] dark:text-[#9CA3AF] mb-6">sarah.jenkins@example.com</p>
-<button class="w-full py-2.5 rounded-lg border border-[#E6E0DC] dark:border-[#3E302A] font-medium text-[#181311] dark:text-white hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] transition-colors mb-8 text-sm flex items-center justify-center gap-2">
+<h3 class="text-xl font-bold text-[#181311] dark:text-white"><%= user.fullname %></h3>
+<p class="text-sm text-[#886e63] dark:text-[#9CA3AF] mb-6"><%= user.email %></p>
+<a href="/editprofile">
+    <button class="w-full py-2.5 rounded-lg border border-[#E6E0DC] dark:border-[#3E302A] font-medium text-[#181311] dark:text-white hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] transition-colors mb-8 text-sm flex items-center justify-center gap-2">
 <span class="material-symbols-outlined text-sm">settings</span>
-                                    Edit Profile
-                                </button>
+                                Edit Profile
+                            </button>
+</a>
+
 </div>
 <div class="space-y-4 pt-6 border-t border-[#f4f1f0] dark:border-[#3E302A]">
 <div class="flex items-center justify-between">
@@ -128,11 +132,11 @@
 </div>
 <div class="flex items-center justify-between">
 <span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Total Orders</span>
-<span class="text-sm font-bold text-[#181311] dark:text-white">24</span>
+<span class="text-sm font-bold text-[#181311] dark:text-white">0</span>
 </div>
 <div class="flex items-center justify-between">
 <span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Wallet Balance</span>
-<span class="text-sm font-bold text-primary">$45.00</span>
+<span class="text-sm font-bold text-primary">00</span>
 </div>
 </div>
 </div>

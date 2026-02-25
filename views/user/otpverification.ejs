@@ -74,13 +74,13 @@
 <div class="mt-8 text-center">
 <p class="text-sm text-[#5C4D46] dark:text-[#A8A29E] font-body">
     Didn't receive the code?
-    
-    <button 
-        id="resendBtn"
-        class="text-primary font-bold hover:underline ml-1 opacity-50 cursor-not-allowed"
-        disabled>
-        Resend Code (<span id="timer">02:00</span>)
-    </button>
+<button 
+    id="resendBtn"
+    type="button"
+    class="text-primary font-bold hover:underline ml-1 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+    disabled>
+    Resend Code <span id="timerText">(02:00)</span>
+</button>
 </p>
 
 
@@ -122,45 +122,55 @@
 </footer>
 </div>
 <script>
-    let timeLeft = 120; // 2 minutes in seconds
-    const timerElement = document.getElementById("timer");
-    const resendBtn = document.getElementById("resendBtn");
+const timerText = document.getElementById("timerText");
+const resendBtn = document.getElementById("resendBtn");
 
-    const countdown = setInterval(() => {
-        let minutes = Math.floor(timeLeft / 60);
-        let seconds = timeLeft % 60;
+let countdown;
+let timeLeft = 120; // 2 minutes
 
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-        timerElement.textContent = `${minutes}:${seconds}`;
+function updateTimer() {
 
-        if (timeLeft <= 0) {
-            clearInterval(countdown);
-            resendBtn.disabled = false;
-            resendBtn.classList.remove("opacity-50", "cursor-not-allowed");
-            resendBtn.innerHTML = "Resend Code";
-        }
+    if (timeLeft <= 0) {
+        clearInterval(countdown);
+        resendBtn.disabled = false;
+        timerText.textContent = "";
+        return;
+    }
 
-        timeLeft--;
-    }, 1000);
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
 
-    resendBtn.addEventListener("click", function () {
-        fetch("/resend-otp", {
-            method: "POST"
-        })
+    timerText.textContent =
+        `(${minutes}:${seconds.toString().padStart(2, "0")})`;
+
+    timeLeft--;
+}
+
+function startTimer() {
+    resendBtn.disabled = true;
+    timeLeft = 120; // reset
+    clearInterval(countdown);
+    updateTimer();
+    countdown = setInterval(updateTimer, 1000);
+}
+
+// Start when page loads
+startTimer();
+
+// Resend logic
+resendBtn.addEventListener("click", function () {
+
+    fetch("/resendotp", { method: "POST" })
         .then(res => res.json())
         .then(data => {
-            alert("OTP Resent Successfully");
-
-            // Restart timer
-            timeLeft = 120;
-            resendBtn.disabled = true;
-            resendBtn.classList.add("opacity-50", "cursor-not-allowed");
-            resendBtn.innerHTML = `Resend Code (<span id="timer">02:00</span>)`;
-
-            // Restart countdown
-            location.reload(); // simplest method
+            if (data.success) {
+                alert("New OTP Sent");
+                startTimer(); // restart 2 minutes
+            } else {
+                alert("Failed to resend OTP");
+            }
         })
         .catch(err => console.log(err));
-    });
+});
 </script>
 </body></html>

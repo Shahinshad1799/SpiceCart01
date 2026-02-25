@@ -69,15 +69,19 @@
 <div class="flex flex-col gap-2">
 <label class="text-sm font-bold text-[#181311]" for="full-name">Full Name</label>
 <input class="w-full rounded-xl border border-[#d1d5db] bg-white px-4 py-3 text-[#181311] placeholder:text-[#886e63] focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] outline-none transition-all" id="full-name" name="fullname" placeholder="e.g. Jessica Miller" type="text"/>
+<p class="text-red-500 text-sm mt-1 hidden" id="fullnameError"></p>
 </div>
 <div class="flex flex-col gap-2">
 <label class="text-sm font-bold text-[#181311]" for="phone">Phone Number</label>
 <input class="w-full rounded-xl border border-[#d1d5db] bg-white px-4 py-3 text-[#181311] placeholder:text-[#886e63] focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] outline-none transition-all" id="phone" name="phonenumber" placeholder="(555) 000-0000" type="tel"/>
+<p class="text-red-500 text-sm mt-1 hidden" id="phoneError"></p>
 </div>
 </div>
 <div class="flex flex-col gap-2">
 <label class="text-sm font-bold text-[#181311]" for="address">Street Address</label>
 <input class="w-full rounded-xl border border-[#d1d5db] bg-white px-4 py-3 text-[#181311] placeholder:text-[#886e63] focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] outline-none transition-all" id="address" name="address" placeholder="Street address" type="text"/>
+<p class="text-red-500 text-sm mt-1 hidden" id="addressError"></p>
+
 </div>
 <div class="flex flex-col gap-2">
 <label class="text-sm font-bold text-[#181311]" for="apt">Apartment, Suite, etc. (Optional)</label>
@@ -87,6 +91,8 @@
 <div class="flex flex-col gap-2">
 <label class="text-sm font-bold text-[#181311]" for="city">City</label>
 <input class="w-full rounded-xl border border-[#d1d5db] bg-white px-4 py-3 text-[#181311] placeholder:text-[#886e63] focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] outline-none transition-all" id="city" name="city" placeholder="City" type="text"/>
+<p class="text-red-500 text-sm mt-1 hidden" id="cityError"></p>
+
 </div>
 <div class="flex flex-col gap-2">
 <label class="text-sm font-bold text-[#181311]" for="state">State</label>
@@ -144,6 +150,8 @@
 <option value="WI">Wisconsin</option>
 <option value="WY">Wyoming</option>
 </select>
+<p class="text-red-500 text-sm mt-1 hidden" id="stateError"></p>
+
 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#886e63]">
 <span class="material-symbols-outlined text-xl">expand_more</span>
 </div>
@@ -152,6 +160,8 @@
 <div class="flex flex-col gap-2">
 <label class="text-sm font-bold text-[#181311]" for="zip">Zip Code</label>
 <input class="w-full rounded-xl border border-[#d1d5db] bg-white px-4 py-3 text-[#181311] placeholder:text-[#886e63] focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] outline-none transition-all" id="zip" name="zipcode" placeholder="Zip" type="text"/>
+<p class="text-red-500 text-sm mt-1 hidden" id="zipError"></p>
+
 </div>
 </div>
 <label class="flex items-center gap-3 mt-2 cursor-pointer group">
@@ -173,4 +183,108 @@
 
 </div>
 </div>
+<script>
+const form = document.querySelector("form");
+
+const fullname = document.querySelector("input[name='fullname']");
+const phone = document.querySelector("input[name='phonenumber']");
+const address = document.querySelector("input[name='address']");
+const city = document.querySelector("input[name='city']");
+const state = document.querySelector("select[name='state']");
+const zipcode = document.querySelector("input[name='zipcode']");
+
+// ===== Helper Functions =====
+function showError(input, id, message) {
+  const error = document.getElementById(id);
+  error.textContent = message;
+  error.classList.remove("hidden");
+  input.classList.add("border-red-500");
+}
+
+function clearError(input, id) {
+  const error = document.getElementById(id);
+  error.textContent = "";
+  error.classList.add("hidden");
+  input.classList.remove("border-red-500");
+}
+
+// ===== Individual Field Validation =====
+
+function validateFullname() {
+  if (!/^[A-Za-z ]{3,}$/.test(fullname.value.trim())) {
+    showError(fullname, "fullnameError", "Enter valid full name (min 3 letters)");
+    return false;
+  }
+  clearError(fullname, "fullnameError");
+  return true;
+}
+
+function validatePhone() {
+  if (!/^[0-9]{10}$/.test(phone.value.trim())) {
+    showError(phone, "phoneError", "Phone must be 10 digits");
+    return false;
+  }
+  clearError(phone, "phoneError");
+  return true;
+}
+
+function validateAddress() {
+  if (address.value.trim().length < 5) {
+    showError(address, "addressError", "Enter valid street address");
+    return false;
+  }
+  clearError(address, "addressError");
+  return true;
+}
+
+function validateCity() {
+  if (!/^[A-Za-z ]{2,}$/.test(city.value.trim())) {
+    showError(city, "cityError", "Enter valid city");
+    return false;
+  }
+  clearError(city, "cityError");
+  return true;
+}
+
+function validateState() {
+  if (!state.value) {
+    showError(state, "stateError", "Select a state");
+    return false;
+  }
+  clearError(state, "stateError");
+  return true;
+}
+
+function validateZip() {
+  if (!/^[0-9]{5,6}$/.test(zipcode.value.trim())) {
+    showError(zipcode, "zipError", "Enter valid zip code");
+    return false;
+  }
+  clearError(zipcode, "zipError");
+  return true;
+}
+
+// ===== Real-Time Validation =====
+fullname.addEventListener("input", validateFullname);
+phone.addEventListener("input", validatePhone);
+address.addEventListener("input", validateAddress);
+city.addEventListener("input", validateCity);
+state.addEventListener("change", validateState);
+zipcode.addEventListener("input", validateZip);
+
+// ===== Final Submit Check =====
+form.addEventListener("submit", (e) => {
+  const isValid =
+    validateFullname() &&
+    validatePhone() &&
+    validateAddress() &&
+    validateCity() &&
+    validateState() &&
+    validateZip();
+
+  if (!isValid) {
+    e.preventDefault();
+  }
+});
+</script>
 </body></html>

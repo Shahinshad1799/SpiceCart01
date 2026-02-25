@@ -33,6 +33,8 @@ route.get("/",userauth.isLogin,user.loadladingpage)
  route.get("/editaddress/:id",checkstatus,user.loadEditAddress)
  route.post("/editaddress/:id",user.updateAddress)
 route.post("/deleteaddress/:id", user.deleteAddress);
+route.post("/logout",user.logout);
+route.post("/delete-profile-image",user.deleteProfile);
 // Start Google Login
 route.get("/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
@@ -50,26 +52,6 @@ route.get("/auth/google/callback",
 );
 
 
-
-
-route.post("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/login");
-  });
-});
-route.post("/delete-profile-image", async (req, res) => {
-  try {
-    const userId = req.session.userId;
-
-    await userModel.findByIdAndUpdate(userId, {
-      profileImage: null
-    });
-
-    res.json({ success: true });
-  } catch (err) {
-    res.json({ success: false });
-  }
-});
 
 
 
