@@ -403,6 +403,9 @@ const loginuser = async (req, res) => {
     if (!user) {
       return res.render("user/login", { error: "User does not exist" });
     }
+     if (user.status === "Blocked") {
+      return res.render("user/login", { error: "Your account has been blocked." });
+    }
 
     const isSame = await bcrypt.compare(password, user.password);
     if (!isSame) {

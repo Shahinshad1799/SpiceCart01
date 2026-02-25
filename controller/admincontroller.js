@@ -37,15 +37,13 @@ const loaddashboard=function(req,res){
 }
 const loadcustomer = async (req, res) => {
   try {
-    const search = req.query.q || "";         // search query
-    const page = parseInt(req.query.page) || 1; // current page
-    const limit = 3;                          // items per page
+    const search = req.query.q || "";
+    const page = parseInt(req.query.page) || 1;
+    const limit = 3;
     const skip = (page - 1) * limit;
-    
-  
 
-    // MongoDB query: search name, email, or customerId (case-insensitive)
-   const filter = search
+    // Search filter
+    const filter = search
       ? {
           $or: [
             { name: { $regex: search, $options: "i" } },
@@ -53,21 +51,25 @@ const loadcustomer = async (req, res) => {
             { customerId: { $regex: search, $options: "i" } }
           ]
         }
-      : {}; // if search is empty, get all customers
-     const totalCustomers = await usermodel.countDocuments(filter);
-    const totalPages = Math.ceil(totalCustomers / limit);
- const customers = await usermodel.find({})
-  .sort({ name: 1 })
-  .skip(skip)
-  .limit(limit);
+      : {};
 
-     
+    const totalCustomers = await usermodel.countDocuments(filter);
+    const totalPages = Math.ceil(totalCustomers / limit);
+
+    // 🔥 Use filter here
+    const customers = await usermodel
+      .find(filter)
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limit);
+
     res.render("admin/customer", {
       customers,
-      search ,
+      search,
       currentPage: page,
       totalPages,
     });
+
   } catch (error) {
     console.log("Customer Load Error:", error);
     res.status(500).send("Server Error");
