@@ -13,7 +13,7 @@ route.get("/",userauth.isLogin,user.loadladingpage)
  route.post("/signup",userauth.isLogout,user.registeruser)
  route.get("/otpverification",userauth.isLogin,user.loadverify)
  route.post("/otpverification",userauth.isLogin,user.veriify)
- route.post("/resend-otp", user.resendOtp);
+ route.post("/resendotp", user.resendOtp);
  route.get("/login",userauth.isLogout,user.loadlogin)
  route.post("/login",userauth.isLogout,user.loginuser)
  route.get("/home",checkstatus,userauth.isLogin,user.loadhome)
@@ -34,6 +34,8 @@ route.get("/",userauth.isLogin,user.loadladingpage)
  route.post("/editaddress/:id",user.updateAddress)
 route.post("/deleteaddress/:id", user.deleteAddress);
 route.post("/logout",user.logout);
+
+
 route.post("/delete-profile-image",user.deleteProfile);
 // Start Google Login
 route.get("/auth/google",

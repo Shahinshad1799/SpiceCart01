@@ -46,10 +46,31 @@ const loadaddaddress = (req, res) => {
   res.render("user/addaddress");
 };
 
-const loadverify = (req, res) => {
-  res.render("user/otpverification");
-};
+const loadverify = async (req, res) => {
+  try {
+    const email =
+      req.session.email || req.session.tempUser?.email;
 
+    if (!email) {
+      return res.redirect("/signup");
+    }
+
+    const record = await otpmodel.findOne({ email });
+
+    if (!record) {
+      return res.redirect("/signup");
+    }
+
+    return res.render("user/otpverification", {
+      purpose: req.session.tempUser ? "signup" : "forgot",
+      otpExpiry: record.expiresAt.getTime()
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.redirect("/signup");
+  }
+};
 // =======================
 // User Profile
 // =======================
@@ -145,22 +166,23 @@ const registeruser = async (req, res) => {
 
     const hashedpassword = await bcrypt.hash(password, saltround);
 
+    // Save temporary user
     req.session.tempUser = { fullname, email, password: hashedpassword };
 
-    await sendotp(email);
-    const otpData = await otpmodel.findOne({ email });
+    // ✅ Send OTP and get expiry directly
+    const otpExpiry = await sendotp(email);
 
     return res.render("user/otpverification", {
-      otpExpiry: otpData.expiresAt,
+      otpExpiry,   // must always pass this
       purpose: "signup",
       success: "OTP sent to the mail",
     });
+
   } catch (error) {
     console.log(error);
     return res.render("user/signup", { error: "Something went wrong" });
   }
 };
-
 const loginuser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -177,47 +199,6 @@ const loginuser = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.render("user/login");
-  }
-};
-
-const veriify = async (req, res) => {
-  const { otp, purpose } = req.body;
-  try {
-    if (purpose === "signup") {
-      const tempUser = req.session.tempUser;
-      if (!tempUser) return res.redirect("/signup");
-
-      const record = await otpmodel.findOne({ email: tempUser.email });
-      if (!record) return res.redirect("/signup");
-
-      const isMatch = await bcrypt.compare(otp, record.otp);
-      if (!isMatch) return res.render("user/otpverification", { message: "Invalid OTP", purpose: "signup", otpExpiry: record.expiresAt });
-      if (record.expiresAt < Date.now()) return res.render("user/otpverification", { message: "OTP Expired", purpose: "signup", otpExpiry: record.expiresAt });
-
-      await usermodel.create(tempUser);
-      await otpmodel.deleteMany({ email: tempUser.email });
-      req.session.destroy();
-
-      return res.redirect("/login");
-    }
-
-    if (purpose === "forgot") {
-      const email = req.session.email;
-      if (!email) return res.redirect("/forgotpassword");
-
-      const record = await otpmodel.findOne({ email });
-      if (!record) return res.redirect("/forgotpassword");
-
-      const isMatch = await bcrypt.compare(otp, record.otp);
-      if (!isMatch) return res.render("user/otpverification", { message: "Invalid OTP", purpose: "forgot", otpExpiry: record.expiresAt });
-      if (record.expiresAt < Date.now()) return res.render("user/otpverification", { message: "OTP Expired", purpose: "forgot", otpExpiry: record.expiresAt });
-
-      req.session.resetEmail = email;
-      return res.render("user/resetpassword");
-    }
-  } catch (err) {
-    console.log(err);
-    res.redirect("/signup");
   }
 };
 
@@ -258,9 +239,9 @@ const forgotpassword = async (req, res) => {
     const users = await usermodel.findOne({ email });
     if (!users) return res.render("user/forgotpasword", { message: "Email not registered" });
 
-    await sendotp(email);
+    const otpExpiry =  await sendotp(email);
 
-    res.render("user/otpverification", { purpose: "forgot" });
+    res.render("user/otpverification", { purpose: "forgot" ,otpExpiry});
   } catch (error) {
     console.log(error);
     return res.render("user/forgotpasword", { message: "Something went wrong" });
@@ -385,35 +366,192 @@ const deleteAddress = async (req, res) => {
 // =======================
 const resendOtp = async (req, res) => {
   try {
-    const email = req.session.email;
+    console.log("RESEND ROUTE HIT");
+    const email = req.session.email || req.session.tempUser?.email;
     if (!email) return res.json({ success: false });
 
     const otp = Math.floor(100000 + Math.random() * 900000);
     const hashedOtp = await bcrypt.hash(otp.toString(), 10);
     const expiryTime = Date.now() + 2 * 60 * 1000;
 
-    await otpmodel.findOneAndUpdate({ email }, { otp: hashedOtp, expiresAt: expiryTime }, { upsert: true });
+    await otpmodel.deleteMany({ email });
 
-    await transporter.sendMail({ to: email, subject: "Resend OTP", html: `<h1>${otp}</h1>` });
+    await otpmodel.create({
+      email,
+      otp: hashedOtp,
+      expiresAt: expiryTime
+    });
+
+    await transporter.sendMail({
+      to: email,
+      subject: "Resend OTP",
+      html: `<h1>${otp}</h1>`
+    });
 
     console.log("Resent OTP:", otp);
-    res.json({ success: true, otpExpiry: expiryTime });
+
+    // ✅ MUST SEND JSON
+    return res.json({
+      success: true,
+      otpExpiry: expiryTime
+    });
+
   } catch (error) {
     console.log(error);
-    res.json({ success: false });
+    return res.json({ success: false });
   }
 };
-
 const sendotp = async (email) => {
   const otp = generateOTP();
   const hashedOtp = await bcrypt.hash(otp.toString(), 10);
+  const expiryTime=Date.now() + 2 * 60 * 1000
 
   await otpmodel.deleteMany({ email });
-  await otpmodel.create({ email, otp: hashedOtp, expiresAt: Date.now() + 2 * 60 * 1000 });
+  await otpmodel.create({ email, otp: hashedOtp, expiresAt: expiryTime });
 
   await transporter.sendMail({ to: email, subject: "OTP Verification", html: `<h1>${otp}</h1>` });
   console.log(otp);
+  return expiryTime
 };
+
+
+const veriify = async (req, res) => {
+  const { otp, purpose } = req.body;
+  try {
+if (purpose === "signup") {
+  const tempUser = req.session.tempUser;
+  if (!tempUser) return res.redirect("/signup");
+
+  const record = await otpmodel.findOne({ email: tempUser.email });
+  if (!record) return res.redirect("/signup");
+
+  const isMatch = await bcrypt.compare(otp, record.otp);
+
+  if (!isMatch)
+    return res.render("user/otpverification", {
+      error: "Invalid OTP",
+      purpose: "signup",
+      otpExpiry: record.expiresAt.getTime()   // ✅ FIXED
+    });
+
+  if (record.expiresAt < Date.now())
+    return res.render("user/otpverification", {
+      error: "OTP Expired",
+      purpose: "signup",
+      otpExpiry: record.expiresAt.getTime()   // ✅ FIXED
+    });
+
+  await usermodel.create(tempUser);
+  await otpmodel.deleteMany({ email: tempUser.email });
+  req.session.destroy();
+
+  return res.redirect("/login");
+}
+  } catch (err) {
+    console.log(err);
+    res.redirect("/signup");
+  }
+};
+
+// const sendotp = async (req, res) => {
+//   try {
+//     const email = req.body.email || req.session.email;
+//     if (!email) return res.status(400).send("Email required");
+
+//     const otp = generateOTP();
+//     const hashedOtp = await bcrypt.hash(otp.toString(), 10);
+//     const expiryTime = Date.now() + 2 * 60 * 1000; // 2 minutes
+
+//     // Delete old OTPs for this email
+//     await otpmodel.deleteMany({ email });
+
+//     // Save new OTP
+//     await otpmodel.create({ email, otp: hashedOtp, expiresAt: expiryTime });
+
+//     // Send OTP email
+//     await transporter.sendMail({
+//       to: email,
+//       subject: "OTP Verification",
+//       html: `<h1>${otp}</h1>`,
+//     });
+
+//     console.log("Sent OTP:", otp);
+
+//     // Store email in session for verification
+//     req.session.email = email;
+
+//     // Pass expiry to frontend
+//     res.render("otpPage", { otpExpiry: expiryTime });
+//   } catch (err) {
+//     console.error("Send OTP Error:", err);
+//     res.status(500).send("Server Error");
+//   }
+// };
+
+// // Resend OTP
+// const resendOtp = async (req, res) => {
+//   try {
+//     const email = req.session.email;
+//     if (!email) return res.json({ success: false });
+
+//     const otp = generateOTP();
+//     const hashedOtp = await bcrypt.hash(otp.toString(), 10);
+//     const expiryTime = Date.now() + 2 * 60 * 1000;
+
+//     // Delete old OTPs
+//     await otpmodel.deleteMany({ email });
+
+//     // Save new OTP
+//     await otpmodel.create({ email, otp: hashedOtp, expiresAt: expiryTime });
+
+//     // Send email
+//     await transporter.sendMail({
+//       to: email,
+//       subject: "Resend OTP",
+//       html: `<h1>${otp}</h1>`,
+//     });
+
+//     console.log("Resent OTP:", otp);
+
+//     // Return expiry to frontend for timer
+//     res.json({ success: true, otpExpiry: expiryTime });
+//   } catch (err) {
+//     console.error("Resend OTP Error:", err);
+//     res.json({ success: false });
+//   }
+// };
+
+// // Verify OTP
+// const veriify= async (req, res) => {
+//   try {
+//     const { otp: enteredOtp } = req.body;
+//     const email = req.session.email;
+
+//     if (!email || !enteredOtp)
+//       return res.render("otpPage", { error: "Enter OTP" });
+
+//     const otpDoc = await otpmodel.findOne({ email }).sort({ createdAt: -1 });
+//     if (!otpDoc) return res.render("otpPage", { error: "OTP expired" });
+
+//     // Check expiry
+//     if (Date.now() > otpDoc.expiresAt)
+//       return res.render("otpPage", { error: "OTP expired", otpExpiry: otpDoc.expiresAt });
+
+//     // Verify OTP
+//     const isValid = await bcrypt.compare(enteredOtp, otpDoc.otp);
+//     if (!isValid)
+//       return res.render("otpPage", { error: "Wrong OTP", otpExpiry: otpDoc.expiresAt });
+
+//     // OTP is correct, delete it and redirect
+//     await otpmodel.deleteMany({ email });
+//     res.redirect("/home");
+//   } catch (err) {
+//     console.error("Verify OTP Error:", err);
+//     res.render("otpPage", { error: "Server error. Try again." });
+//   }
+// };
+
+
 
 const logout= function(req, res){
   req.session.destroy(() => {
