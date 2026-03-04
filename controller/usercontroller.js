@@ -233,14 +233,14 @@ const changepassword = async (req, res) => {
 const forgotpassword = async (req, res) => {
   try {
     const { email } = req.body;
-    req.session.email = email;
+    req.session.resetEmail = email;
 
     const users = await usermodel.findOne({ email });
     if (!users) return res.render("user/forgotpasword", { error: "Email not registered" });
 
     const otpExpiry =  await sendotp(email);
 
-    res.render("user/otpverification", { purpose: "forgot" ,otpExpiry});
+    res.render("user/otpverification", { purpose: "forgotpassword" ,otpExpiry});
   } catch (error) {
     console.log(error);
     return res.render("user/forgotpasword", { error: "Something went wrong" });
@@ -415,39 +415,87 @@ const sendotp = async (email) => {
   return expiryTime
 };
 
-
 const veriify = async (req, res) => {
   const { otp, purpose } = req.body;
+
   try {
-if (purpose === "signup") {
-  const tempUser = req.session.tempUser;
-  if (!tempUser) return res.redirect("/signup");
 
-  const record = await otpmodel.findOne({ email: tempUser.email });
-  if (!record) return res.redirect("/signup");
+    // ========================
+    // 🔹 SIGNUP OTP VERIFY
+    // ========================
+    if (purpose === "signup") {
 
-  const isMatch = await bcrypt.compare(otp, record.otp);
+      const tempUser = req.session.tempUser;
+      if (!tempUser) return res.redirect("/signup");
 
-  if (!isMatch)
-    return res.render("user/otpverification", {
-      error: "Invalid OTP",
-      purpose: "signup",
-      otpExpiry: record.expiresAt.getTime()   // ✅ FIXED
-    });
+      const record = await otpmodel.findOne({ email: tempUser.email });
+      if (!record) return res.redirect("/signup");
 
-  if (record.expiresAt < Date.now())
-    return res.render("user/otpverification", {
-      error: "OTP Expired",
-      purpose: "signup",
-      otpExpiry: record.expiresAt.getTime()   // ✅ FIXED
-    });
+      const isMatch = await bcrypt.compare(otp, record.otp);
 
-  await usermodel.create(tempUser);
-  await otpmodel.deleteMany({ email: tempUser.email });
-  req.session.destroy();
+      if (!isMatch) {
+        return res.render("user/otpverification", {
+          error: "Invalid OTP",
+          purpose: "signup",
+          otpExpiry: record.expiresAt.getTime()
+        });
+      }
 
-  return res.redirect("/login");
-}
+      if (record.expiresAt < Date.now()) {
+        return res.render("user/otpverification", {
+          error: "OTP Expired",
+          purpose: "signup",
+          otpExpiry: record.expiresAt.getTime()
+        });
+      }
+
+      await usermodel.create(tempUser);
+      await otpmodel.deleteMany({ email: tempUser.email });
+
+      return res.redirect("/login");
+    }
+
+    // ========================
+    // 🔹 FORGOT PASSWORD OTP VERIFY
+    // ========================
+    else if (purpose === "forgotpassword") {
+
+      const email = req.session.resetEmail;
+      console.log(email)
+      if (!email) return res.redirect("/forgotpassword");
+
+      const record = await otpmodel.findOne({ email });
+      if (!record) return res.redirect("/forgotpassword");
+
+      const isMatch = await bcrypt.compare(otp, record.otp);
+
+      if (!isMatch) {
+        return res.render("user/otpverification", {
+          error: "Invalid OTP",
+          purpose: "forgotpassword",
+          otpExpiry: record.expiresAt.getTime()
+        });
+      }
+
+      if (record.expiresAt < Date.now()) {
+        return res.render("user/otpverification", {
+          error: "OTP Expired",
+          purpose: "forgotpassword",
+          otpExpiry: record.expiresAt.getTime()
+        });
+      }
+
+      // OTP correct → allow password reset
+      return res.redirect("/resetpassword");
+    }
+
+    // ========================
+    // 🔹 INVALID PURPOSE
+    // ========================
+    else {
+      return res.redirect("/login");
+    }
+
   } catch (err) {
     console.log(err);
     res.redirect("/signup");

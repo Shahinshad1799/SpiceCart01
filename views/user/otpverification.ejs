@@ -8,6 +8,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -197,25 +198,48 @@ else resendBtn.disabled = false;
 // 4️⃣ Resend OTP logic
 resendBtn.addEventListener("click", async function () {
     resendBtn.disabled = true;
+
     try {
         const res = await fetch("/resendotp", { method: "POST" });
         const data = await res.json();
 
         if (data.success) {
-            alert("New OTP Sent");
+
+            await Swal.fire({
+                icon: "success",
+                title: "OTP Sent",
+                text: "New OTP has been sent to your email.",
+                timer: 2000,
+                showConfirmButton: false
+            });
 
             // Update server-provided expiry
             otpExpiryFromServer = data.otpExpiry;
 
             // Restart countdown
             startTimer();
+
         } else {
-            alert("Failed to resend OTP. Please try again.");
+
+            Swal.fire({
+                icon: "error",
+                title: "Failed",
+                text: "Failed to resend OTP. Please try again."
+            });
+
             resendBtn.disabled = false;
         }
+
     } catch (err) {
+
         console.log("Fetch Error:", err);
-        alert("Error sending OTP. Check your connection.");
+
+        Swal.fire({
+            icon: "error",
+            title: "Network Error",
+            text: "Error sending OTP. Check your connection."
+        });
+
         resendBtn.disabled = false;
     }
 });

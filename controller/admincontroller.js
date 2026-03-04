@@ -56,7 +56,7 @@ const loadcustomer = async (req, res) => {
     const totalCustomers = await usermodel.countDocuments(filter);
     const totalPages = Math.ceil(totalCustomers / limit);
 
-    // 🔥 Use filter here
+    // filter here
     const customers = await usermodel
       .find(filter)
       .sort({ name: 1 })
