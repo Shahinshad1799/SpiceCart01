@@ -7,6 +7,7 @@ const saltround = 10;
 const transporter = require("../utils/emailer");
 const { render } = require("ejs");
  const passport = require("passport");
+ const { editProfileSchema } = require("../validators/uservalidator");
 
 // =======================
 // Load Views
@@ -97,43 +98,53 @@ const loadeditprofile = async (req, res) => {
     if (!userId) return res.redirect("/login");
 
     const user = await usermodel.findById(userId);
-    res.render("user/editprofile", { user });
+    res.render("user/editprofile", { user ,error:{}});
   } catch (error) {
     console.log(error);
     res.redirect("/profile");
   }
 };
+
 
 const updateprofile = async (req, res) => {
   try {
     const userId = req.session.userId;
-    console.log(userId)
-    const { fullname, phonenumber, dateofbirth } = req.body;
 
-    if (!fullname) {
+    // Validate using Zod
+    const result = editProfileSchema.safeParse(req.body);
+
+    if (!result.success) {
+      const errorMessage = result.error.issues[0].message;
+
       return res.render("user/editprofile", {
         user: req.body,
-        error: "Full name is required",
+        error: errorMessage,
       });
     }
 
+    const { fullname, phonenumber, dateofbirth } = result.data;
+
     let updateData = { fullname, phonenumber, dateofbirth };
 
-    // Update profile image if uploaded
     if (req.file) {
       updateData.profileImage = req.file.filename;
     }
 
-    await usermodel.updateOne({ _id: userId }, { $set: updateData });
+    await usermodel.updateOne(
+      { _id: userId },
+      { $set: updateData }
+    );
 
-  
-    
     res.redirect("/profile");
+
   } catch (error) {
-    console.log(error);
-    res.render("user/editprofile", { error: "Something went wrong" });
-  }
+  console.log("FULL ERROR:", error);
+  res.render("user/editprofile", {
+    error: error.message || "Something went wrong",
+  });
+}
 };
+
 const deleteProfile= async (req, res) => {
   try {
     const userId = req.session.userId;

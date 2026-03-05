@@ -172,9 +172,17 @@
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#886e63] transition-colors group-focus-within:text-primary">person</span>
 <input class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0 transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium" type="text" name="fullname" value="<%= user.fullname %>"/>
-<p class="error-msg text-red-500 text-sm mt-1 hidden" id="fullnameError"></p>
+<p class="error-msg text-red-500 text-sm mt-1 
+  <%= error?.fullname ? '' : 'hidden' %>" 
+  id="fullnameError">
+  <%= error?.fullname %>
+</p></div>
 </div>
-</div>
+<p class="error-msg text-red-500 text-sm mt-1 
+  <%= error?.fullname ? '' : 'hidden' %>" 
+  id="fullnameError">
+  <%= error?.fullname %>
+</p>
 <div class="col-span-1">
   <div class="flex justify-between items-center mb-2">
     <label class="block text-sm font-bold text-[#181311] dark:text-white">
@@ -213,9 +221,13 @@
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#886e63] transition-colors group-focus-within:text-primary">call</span>
 <input class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0 transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium" type="tel" name="phonenumber" value="<%= user.phonenumber %>"/>
-<p class="error-msg text-red-500 text-sm mt-1 hidden" id="phoneError"></p>
+<p class="error-msg text-red-500 text-sm mt-1 
+  <%= error?.phonenumber ? '' : 'hidden' %>" 
+  id="phoneError">
+  <%= error?.phonenumber %>
+</p></div>
 </div>
-</div>
+
 <div class="col-span-1">
 <label class="block text-sm font-bold text-[#181311] dark:text-white mb-2">Date of Birth</label>
 <div class="relative group">
