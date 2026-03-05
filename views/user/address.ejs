@@ -98,48 +98,8 @@
 <span class="text-[#181311] dark:text-white font-medium">Addresses</span>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-<aside class="lg:col-span-4 xl:col-span-3 space-y-6">
-<div class="bg-white dark:bg-[#2C201A] rounded-2xl p-6 shadow-sm border border-[#E6E0DC] dark:border-[#3E302A]">
-<div class="flex flex-col items-center text-center">
-<div class="relative mb-4 group cursor-pointer">
-<div class="size-24 rounded-full overflow-hidden border-4 border-[#F0F3F1] dark:border-[#1A120E] shadow-inner">
-  <img 
-    alt="User"
-    class="w-full h-full object-cover"
-    src="<%= user.profileImage 
-      ? '/uploads/profile/' + user.profileImage 
-      : '/images/default.png' %>"
-  />
-</div>
-
-</div>
-<h3 class="text-xl font-bold text-[#181311] dark:text-white"><%= user.fullname %></h3>
-<p class="text-sm text-[#886e63] dark:text-[#9CA3AF] mb-6"><%= user.email %></p>
-<a href="/editprofile">
-    <button class="w-full py-2.5 rounded-lg border border-[#E6E0DC] dark:border-[#3E302A] font-medium text-[#181311] dark:text-white hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] transition-colors mb-8 text-sm flex items-center justify-center gap-2">
-<span class="material-symbols-outlined text-sm">settings</span>
-                                Edit Profile
-                            </button>
-</a>
-
-</div>
-<div class="space-y-4 pt-6 border-t border-[#f4f1f0] dark:border-[#3E302A]">
-<div class="flex items-center justify-between">
-<span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Member Since</span>
-<span class="text-sm font-bold text-[#181311] dark:text-white">Oct 2021</span>
-</div>
-<div class="flex items-center justify-between">
-<span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Total Orders</span>
-<span class="text-sm font-bold text-[#181311] dark:text-white">0</span>
-</div>
-<div class="flex items-center justify-between">
-<span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Wallet Balance</span>
-<span class="text-sm font-bold text-primary">00</span>
-</div>
-</div>
-</div>
-</aside>
-<div class="lg:col-span-8 xl:col-span-9">
+<%- include("../partials/profilecard") %>
+  <div class="lg:col-span-8 xl:col-span-9">
 <div class="bg-white dark:bg-[#2C201A] rounded-2xl shadow-sm border border-[#E6E0DC] dark:border-[#3E302A] overflow-hidden">
 <div class="px-6 py-6 lg:px-8 border-b border-[#f4f1f0] dark:border-[#3E302A]">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">

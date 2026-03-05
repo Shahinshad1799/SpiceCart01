@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const saltround = 10;
 const transporter = require("../utils/emailer");
 const { render } = require("ejs");
+ const passport = require("passport");
 
 // =======================
 // Load Views
@@ -45,6 +46,9 @@ const loadchangepassword = (req, res) => {
 const loadaddaddress = (req, res) => {
   res.render("user/addaddress");
 };
+const loadchangeemail=(req,res)=>{
+  res.render("user/changeemail")
+}
 
 const loadverify = async (req, res) => {
   try {
@@ -103,6 +107,7 @@ const loadeditprofile = async (req, res) => {
 const updateprofile = async (req, res) => {
   try {
     const userId = req.session.userId;
+    console.log(userId)
     const { fullname, phonenumber, dateofbirth } = req.body;
 
     if (!fullname) {
@@ -122,7 +127,7 @@ const updateprofile = async (req, res) => {
     await usermodel.updateOne({ _id: userId }, { $set: updateData });
 
   
-
+    
     res.redirect("/profile");
   } catch (error) {
     console.log(error);
@@ -277,7 +282,7 @@ const loadaddress = async (req, res) => {
     const userId = req.session.userId;
     if (!userId) return res.redirect("/login");
 
-    const user = await usermodel.findById(userId).select("fullname image email");
+    const user = await usermodel.findById(userId).select("fullname profileImage email");
     const addresses = await addressmodel.find({ userId });
 
     res.render("user/address", { user, addresses });
@@ -286,6 +291,7 @@ const loadaddress = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+
 
 const addaddress = async (req, res) => {
   try {
@@ -359,6 +365,28 @@ const deleteAddress = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+
+// =======================
+// Email change
+// =======================
+ const changeemail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    req.session.newEmail = email;
+
+    const users = await usermodel.findOne({ email });
+    if (users) return res.render("user/forgotpasword", { error: "Email already registered" });
+
+    const otpExpiry =  await sendotp(email);
+
+    res.render("user/otpverification", { purpose: "changeemail" ,otpExpiry});
+  } catch (error) {
+    console.log(error);
+    return res.render("user/forgotpasword", { error: "Something went wrong" });
+  }
+};
+
+
 
 // =======================
 // OTP Management
@@ -488,7 +516,56 @@ const veriify = async (req, res) => {
       // OTP correct → allow password reset
       return res.redirect("/resetpassword");
     }
+    // ========================
+// 🔹 CHANGE EMAIL OTP VERIFY
+// ========================
+if (purpose === "changeemail") {
 
+  const newEmail = req.session.newEmail;   // ✅ FIXED
+  const userId = req.session.userId;
+
+  if (!newEmail) {
+    return res.render("user/changeemail", {
+      error: "Session expired. Try again."
+    });
+  }
+
+  const record = await otpmodel.findOne({ email: newEmail });
+  if (!record) {
+    return res.render("user/otpverification", {
+      purpose,
+      error: "OTP not found"
+    });
+  }
+
+  const isMatch = await bcrypt.compare(otp, record.otp);
+  if (!isMatch) {
+    return res.render("user/otpverification", {
+      purpose,
+      error: "Invalid OTP"
+    });
+  }
+
+  if (record.expiresAt < Date.now()) {
+    return res.render("user/otpverification", {
+      purpose,
+      error: "OTP expired"
+    });
+  }
+
+  // ✅ Update database properly
+  await usermodel.findByIdAndUpdate(
+    userId,
+    { $set: { email: newEmail } },
+    { new: true }
+  );
+
+  // Cleanup
+  await otpmodel.deleteMany({ email: newEmail });
+  delete req.session.newEmail;
+
+  return res.redirect("/editprofile");
+}
     // ========================
     // 🔹 INVALID PURPOSE
     // ========================
@@ -501,6 +578,30 @@ const veriify = async (req, res) => {
     res.redirect("/signup");
   }
 };
+
+// Start Google Auth
+const googleAuth = passport.authenticate("google", {
+  scope: ["profile", "email"],
+});
+
+// Google Callback
+const googleCallback = [
+  passport.authenticate("google", {
+    failureRedirect: "/login",
+  }),
+  (req, res) => {
+    try {
+      req.session.userId = req.user._id;
+      return res.redirect("/home");
+    } catch (error) {
+      console.log("Google Auth Error:", error);
+      return res.redirect("/login");
+    }
+  }
+];
+
+
+
 
 const logout= function(req, res){
   req.session.destroy(() => {
@@ -538,5 +639,9 @@ module.exports = {
   updateAddress,
   deleteAddress,
   resendOtp,
+  googleAuth,
+  googleCallback,
+  loadchangeemail,
+  changeemail,
   logout
 };

@@ -176,12 +176,37 @@
 </div>
 </div>
 <div class="col-span-1">
-<label class="block text-sm font-bold text-[#181311] dark:text-white mb-2">Email Address</label>
-<div class="relative group">
-<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#886e63] transition-colors group-focus-within:text-primary">mail</span>
-<input class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0 transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium" type="email" name="email" value="<%= user.email %>"/>
-<p class="error-msg text-red-500 text-sm mt-1 hidden" id="emailError"></p>
-</div>
+  <div class="flex justify-between items-center mb-2">
+    <label class="block text-sm font-bold text-[#181311] dark:text-white">
+      Email Address
+    </label>
+
+    <!-- Change Email Button -->
+     <a href="/changeemail">
+  <button type="button"
+      class="text-xs font-bold text-primary hover:underline hover:text-primary/80 transition-colors">
+      Change Email
+    </button>
+     </a>
+  
+  </div>
+
+  <div class="relative group">
+    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#886e63]">
+      mail
+    </span>
+
+    <!-- Disabled Email Input -->
+    <input
+      id="emailDisplay"
+      class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611]
+             border border-transparent text-[#181311] dark:text-white
+             font-medium opacity-70 cursor-not-allowed"
+      type="email"
+      value="<%= user.email %>"
+      disabled
+    />
+  </div>
 </div>
 <div class="col-span-1">
 <label class="block text-sm font-bold text-[#181311] dark:text-white mb-2">Phone Number</label>
@@ -300,53 +325,6 @@ value="<%= user.dateofbirth
 </footer>
 </div>
 <script>
-function confirmDelete() {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: "Your profile image will be removed!",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#cd4e18',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, delete it!',
-    reverseButtons: true
-  }).then((result) => {
-    if (result.isConfirmed) {
-
-      fetch("user/delete-profile-image", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Deleted!',
-            text: 'Profile image removed successfully.',
-            timer: 2000,
-            showConfirmButton: false
-          }).then(() => {
-            location.reload();
-          });
-
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Something went wrong!'
-          });
-        }
-      });
-
-    }
-  });
-}
-</script>
-<script>
 function previewImage(event) {
   const reader = new FileReader();
   reader.onload = function () {
@@ -358,7 +336,6 @@ function previewImage(event) {
 <script>
 const form = document.querySelector("form");
 const fullname = document.querySelector("input[name='fullname']");
-const email = document.querySelector("input[name='email']");
 const phone = document.querySelector("input[name='phonenumber']");
 const dob = document.querySelector("input[name='dateofbirth']");
 const imageInput = document.getElementById("profileImageInput");
@@ -390,15 +367,6 @@ fullname.addEventListener("input", () => {
   }
 });
 
-// Email
-email.addEventListener("input", () => {
-  const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/;
-  if (!emailPattern.test(email.value.trim())) {
-    showError("emailError", "Enter valid email address.", email);
-  } else {
-    clearError("emailError", email);
-  }
-});
 
 // Phone
 phone.addEventListener("input", () => {
