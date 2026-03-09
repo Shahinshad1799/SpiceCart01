@@ -14,6 +14,10 @@ app.use(require("express-session")({
   saveUninitialized: false
 }));
 
+app.use((req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
 
 
 app.use("/uploads", express.static("uploads"));

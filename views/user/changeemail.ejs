@@ -2,7 +2,7 @@
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Spice Market - Login</title>
+<title>Spice Market - Forgot Password</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -57,44 +57,33 @@
 <div class="flex w-full max-w-[1080px] bg-white dark:bg-[#2C201A] rounded-2xl overflow-hidden shadow-2xl border border-[#f4f1f0] dark:border-[#3E302A]">
 <div class="w-full lg:w-1/2 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
 <div class="mb-8">
-<h1 class="text-3xl font-bold text-[#181311] dark:text-white mb-2">Welcome Back</h1>
-<p class="text-[#886e63] dark:text-[#9CA3AF] font-body">Log in to access your spice collection and recipes.</p>
+<h1 class="text-3xl font-bold text-[#181311] dark:text-white mb-2">you want to change email</h1>
+<p class="text-[#886e63] dark:text-[#9CA3AF] font-body">Don't worry, it happens! Enter your new email that you want to change.</p>
 </div>
-<form class="space-y-5" method="post" action="/login">
-<div class="space-y-1">
-<label class="block text-sm font-bold text-[#181311] dark:text-white" for="email">Email Address</label>
-<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" id="email" placeholder="you@example.com" name="email" type="email"/>
-</div>
-<div class="space-y-1">
-<label class="block text-sm font-bold text-[#181311] dark:text-white" for="password">Password</label>
-<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" id="password" placeholder="Enter your password" name="password" type="password"/>
-</div>
-<div class="flex justify-end pt-1">
-<a class="text-sm font-bold text-primary hover:underline" href="/forgotpassword">Forgot Password?</a>
-</div>
-<button class="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-transform active:scale-95 shadow-lg shadow-primary/30 flex items-center justify-center gap-2 mt-2">
-                            Log In
-                            <span class="material-symbols-outlined text-[20px]">login</span>
-</button>
-<div class="mt-4">
-  <a href="/auth/google"
-    class="w-full h-12 flex items-center justify-center gap-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition">
-    
-    <img src="https://www.svgrepo.com/show/475656/google-color.svg" 
-         class="w-5 h-5" alt="Google">
-         
-    <span class="font-medium text-gray-700">
-      Continue with Google
-    </span>
-  </a>
-</div>
+<form id="forgotForm" class="space-y-6" action="/changeemail" method="post">
+  <div class="space-y-1">
+    <label class="block text-sm font-bold text-[#181311] dark:text-white" for="email">Email Address</label>
+    <input 
+      class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50"
+      id="email"
+      placeholder="you@example.com"
+      name="email"
+      type="email"
+    />
+    <!-- Error message -->
+    <p id="emailError" class="text-red-500 text-sm mt-1 hidden"></p>
+  </div>
 
+  <button class="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-transform active:scale-95 shadow-lg shadow-primary/30 flex items-center justify-center gap-2 mt-4" type="submit">
+    ChangeEmail
+    <span class="material-symbols-outlined text-[20px]">lock_reset</span>
+  </button>
 </form>
 <div class="mt-8 text-center">
-<p class="text-sm text-[#5C4D46] dark:text-[#A8A29E] font-body">
-                            Don't have an account? 
-                            <a class="text-primary font-bold hover:underline ml-1" href="/signup">Sign up</a>
-</p>
+<a class="inline-flex items-center gap-2 text-sm text-[#5C4D46] dark:text-[#A8A29E] font-bold hover:text-primary transition-colors font-body" href="/editprofile">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Back to Profile
+                        </a>
 </div>
 </div>
 <div class="hidden lg:block w-1/2 relative bg-[#f4f1f0] dark:bg-[#1A120E]">
@@ -131,48 +120,45 @@
 </div>
 </footer>
 </div>
-<% if (typeof success !== "undefined") { %>
-<div id="toast"
-     class="fixed bottom-6 right-6 bg-green-600 text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
-            transform translate-y-20 opacity-0 transition-all duration-500">
-  <%= success %>
-</div>
 
 <script>
-  const toast = document.getElementById("toast");
+const form = document.getElementById("forgotForm");
+const emailInput = document.getElementById("email");
+const emailError = document.getElementById("emailError");
 
-  // Show animation
-  setTimeout(() => {
-    toast.classList.remove("translate-y-20", "opacity-0");
-  }, 100);
+// Helper functions
+function showError(message) {
+  emailError.textContent = message;
+  emailError.classList.remove("hidden");
+  emailInput.classList.add("border-red-500");
+}
 
-  // Hide after 3 seconds
-  setTimeout(() => {
-    toast.classList.add("translate-y-20", "opacity-0");
-  }, 3000);
-</script>
-<% } %>
+function clearError() {
+  emailError.textContent = "";
+  emailError.classList.add("hidden");
+  emailInput.classList.remove("border-red-500");
+}
 
+// Real-time validation
+emailInput.addEventListener("input", () => {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(emailInput.value.trim())) {
+    showError("Enter a valid email address");
+  } else {
+    clearError();
+  }
+});
 
-<% if (typeof error !== "undefined") { %>
-<div id="toast"
-     class="fixed bottom-6 right-6 bg-red-600 text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
-            transform translate-y-20 opacity-0 transition-all duration-500">
-  <%= error %>
-</div>
-
-<script>
-  const toas = document.getElementById("toast");
-
-  setTimeout(() => {
-    toas.classList.remove("translate-y-20", "opacity-0");
-  }, 100);
-
-  setTimeout(() => {
-    toas.classList.add("translate-y-20", "opacity-0");
-  }, 3000);
-</script>
-<% } %>
-
-
-</body></html>
+// Final submit validation
+form.addEventListener("submit", (e) => {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailInput.value.trim()) {
+    showError("Email is required");
+    e.preventDefault();
+  } else if (!emailPattern.test(emailInput.value.trim())) {
+    showError("Enter a valid email address");
+    e.preventDefault();
+  } else {
+    clearError();
+  }
+});

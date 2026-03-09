@@ -53,7 +53,7 @@
 <div class="flex items-center gap-4 lg:gap-12 flex-1">
 <div class="flex items-center gap-2 cursor-pointer">
 <span class="material-symbols-outlined text-primary" style="font-size: 32px;">local_fire_department</span>
-<h2 class="text-xl lg:text-2xl font-bold tracking-tight text-[#181311] dark:text-white">Spice Market</h2>
+<h2 class="text-xl lg:text-2xl font-bold tracking-tight text-[#181311] dark:text-white">Spice Cart</h2>
 </div>
 <div class="hidden md:flex flex-1 max-w-md">
 <label class="flex w-full items-center h-12 rounded-full bg-[#f4f1f0] dark:bg-[#2C201A] border border-transparent focus-within:border-primary/50 transition-colors overflow-hidden px-4">
@@ -77,9 +77,7 @@
 <div class="h-6 w-px bg-[#E6E0DC] dark:bg-[#3E302A]"></div>
 <div class="flex items-center gap-3 cursor-pointer group">
 <div class="size-9 rounded-full overflow-hidden border border-[#E6E0DC] dark:border-[#3E302A]">
-<img alt="User" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl-aGfZ8oQuV44VqPbS0CK2zYKZrgcjfAHgSWSk1DSMMbAzpkRd4Euu3-y-QgNhX6xZ3sBfWmB0Z-TJdxZUvoe6aR_6SghOURAycGq9xwmyyKuBNTMofd_gO5rBaqyDNKEAcg9kI6XL0sal9Y1JWuKI4jTEf_k8T8ZNHALTxGdY3JfuscgZ44s7t_PGvL3tvl1DhmsxlPLHiEqT9XgQoPu0OU_irZgT0WtlGri1hvcxmhfBxS9QTCMkLbtND4z1add7bvSRN7-Hk4"/>
-</div>
-<span class="hidden md:block font-bold text-sm group-hover:text-primary transition-colors">Sarah Jenkins</span>
+    <span class="material-symbols-outlined">account_circle</span></div>
 </div>
 </div>
 <button class="lg:hidden flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] dark:hover:bg-[#2C201A]">
@@ -99,47 +97,7 @@
 <span class="text-[#181311] dark:text-white font-medium">Account Settings</span>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-<aside class="lg:col-span-4 xl:col-span-3 space-y-6">
-<div class="bg-white dark:bg-[#2C201A] rounded-2xl p-6 shadow-sm border border-[#E6E0DC] dark:border-[#3E302A]">
-<div class="flex flex-col items-center text-center">
-<div class="relative mb-4 group cursor-pointer">
-<div class="size-24 rounded-full overflow-hidden border-4 border-[#F0F3F1] dark:border-[#1A120E] shadow-inner">
-  <img 
-    alt="User"
-    class="w-full h-full object-cover"
-    src="<%= user.profileImage 
-      ? '/uploads/profile/' + user.profileImage 
-      : '/images/default.png' %>"
-  />
-</div>
-
-</div>
-<h3 class="text-xl font-bold text-[#181311] dark:text-white"><%= user.fullname %></h3>
-<p class="text-sm text-[#886e63] dark:text-[#9CA3AF] mb-6"><%= user.email %></p>
-<a href="/editprofile">
-    <button class="w-full py-2.5 rounded-lg border border-[#E6E0DC] dark:border-[#3E302A] font-medium text-[#181311] dark:text-white hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] transition-colors mb-8 text-sm flex items-center justify-center gap-2">
-<span class="material-symbols-outlined text-sm">settings</span>
-                                Edit Profile
-                            </button>
-</a>
-
-</div>
-<div class="space-y-4 pt-6 border-t border-[#f4f1f0] dark:border-[#3E302A]">
-<div class="flex items-center justify-between">
-<span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Member Since</span>
-<span class="text-sm font-bold text-[#181311] dark:text-white">Oct 2021</span>
-</div>
-<div class="flex items-center justify-between">
-<span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Total Orders</span>
-<span class="text-sm font-bold text-[#181311] dark:text-white">0</span>
-</div>
-<div class="flex items-center justify-between">
-<span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Wallet Balance</span>
-<span class="text-sm font-bold text-primary">00</span>
-</div>
-</div>
-</div>
-</aside>
+<%- include("../partials/profilecard") %>
 <div class="lg:col-span-8 xl:col-span-9">
 <div class="bg-white dark:bg-[#2C201A] rounded-2xl shadow-sm border border-[#E6E0DC] dark:border-[#3E302A] overflow-hidden">
 <div class="px-6 py-6 lg:px-8 border-b border-[#f4f1f0] dark:border-[#3E302A]">

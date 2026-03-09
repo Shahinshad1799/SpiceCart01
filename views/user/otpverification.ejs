@@ -8,6 +8,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -50,7 +51,7 @@
 <div class="w-full flex justify-center py-8 lg:py-10">
 <div class="flex items-center gap-2 cursor-pointer">
 <span class="material-symbols-outlined text-primary" style="font-size: 32px;">local_fire_department</span>
-<h2 class="text-2xl lg:text-3xl font-bold tracking-tight text-[#181311] dark:text-white">Spice Market</h2>
+<h2 class="text-2xl lg:text-3xl font-bold tracking-tight text-[#181311] dark:text-white">Spice Cart</h2>
 </div>
 </div>
 <main class="flex-1 flex items-start justify-center pb-12 px-6 lg:px-20 xl:px-40">
@@ -71,6 +72,7 @@
                             <span class="material-symbols-outlined text-[20px]">check_circle</span>
 </button>
 </form>
+<div id="otp-data" data-expiry="<%= otpExpiry %>"></div>
 <div class="mt-8 text-center">
 <p class="text-sm text-[#5C4D46] dark:text-[#A8A29E] font-body">
     Didn't receive the code?
@@ -121,18 +123,54 @@
 </div>
 </footer>
 </div>
+<% if (typeof error !== "undefined") { %>
+<div id="toast"
+     class="fixed bottom-6 right-6 bg-red-600 text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
+            transform translate-y-20 opacity-0 transition-all duration-500">
+  <%= error %>
+</div>
+
+<script>
+  const toas = document.getElementById("toast");
+
+  setTimeout(() => {
+    toas.classList.remove("translate-y-20", "opacity-0");
+  }, 100);
+
+  setTimeout(() => {
+    toas.classList.add("translate-y-20", "opacity-0");
+  }, 3000);
+</script>
+<% } %>
+
+
+
 <script>
 const timerText = document.getElementById("timerText");
 const resendBtn = document.getElementById("resendBtn");
 
+// -----------------------------
+// 1️⃣ Initialize from server
+// otpExpiry is passed from your controller: res.render("otpPage", { otpExpiry })
+// otpExpiry is timestamp in ms
+const otpDataDiv = document.getElementById("otp-data");
+let otpExpiryFromServer = Number(otpDataDiv.dataset.expiry) || Date.now();
+  console.log("OTP expiry:", otpExpiryFromServer);
 let countdown;
-let timeLeft = 120; // 2 minutes
 
+// Calculate remaining seconds
+function getTimeLeft() {
+    return Math.max(Math.floor((otpExpiryFromServer - Date.now()) / 1000), 0);
+}
+
+// -----------------------------
+// 2️⃣ Timer update function
 function updateTimer() {
+    const timeLeft = getTimeLeft();
 
     if (timeLeft <= 0) {
         clearInterval(countdown);
-        resendBtn.disabled = false;
+        resendBtn.disabled = false; // enable resend button
         timerText.textContent = "";
         return;
     }
@@ -140,37 +178,71 @@ function updateTimer() {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
 
-    timerText.textContent =
-        `(${minutes}:${seconds.toString().padStart(2, "0")})`;
-
-    timeLeft--;
+    timerText.textContent = `(${minutes}:${seconds.toString().padStart(2, "0")})`;
 }
 
+// -----------------------------
+// 3️⃣ Start / restart timer
 function startTimer() {
     resendBtn.disabled = true;
-    timeLeft = 120; // reset
     clearInterval(countdown);
     updateTimer();
     countdown = setInterval(updateTimer, 1000);
 }
 
-// Start when page loads
-startTimer();
+// Start timer on page load if OTP is still valid
+if (getTimeLeft() > 0) startTimer();
+else resendBtn.disabled = false;
 
-// Resend logic
-resendBtn.addEventListener("click", function () {
+// -----------------------------
+// 4️⃣ Resend OTP logic
+resendBtn.addEventListener("click", async function () {
+    resendBtn.disabled = true;
 
-    fetch("/resendotp", { method: "POST" })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert("New OTP Sent");
-                startTimer(); // restart 2 minutes
-            } else {
-                alert("Failed to resend OTP");
-            }
-        })
-        .catch(err => console.log(err));
+    try {
+        const res = await fetch("/resendotp", { method: "POST" });
+        const data = await res.json();
+
+        if (data.success) {
+
+            await Swal.fire({
+                icon: "success",
+                title: "OTP Sent",
+                text: "New OTP has been sent to your email.",
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            // Update server-provided expiry
+            otpExpiryFromServer = data.otpExpiry;
+
+            // Restart countdown
+            startTimer();
+
+        } else {
+
+            Swal.fire({
+                icon: "error",
+                title: "Failed",
+                text: "Failed to resend OTP. Please try again."
+            });
+
+            resendBtn.disabled = false;
+        }
+
+    } catch (err) {
+
+        console.log("Fetch Error:", err);
+
+        Swal.fire({
+            icon: "error",
+            title: "Network Error",
+            text: "Error sending OTP. Check your connection."
+        });
+
+        resendBtn.disabled = false;
+    }
 });
 </script>
+
 </body></html>

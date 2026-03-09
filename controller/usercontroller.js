@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const saltround = 10;
 const transporter = require("../utils/emailer");
 const { render } = require("ejs");
+ const passport = require("passport");
 
 // =======================
 // Load Views
@@ -45,11 +46,35 @@ const loadchangepassword = (req, res) => {
 const loadaddaddress = (req, res) => {
   res.render("user/addaddress");
 };
+const loadchangeemail=(req,res)=>{
+  res.render("user/changeemail")
+}
 
-const loadverify = (req, res) => {
-  res.render("user/otpverification");
+const loadverify = async (req, res) => {
+  try {
+    const email =
+      req.session.email || req.session.tempUser?.email;
+
+    if (!email) {
+      return res.redirect("/signup");
+    }
+
+    const record = await otpmodel.findOne({ email });
+
+    if (!record) {
+      return res.redirect("/signup");
+    }
+
+    return res.render("user/otpverification", {
+      purpose: req.session.tempUser ? "signup" : "forgot",
+      otpExpiry: record.expiresAt.getTime()
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.redirect("/signup");
+  }
 };
-
 // =======================
 // User Profile
 // =======================
@@ -82,12 +107,13 @@ const loadeditprofile = async (req, res) => {
 const updateprofile = async (req, res) => {
   try {
     const userId = req.session.userId;
+    console.log(userId)
     const { fullname, phonenumber, dateofbirth } = req.body;
 
     if (!fullname) {
       return res.render("user/editprofile", {
         user: req.body,
-        message: "Full name is required",
+        error: "Full name is required",
       });
     }
 
@@ -100,13 +126,12 @@ const updateprofile = async (req, res) => {
 
     await usermodel.updateOne({ _id: userId }, { $set: updateData });
 
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
-
+  
+    
     res.redirect("/profile");
   } catch (error) {
     console.log(error);
-    res.render("user/editprofile", { message: "Something went wrong" });
+    res.render("user/editprofile", { error: "Something went wrong" });
   }
 };
 const deleteProfile= async (req, res) => {
@@ -145,22 +170,23 @@ const registeruser = async (req, res) => {
 
     const hashedpassword = await bcrypt.hash(password, saltround);
 
+    // Save temporary user
     req.session.tempUser = { fullname, email, password: hashedpassword };
 
-    await sendotp(email);
-    const otpData = await otpmodel.findOne({ email });
+    // ✅ Send OTP and get expiry directly
+    const otpExpiry = await sendotp(email);
 
     return res.render("user/otpverification", {
-      otpExpiry: otpData.expiresAt,
+      otpExpiry,   // must always pass this
       purpose: "signup",
       success: "OTP sent to the mail",
     });
+
   } catch (error) {
     console.log(error);
     return res.render("user/signup", { error: "Something went wrong" });
   }
 };
-
 const loginuser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -180,47 +206,6 @@ const loginuser = async (req, res) => {
   }
 };
 
-const veriify = async (req, res) => {
-  const { otp, purpose } = req.body;
-  try {
-    if (purpose === "signup") {
-      const tempUser = req.session.tempUser;
-      if (!tempUser) return res.redirect("/signup");
-
-      const record = await otpmodel.findOne({ email: tempUser.email });
-      if (!record) return res.redirect("/signup");
-
-      const isMatch = await bcrypt.compare(otp, record.otp);
-      if (!isMatch) return res.render("user/otpverification", { message: "Invalid OTP", purpose: "signup", otpExpiry: record.expiresAt });
-      if (record.expiresAt < Date.now()) return res.render("user/otpverification", { message: "OTP Expired", purpose: "signup", otpExpiry: record.expiresAt });
-
-      await usermodel.create(tempUser);
-      await otpmodel.deleteMany({ email: tempUser.email });
-      req.session.destroy();
-
-      return res.redirect("/login");
-    }
-
-    if (purpose === "forgot") {
-      const email = req.session.email;
-      if (!email) return res.redirect("/forgotpassword");
-
-      const record = await otpmodel.findOne({ email });
-      if (!record) return res.redirect("/forgotpassword");
-
-      const isMatch = await bcrypt.compare(otp, record.otp);
-      if (!isMatch) return res.render("user/otpverification", { message: "Invalid OTP", purpose: "forgot", otpExpiry: record.expiresAt });
-      if (record.expiresAt < Date.now()) return res.render("user/otpverification", { message: "OTP Expired", purpose: "forgot", otpExpiry: record.expiresAt });
-
-      req.session.resetEmail = email;
-      return res.render("user/resetpassword");
-    }
-  } catch (err) {
-    console.log(err);
-    res.redirect("/signup");
-  }
-};
-
 // =======================
 // Password Management
 // =======================
@@ -236,8 +221,8 @@ const changepassword = async (req, res) => {
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     console.log("Password Match:", isMatch);
 
-    if (!isMatch) return res.render("user/changepassword", { message: "Current password is incorrect" });
-    if (newPassword !== confirmPassword) return res.render("user/changepassword", { message: "Passwords do not match" });
+    if (!isMatch) return res.render("user/changepassword", { error: "Current password is incorrect" });
+    if (newPassword !== confirmPassword) return res.render("user/changepassword", { error: "Passwords do not match" });
 
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
@@ -253,17 +238,17 @@ const changepassword = async (req, res) => {
 const forgotpassword = async (req, res) => {
   try {
     const { email } = req.body;
-    req.session.email = email;
+    req.session.resetEmail = email;
 
     const users = await usermodel.findOne({ email });
-    if (!users) return res.render("user/forgotpasword", { message: "Email not registered" });
+    if (!users) return res.render("user/forgotpasword", { error: "Email not registered" });
 
-    await sendotp(email);
+    const otpExpiry =  await sendotp(email);
 
-    res.render("user/otpverification", { purpose: "forgot" });
+    res.render("user/otpverification", { purpose: "forgotpassword" ,otpExpiry});
   } catch (error) {
     console.log(error);
-    return res.render("user/forgotpasword", { message: "Something went wrong" });
+    return res.render("user/forgotpasword", { error: "Something went wrong" });
   }
 };
 
@@ -273,8 +258,8 @@ const resetPassword = async (req, res) => {
     const email = req.session.resetEmail;
 
     if (!email) return res.redirect("/forgotpassword");
-    if (!password || !confirmpassword) return res.render("user/resetpassword", { message: "All fields are required" });
-    if (password !== confirmpassword) return res.render("user/resetpassword", { message: "Passwords do not match" });
+    if (!password || !confirmpassword) return res.render("user/resetpassword", { error: "All fields are required" });
+    if (password !== confirmpassword) return res.render("user/resetpassword", { error: "Passwords do not match" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     await usermodel.updateOne({ email }, { $set: { password: hashedPassword } });
@@ -282,10 +267,10 @@ const resetPassword = async (req, res) => {
     await otpmodel.deleteMany({ email });
     req.session.resetEmail = null;
 
-    res.render("user/successpassword", { message: "Password reset successful" });
+    res.render("user/successpassword", { success: "Password reset successful" });
   } catch (error) {
     console.log(error);
-    res.render("user/resetpassword", { message: "Something went wrong" });
+    res.render("user/resetpassword", { error: "Something went wrong" });
   }
 };
 
@@ -297,7 +282,7 @@ const loadaddress = async (req, res) => {
     const userId = req.session.userId;
     if (!userId) return res.redirect("/login");
 
-    const user = await usermodel.findById(userId).select("fullname image email");
+    const user = await usermodel.findById(userId).select("fullname profileImage email");
     const addresses = await addressmodel.find({ userId });
 
     res.render("user/address", { user, addresses });
@@ -306,6 +291,7 @@ const loadaddress = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+
 
 const addaddress = async (req, res) => {
   try {
@@ -381,39 +367,241 @@ const deleteAddress = async (req, res) => {
 };
 
 // =======================
+// Email change
+// =======================
+ const changeemail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    req.session.newEmail = email;
+
+    const users = await usermodel.findOne({ email });
+    if (users) return res.render("user/forgotpasword", { error: "Email already registered" });
+
+    const otpExpiry =  await sendotp(email);
+
+    res.render("user/otpverification", { purpose: "changeemail" ,otpExpiry});
+  } catch (error) {
+    console.log(error);
+    return res.render("user/forgotpasword", { error: "Something went wrong" });
+  }
+};
+
+
+
+// =======================
 // OTP Management
 // =======================
 const resendOtp = async (req, res) => {
   try {
-    const email = req.session.email;
+    console.log("RESEND ROUTE HIT");
+   
+    const email = req.session.email || req.session.tempUser?.email;
     if (!email) return res.json({ success: false });
+     console.log("Resend email:", email);
 
     const otp = Math.floor(100000 + Math.random() * 900000);
     const hashedOtp = await bcrypt.hash(otp.toString(), 10);
     const expiryTime = Date.now() + 2 * 60 * 1000;
 
-    await otpmodel.findOneAndUpdate({ email }, { otp: hashedOtp, expiresAt: expiryTime }, { upsert: true });
+    await otpmodel.deleteMany({ email });
 
-    await transporter.sendMail({ to: email, subject: "Resend OTP", html: `<h1>${otp}</h1>` });
+    await otpmodel.create({
+      email,
+      otp: hashedOtp,
+      expiresAt: expiryTime
+    });
+
+    await transporter.sendMail({
+      to: email,
+      subject: "Resend OTP",
+      html: `<h1>${otp}</h1>`
+    });
 
     console.log("Resent OTP:", otp);
-    res.json({ success: true, otpExpiry: expiryTime });
+
+    // ✅ MUST SEND JSON
+    return res.json({
+      success: true,
+      otpExpiry: expiryTime
+    });
+
   } catch (error) {
     console.log(error);
-    res.json({ success: false });
+    return res.json({ success: false });
   }
 };
-
 const sendotp = async (email) => {
   const otp = generateOTP();
   const hashedOtp = await bcrypt.hash(otp.toString(), 10);
+  const expiryTime=Date.now() + 2 * 60 * 1000
 
   await otpmodel.deleteMany({ email });
-  await otpmodel.create({ email, otp: hashedOtp, expiresAt: Date.now() + 2 * 60 * 1000 });
+  await otpmodel.create({ email, otp: hashedOtp, expiresAt: expiryTime });
 
   await transporter.sendMail({ to: email, subject: "OTP Verification", html: `<h1>${otp}</h1>` });
   console.log(otp);
+  return expiryTime
 };
+
+const veriify = async (req, res) => {
+  const { otp, purpose } = req.body;
+
+  try {
+
+    // ========================
+    // 🔹 SIGNUP OTP VERIFY
+    // ========================
+    if (purpose === "signup") {
+
+      const tempUser = req.session.tempUser;
+      if (!tempUser) return res.redirect("/signup");
+
+      const record = await otpmodel.findOne({ email: tempUser.email });
+      if (!record) return res.redirect("/signup");
+
+      const isMatch = await bcrypt.compare(otp, record.otp);
+
+      if (!isMatch) {
+        return res.render("user/otpverification", {
+          error: "Invalid OTP",
+          purpose: "signup",
+          otpExpiry: record.expiresAt.getTime()
+        });
+      }
+
+      if (record.expiresAt < Date.now()) {
+        return res.render("user/otpverification", {
+          error: "OTP Expired",
+          purpose: "signup",
+          otpExpiry: record.expiresAt.getTime()
+        });
+      }
+
+      await usermodel.create(tempUser);
+      await otpmodel.deleteMany({ email: tempUser.email });
+
+      return res.redirect("/login");
+    }
+
+    // ========================
+    // 🔹 FORGOT PASSWORD OTP VERIFY
+    // ========================
+    else if (purpose === "forgotpassword") {
+
+      const email = req.session.resetEmail;
+      console.log(email)
+      if (!email) return res.redirect("/forgotpassword");
+
+      const record = await otpmodel.findOne({ email });
+      if (!record) return res.redirect("/forgotpassword");
+
+      const isMatch = await bcrypt.compare(otp, record.otp);
+
+      if (!isMatch) {
+        return res.render("user/otpverification", {
+          error: "Invalid OTP",
+          purpose: "forgotpassword",
+          otpExpiry: record.expiresAt.getTime()
+        });
+      }
+
+      if (record.expiresAt < Date.now()) {
+        return res.render("user/otpverification", {
+          error: "OTP Expired",
+          purpose: "forgotpassword",
+          otpExpiry: record.expiresAt.getTime()
+        });
+      }
+
+      // OTP correct → allow password reset
+      return res.redirect("/resetpassword");
+    }
+    // ========================
+// 🔹 CHANGE EMAIL OTP VERIFY
+// ========================
+if (purpose === "changeemail") {
+
+  const newEmail = req.session.newEmail;   // ✅ FIXED
+  const userId = req.session.userId;
+
+  if (!newEmail) {
+    return res.render("user/changeemail", {
+      error: "Session expired. Try again."
+    });
+  }
+
+  const record = await otpmodel.findOne({ email: newEmail });
+  if (!record) {
+    return res.render("user/otpverification", {
+      purpose,
+      error: "OTP not found"
+    });
+  }
+
+  const isMatch = await bcrypt.compare(otp, record.otp);
+  if (!isMatch) {
+    return res.render("user/otpverification", {
+      purpose,
+      error: "Invalid OTP"
+    });
+  }
+
+  if (record.expiresAt < Date.now()) {
+    return res.render("user/otpverification", {
+      purpose,
+      error: "OTP expired"
+    });
+  }
+
+  // ✅ Update database properly
+  await usermodel.findByIdAndUpdate(
+    userId,
+    { $set: { email: newEmail } },
+    { new: true }
+  );
+
+  // Cleanup
+  await otpmodel.deleteMany({ email: newEmail });
+  delete req.session.newEmail;
+
+  return res.redirect("/editprofile");
+}
+    // ========================
+    // 🔹 INVALID PURPOSE
+    // ========================
+    else {
+      return res.redirect("/login");
+    }
+
+  } catch (err) {
+    console.log(err);
+    res.redirect("/signup");
+  }
+};
+
+// Start Google Auth
+const googleAuth = passport.authenticate("google", {
+  scope: ["profile", "email"],
+});
+
+// Google Callback
+const googleCallback = [
+  passport.authenticate("google", {
+    failureRedirect: "/login",
+  }),
+  (req, res) => {
+    try {
+      req.session.userId = req.user._id;
+      return res.redirect("/home");
+    } catch (error) {
+      console.log("Google Auth Error:", error);
+      return res.redirect("/login");
+    }
+  }
+];
+
+
+
 
 const logout= function(req, res){
   req.session.destroy(() => {
@@ -451,5 +639,9 @@ module.exports = {
   updateAddress,
   deleteAddress,
   resendOtp,
+  googleAuth,
+  googleCallback,
+  loadchangeemail,
+  changeemail,
   logout
 };
