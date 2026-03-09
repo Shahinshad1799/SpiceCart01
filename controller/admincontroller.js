@@ -6,7 +6,18 @@ require("dotenv").config();
 const loadadminlogin=function(req,res){
     res.render("admin/login")
 }
-
+const loadaddproduct=(req,res)=>{
+  res.render("admin/addproduct")
+}
+const loadproduct=(req,res)=>{
+  res.render("admin/product")
+}
+const loadaddcatagory=(req,res)=>{
+  res.render("admin/addcatagory")
+}
+const loadcatagory=(req,res)=>{
+  res.render("admin/catagory")
+}
 
 const adminLogin = async (req, res) => {
   try {
@@ -59,7 +70,7 @@ const loadcustomer = async (req, res) => {
     // filter here
     const customers = await usermodel
       .find(filter)
-      .sort({ name: 1 })
+      .sort({ googleId: -1 ,name:1})
       .skip(skip)
       .limit(limit);
 
@@ -108,5 +119,9 @@ module.exports={
     adminLogin,
     blockcustomer,
     unblockcustomer,
+    loadaddproduct,
+    loadproduct,
+    loadcatagory,
+    loadaddcatagory,
     logout
 }

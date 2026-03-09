@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SpiceCart Admin - Add New Category</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.font-fill-1 {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-[#181611] dark:text-white">
+<div class="flex h-screen overflow-hidden">
+<%- include("../partials/sidebar") %>
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark">
+<div class="max-w-4xl mx-auto p-8 lg:p-12">
+<nav class="flex items-center gap-2 mb-6 text-sm font-medium text-[#8a7e60] dark:text-gray-400">
+<a class="hover:text-emerald-dark dark:hover:text-primary transition-colors" href="#">Categories</a>
+<span class="material-symbols-outlined text-base">chevron_right</span>
+<span class="text-[#181611] dark:text-white">Add New Category</span>
+</nav>
+<div class="mb-10">
+<h2 class="text-4xl font-black text-[#181611] dark:text-white tracking-tight">Create New Category</h2>
+<p class="text-[#8a7e60] dark:text-gray-400 mt-2 font-medium">Organize your spice collection with a new high-level category.</p>
+</div>
+<div class="bg-white dark:bg-[#222] rounded-xl border border-[#e6e3db] dark:border-gray-800 shadow-sm overflow-hidden">
+<form class="p-8 lg:p-10 flex flex-col gap-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#181611] dark:text-gray-200" for="category-name">Category Name</label>
+<input class="h-12 px-4 bg-white dark:bg-[#2a2a2a] border border-[#e6e3db] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-base font-medium placeholder:text-[#8a7e60]/50 transition-all" id="category-name" name="category-name" placeholder="e.g., Exotic Blends" type="text"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#181611] dark:text-gray-200" for="category-slug">Slug</label>
+<div class="relative">
+<input class="w-full h-12 px-4 bg-gray-50 dark:bg-[#242424] border border-[#e6e3db] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-base font-medium placeholder:text-[#8a7e60]/50 transition-all" id="category-slug" name="category-slug" placeholder="exotic-blends" type="text"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-dark dark:text-primary uppercase tracking-wider" type="button">Manual</button>
+</div>
+<p class="text-[10px] text-[#8a7e60] font-medium">The "slug" is the URL-friendly version of the name.</p>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#181611] dark:text-gray-200" for="category-description">Description</label>
+<textarea class="p-4 bg-white dark:bg-[#2a2a2a] border border-[#e6e3db] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-base font-medium placeholder:text-[#8a7e60]/50 transition-all resize-none" id="category-description" name="category-description" placeholder="Describe the spices included in this category..." rows="4"></textarea>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#181611] dark:text-gray-200">Category Icon/Image</label>
+<div class="flex items-center justify-center w-full">
+<label class="flex flex-col items-center justify-center w-full h-48 border-2 border-[#e6e3db] dark:border-gray-700 border-dashed rounded-xl cursor-pointer bg-gray-50/50 dark:bg-[#2a2a2a]/30 hover:bg-gray-50 dark:hover:bg-[#2a2a2a]/50 transition-all" for="dropzone-file">
+<div class="flex flex-col items-center justify-center pt-5 pb-6">
+<span class="material-symbols-outlined text-4xl text-[#8a7e60] mb-3">cloud_upload</span>
+<p class="mb-2 text-sm text-[#181611] dark:text-gray-300 font-bold">Click to upload or drag and drop</p>
+<p class="text-xs text-[#8a7e60]">SVG, PNG, JPG or GIF (max. 800x400px)</p>
+</div>
+<input class="hidden" id="dropzone-file" type="file"/>
+</label>
+</div>
+</div>
+<div class="flex items-center justify-end gap-6 pt-4 border-t border-[#e6e3db] dark:border-gray-800 mt-4">
+<a class="text-sm font-bold text-[#8a7e60] hover:text-[#181611] dark:hover:text-white transition-colors" href="#">Cancel</a>
+<button class="h-14 px-10 bg-primary text-emerald-dark rounded-xl font-extrabold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95" type="submit">
+                            Save Category
+                        </button>
+</div>
+</form>
+</div>
+<div class="mt-8 flex items-center gap-3 p-4 bg-emerald-dark/5 dark:bg-primary/5 rounded-xl border border-emerald-dark/10 dark:border-primary/10">
+<span class="material-symbols-outlined text-emerald-dark dark:text-primary">info</span>
+<p class="text-sm text-emerald-dark/80 dark:text-primary/80 font-medium">
+                    New categories will immediately appear in the store navigation. Ensure images are high quality for the best customer experience.
+                </p>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

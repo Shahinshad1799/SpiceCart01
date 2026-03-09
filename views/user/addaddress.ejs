@@ -12,54 +12,13 @@
   
 <div class="relative flex h-auto min-h-screen w-full flex-col bg-white group/design-root overflow-x-hidden" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
 <div class="layout-container flex h-full grow flex-col">
-<header class="sticky top-0 z-50 w-full border-b border-[#E6E0DC] dark:border-[#3E302A] bg-white/90 dark:bg-[#211611]/90 backdrop-blur-md transition-all duration-300">
-<div class="layout-container flex h-full flex-col">
-<div class="flex items-center justify-between px-6 py-4 lg:px-20 xl:px-40">
-<div class="flex items-center gap-4 lg:gap-12 flex-1">
-<div class="flex items-center gap-2 cursor-pointer">
-<span class="material-symbols-outlined text-primary" style="font-size: 32px;">local_fire_department</span>
-<h2 class="text-xl lg:text-2xl font-bold tracking-tight text-[#181311] dark:text-white">Spice Cart</h2>
-</div>
-<div class="hidden md:flex flex-1 max-w-md">
-<label class="flex w-full items-center h-12 rounded-full bg-[#f4f1f0] dark:bg-[#2C201A] border border-transparent focus-within:border-primary/50 transition-colors overflow-hidden px-4">
-<span class="material-symbols-outlined text-[#886e63] dark:text-[#9CA3AF]">search</span>
-<input class="flex-1 bg-transparent border-none focus:ring-0 text-base ml-2 placeholder-[#886e63] dark:placeholder-[#9CA3AF] text-[#181311] dark:text-white h-full" placeholder="Search for saffron, curry..."/>
-</label>
-</div>
-</div>
-<div class="flex items-center justify-end gap-6 lg:gap-8">
-<nav class="hidden lg:flex items-center gap-8 font-body font-medium text-sm">
-<a class="hover:text-primary transition-colors" href="#">Shop</a>
-<a class="hover:text-primary transition-colors" href="#">About</a>
-<a class="hover:text-primary transition-colors" href="#">Recipes</a>
-<a class="hover:text-primary transition-colors" href="#">Blog</a>
-</nav>
-<div class="flex items-center gap-3">
-<div class="hidden sm:flex items-center gap-4">
-<button class="text-[#5C4D46] dark:text-[#A8A29E] hover:text-primary transition-colors">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<div class="h-6 w-px bg-[#E6E0DC] dark:bg-[#3E302A]"></div>
-<div class="flex items-center gap-3 cursor-pointer group">
-<div class="size-9 rounded-full overflow-hidden border border-[#E6E0DC] dark:border-[#3E302A]">
-      <span class="material-symbols-outlined">account_circle</span>
-</div>
-</div>
-</div>
-<button class="lg:hidden flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] dark:hover:bg-[#2C201A]">
-<span class="material-symbols-outlined">menu</span>
-</button>
-</div>
-</div>
-</div>
-</div>
-</header>
+<%- include("../partials/header") %>
 <div class="flex flex-1 justify-center py-10 px-5 md:px-10 lg:px-20 xl:px-40">
 <div class="layout-content-container flex flex-col w-full max-w-[720px] flex-1">
 <div class="flex items-center gap-2 mb-8">
-<a class="text-[#886e63] flex items-center gap-1 text-sm font-medium hover:text-[#ea580c] transition-colors" href="#">
+<a class="text-[#886e63] flex items-center gap-1 text-sm font-medium hover:text-[#ea580c] transition-colors" href="/address">
 <span class="material-symbols-outlined text-base">arrow_back</span>
-        Back to Checkout
+        Back to address
       </a>
 </div>
 <h1 class="text-[#181311] text-3xl md:text-4xl font-bold leading-tight mb-8">Add New Address</h1>
@@ -168,7 +127,9 @@
 <span class="text-sm font-medium text-[#181311] group-hover:text-[#ea580c] transition-colors">Set as default address</span>
 </label>
 <div class="flex flex-col-reverse sm:flex-row items-center gap-4 mt-8">
-<button class="w-full sm:w-auto text-[#181311] font-bold py-3 px-8 rounded-xl hover:bg-[#f4f1f0] transition-colors" type="button">Cancel</button>
+  <a href="/address">
+    <button class="w-full sm:w-auto text-[#181311] font-bold py-3 px-8 rounded-xl hover:bg-[#f4f1f0] transition-colors" type="button">Cancel</button>
+  </a>
 <button class="w-full sm:w-auto bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold py-3 px-12 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2" type="submit">
           Save Address
         </button>

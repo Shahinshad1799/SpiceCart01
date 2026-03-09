@@ -51,6 +51,10 @@ route.post("/delete-profile-image", userauth.isLogin, user.deleteProfile);
 route.get("/changeemail",user.loadchangeemail)
 route.post("/changeemail",user.changeemail)
 
+route.get("/shop",user.loadshop)
+route.get("/cart",user.loadcart)
+route.get("/details",user.loaddetails)
+
 
 route.get("/auth/google",user.googleAuth);
 route.get("/auth/google/callback",user.googleCallback);

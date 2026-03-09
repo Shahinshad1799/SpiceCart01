@@ -50,6 +50,15 @@ const loadaddaddress = (req, res) => {
 const loadchangeemail=(req,res)=>{
   res.render("user/changeemail")
 }
+const loadshop=(req,res)=>{
+  res.render("user/shop")
+}
+const loadcart=(req,res)=>{
+  res.render("user/cart")
+}
+const loaddetails=(req,res)=>{
+   res.render("user/productdetails")
+}
 
 const loadverify = async (req, res) => {
   try {
@@ -184,7 +193,7 @@ const registeruser = async (req, res) => {
     // Save temporary user
     req.session.tempUser = { fullname, email, password: hashedpassword };
 
-    // ✅ Send OTP and get expiry directly
+    //  Send OTP and get expiry directly
     const otpExpiry = await sendotp(email);
 
     return res.render("user/otpverification", {
@@ -238,7 +247,7 @@ const changepassword = async (req, res) => {
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    console.log("✅ Password Updated");
+    console.log(" Password Updated");
     res.redirect("/profile");
   } catch (error) {
     console.log("ERROR:", error);
@@ -430,7 +439,7 @@ const resendOtp = async (req, res) => {
 
     console.log("Resent OTP:", otp);
 
-    // ✅ MUST SEND JSON
+    //  MUST SEND JSON
     return res.json({
       success: true,
       otpExpiry: expiryTime
@@ -532,7 +541,7 @@ const veriify = async (req, res) => {
 // ========================
 if (purpose === "changeemail") {
 
-  const newEmail = req.session.newEmail;   // ✅ FIXED
+  const newEmail = req.session.newEmail;   // FIXED
   const userId = req.session.userId;
 
   if (!newEmail) {
@@ -564,7 +573,7 @@ if (purpose === "changeemail") {
     });
   }
 
-  // ✅ Update database properly
+  // Update database properly
   await usermodel.findByIdAndUpdate(
     userId,
     { $set: { email: newEmail } },
@@ -654,5 +663,8 @@ module.exports = {
   googleCallback,
   loadchangeemail,
   changeemail,
+  loadshop,
+  loadcart,
+  loaddetails,
   logout
 };

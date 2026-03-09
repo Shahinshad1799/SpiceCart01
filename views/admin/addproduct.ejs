@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SpiceCart Admin - Add New Product</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+body {
+    font-family: 'Manrope', sans-serif;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+}
+
+.nav-active {
+    background-color: #f97316;
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(124,45,18,0.2);
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.form-input {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+</style>
+</head>
+<body class="bg-main-bg min-h-screen flex text-slate-800">
+<%- include("../partials/sidebar") %>
+<main class="flex-1 ml-64 p-8">
+<header class="mb-8">
+<div class="flex items-center gap-2 text-sm text-slate-500 mb-2">
+<a class="hover:text-saffron transition-colors" href="#">Dashboard</a>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<a class="hover:text-saffron transition-colors" href="/admin/product">Products</a>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-slate-900 font-medium">Add New Product</span>
+</div>
+<h1 class="text-2xl font-extrabold text-slate-900">Add New Product</h1>
+<p class="text-slate-500 text-sm">Fill in the details below to add a new spice or product to your inventory.</p>
+</header>
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+<form class="p-8">
+<div class="space-y-10">
+<section>
+<div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+<span class="material-symbols-outlined text-saffron">info</span>
+<h2 class="text-lg font-bold text-slate-900">Basic Information</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="md:col-span-2">
+<label class="form-label" for="product_name">Product Name</label>
+<input class="form-input" id="product_name" placeholder="e.g. Organic Kashmiri Saffron Threads" type="text"/>
+</div>
+<div>
+<label class="form-label" for="category">Category</label>
+<select class="form-input" id="category">
+<option value="">Select a category</option>
+<option value="whole-spices">Whole Spices</option>
+<option value="ground-spices">Ground Spices</option>
+<option value="blends">Spice Blends</option>
+<option value="herbs">Dried Herbs</option>
+<option value="oils">Infused Oils</option>
+</select>
+</div>
+<div>
+<label class="form-label" for="sku">SKU</label>
+<input class="form-input" id="sku" placeholder="SPC-KAS-001" type="text"/>
+</div>
+<div class="md:col-span-2">
+<label class="form-label" for="description">Description</label>
+<textarea class="form-input min-h-[120px]" id="description" placeholder="Provide a detailed description of the product, including its origin, flavor profile, and culinary uses..."></textarea>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+<span class="material-symbols-outlined text-saffron">payments</span>
+<h2 class="text-lg font-bold text-slate-900">Pricing &amp; Stock</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div>
+<label class="form-label" for="price">Base Price ($)</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+<input class="form-input pl-7" id="price" placeholder="0.00" step="0.01" type="number"/>
+</div>
+</div>
+<div>
+<label class="form-label" for="stock">Stock Quantity</label>
+<input class="form-input" id="stock" placeholder="0" type="number"/>
+</div>
+<div>
+<label class="form-label" for="unit">Base Unit (e.g. 100g, kg)</label>
+<input class="form-input" id="unit" placeholder="100g" type="text"/>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-saffron">layers</span>
+<h2 class="text-lg font-bold text-slate-900">Product Variants</h2>
+</div>
+<button class="flex items-center gap-1.5 text-xs font-bold text-saffron hover:text-orange-700 transition-colors bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100" type="button">
+<span class="material-symbols-outlined text-sm">add_circle</span>
+                            Add Variant
+                        </button>
+</div>
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+<div>
+<label class="form-label text-xs uppercase tracking-wider" for="variant_name">Variant Name</label>
+<input class="form-input text-sm" id="variant_name" placeholder="e.g. 500g Pack" type="text"/>
+</div>
+<div>
+<label class="form-label text-xs uppercase tracking-wider" for="variant_price">Additional Price ($)</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+<input class="form-input pl-6 text-sm" id="variant_price" placeholder="0.00" step="0.01" type="number"/>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-white border border-slate-200 text-slate-600 text-sm font-bold py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors" type="button">Cancel</button>
+<button class="flex-1 bg-saffron text-white text-sm font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors" type="button">Add</button>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-3">
+<div class="group flex items-center gap-3 bg-white border border-slate-200 pl-3 pr-2 py-2 rounded-xl shadow-sm hover:border-saffron/30 transition-all">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-700">50g Pouch</span>
+<span class="text-[10px] text-slate-500">+$0.00</span>
+</div>
+<button class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="group flex items-center gap-3 bg-white border border-slate-200 pl-3 pr-2 py-2 rounded-xl shadow-sm hover:border-saffron/30 transition-all">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-700">100g Tin</span>
+<span class="text-[10px] text-slate-500">+$4.50</span>
+</div>
+<button class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="group flex items-center gap-3 bg-white border border-slate-200 pl-3 pr-2 py-2 rounded-xl shadow-sm hover:border-saffron/30 transition-all">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-700">500g Eco-Refill</span>
+<span class="text-[10px] text-slate-500">+$18.00</span>
+</div>
+<button class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+<span class="material-symbols-outlined text-saffron">image</span>
+<h2 class="text-lg font-bold text-slate-900">Product Images</h2>
+</div>
+<div class="border-2 border-dashed border-slate-200 rounded-2xl p-12 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100/50 hover:border-saffron/40 transition-all cursor-pointer group">
+<div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-saffron">cloud_upload</span>
+</div>
+<p class="text-sm font-bold text-slate-700">Click to upload or drag and drop</p>
+<p class="text-xs text-slate-500 mt-1">SVG, PNG, JPG or WEBP (MAX. 800x800px)</p>
+<input class="hidden" multiple="" type="file"/>
+</div>
+</section>
+</div>
+<div class="mt-12 pt-8 border-t border-slate-100 flex items-center justify-end gap-4">
+<button class="px-6 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-colors border border-slate-200" type="button">
+                    Cancel
+                </button>
+<button class="px-8 py-2.5 text-sm font-bold text-white bg-saffron hover:bg-orange-600 rounded-lg transition-all shadow-md shadow-orange-500/20 flex items-center gap-2" type="submit">
+<span class="material-symbols-outlined text-[20px]">check</span>
+                    Save Product
+                </button>
+</div>
+</form>
+</div>
+</main>
+
+</body></html>

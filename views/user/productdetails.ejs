@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<html><head>
+<meta charset="utf-8"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Epilogue%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<title>Product Details Page</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+</head>
+<body>
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-white group/design-root overflow-x-hidden" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
+<div class="layout-container flex h-full grow flex-col">
+<%- include("../partials/header") %>
+<div class="px-5 md:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1"><nav aria-label="Breadcrumb" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#886e63]" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
+<a class="hover:text-[#181311] transition-colors" href="#">Home</a>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<a class="hover:text-[#181311] transition-colors" href="#">Shop</a>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-[#181311] truncate">Saffron Threads</span>
+</nav>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 p-4">
+<!-- Left Column: Main Image and Thumbnails -->
+<div class="flex flex-col gap-4">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-xl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpvldkmdHWoAOManH6UAyKYNHcYGbhY10Ui5UlgCyAIRDf8N_TLudtmkTX8zbBO0ctecAYDHIcV1Px1oEK2Z_ZM9hLB5dDCB8nHiDMPcFw7qVYfxjIISQNqrOh4E8RD3CDllp9h2wkCZ4rP3WX7tQuROM5Xr9woEoU1iHhvl3CA5Fat0j5RqlOaVy31lAs1ObpDIMMZpDBO6TqO6lcZ8xNG5PelLVX-UIprr76w3jUaN81aS75jquyDM5BZVnUzF3MhmvS6HpKY");'></div>
+<div class="grid grid-cols-4 gap-3">
+<div class="aspect-square rounded-lg bg-center bg-cover border-2 border-[#181311]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpvldkmdHWoAOManH6UAyKYNHcYGbhY10Ui5UlgCyAIRDf8N_TLudtmkTX8zbBO0ctecAYDHIcV1Px1oEK2Z_ZM9hLB5dDCB8nHiDMPcFw7qVYfxjIISQNqrOh4E8RD3CDllp9h2wkCZ4rP3WX7tQuROM5Xr9woEoU1iHhvl3CA5Fat0j5RqlOaVy31lAs1ObpDIMMZpDBO6TqO6lcZ8xNG5PelLVX-UIprr76w3jUaN81aS75jquyDM5BZVnUzF3MhmvS6HpKY"); cursor: pointer;'></div>
+<div class="aspect-square rounded-lg bg-center bg-cover opacity-60 hover:opacity-100 transition-opacity" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpvldkmdHWoAOManH6UAyKYNHcYGbhY10Ui5UlgCyAIRDf8N_TLudtmkTX8zbBO0ctecAYDHIcV1Px1oEK2Z_ZM9hLB5dDCB8nHiDMPcFw7qVYfxjIISQNqrOh4E8RD3CDllp9h2wkCZ4rP3WX7tQuROM5Xr9woEoU1iHhvl3CA5Fat0j5RqlOaVy31lAs1ObpDIMMZpDBO6TqO6lcZ8xNG5PelLVX-UIprr76w3jUaN81aS75jquyDM5BZVnUzF3MhmvS6HpKY"); cursor: pointer;'></div>
+<div class="aspect-square rounded-lg bg-center bg-cover opacity-60 hover:opacity-100 transition-opacity" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpvldkmdHWoAOManH6UAyKYNHcYGbhY10Ui5UlgCyAIRDf8N_TLudtmkTX8zbBO0ctecAYDHIcV1Px1oEK2Z_ZM9hLB5dDCB8nHiDMPcFw7qVYfxjIISQNqrOh4E8RD3CDllp9h2wkCZ4rP3WX7tQuROM5Xr9woEoU1iHhvl3CA5Fat0j5RqlOaVy31lAs1ObpDIMMZpDBO6TqO6lcZ8xNG5PelLVX-UIprr76w3jUaN81aS75jquyDM5BZVnUzF3MhmvS6HpKY"); cursor: pointer;'></div>
+<div class="aspect-square rounded-lg bg-center bg-cover opacity-60 hover:opacity-100 transition-opacity" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpvldkmdHWoAOManH6UAyKYNHcYGbhY10Ui5UlgCyAIRDf8N_TLudtmkTX8zbBO0ctecAYDHIcV1Px1oEK2Z_ZM9hLB5dDCB8nHiDMPcFw7qVYfxjIISQNqrOh4E8RD3CDllp9h2wkCZ4rP3WX7tQuROM5Xr9woEoU1iHhvl3CA5Fat0j5RqlOaVy31lAs1ObpDIMMZpDBO6TqO6lcZ8xNG5PelLVX-UIprr76w3jUaN81aS75jquyDM5BZVnUzF3MhmvS6HpKY"); cursor: pointer;'></div>
+</div>
+</div>
+<!-- Right Column: Product Details -->
+<div class="flex flex-col gap-6">
+<div>
+<h1 class="text-[#181311] text-4xl font-bold leading-tight tracking-[-0.015em]">Saffron Threads</h1>
+<p class="text-[#886e63] text-lg font-normal leading-normal mt-2">Delicate, prized threads known for their vivid color and distinct flavor.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="text-[#181311] text-3xl font-bold leading-tight">$18.99</div>
+<span class="px-2 py-1 rounded bg-[#e8f5e9] text-[#2e7d32] text-sm font-bold">20% OFF</span>
+</div>
+<div class="flex flex-col gap-3">
+<p class="text-[#181311] text-base font-bold leading-normal">Weight</p>
+<div class="flex gap-3 flex-wrap">
+<button class="h-10 px-4 rounded-lg border border-[#e6e2e0] bg-white text-[#181311] text-sm font-medium hover:bg-[#f4f1f0] transition-colors">25g</button>
+<button class="h-10 px-4 rounded-lg border border-[#181311] bg-[#181311] text-white text-sm font-medium transition-colors">50g</button>
+<button class="h-10 px-4 rounded-lg border border-[#e6e2e0] bg-white text-[#181311] text-sm font-medium hover:bg-[#f4f1f0] transition-colors">100g</button>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<p class="text-[#181311] text-base font-bold leading-normal">Quantity</p>
+<div class="flex items-center w-32 h-10 border border-[#e6e2e0] rounded-lg bg-[#f4f1f0]">
+<button class="flex items-center justify-center w-10 h-full text-[#181311] hover:bg-[#e6e2e0] rounded-l-lg">-</button>
+<input class="w-12 h-full bg-transparent text-center border-none focus:ring-0 p-0 text-[#181311] font-medium" type="number" value="1"/>
+<button class="flex items-center justify-center w-10 h-full text-[#181311] hover:bg-[#e6e2e0] rounded-r-lg">+</button>
+</div>
+</div>
+<div class="flex flex-col gap-3 mt-2">
+<button class="w-full h-12 rounded-lg bg-[#181311] text-white font-bold text-base tracking-[0.015em] hover:opacity-90 transition-opacity">Buy Now</button>
+<button class="w-full h-12 rounded-lg bg-[#f4f1f0] text-[#181311] font-bold text-base tracking-[0.015em] hover:bg-[#e6e2e0] transition-colors">Add to Cart</button>
+</div>
+<!-- Moved Description here -->
+<div class="flex flex-col gap-4 border-t border-[#f4f1f0] pt-6">
+<h2 class="text-[#181311] text-2xl font-bold leading-tight">Product Description</h2>
+<p class="text-[#181311] text-base font-normal leading-relaxed">Experience the luxury of our premium Saffron Threads, meticulously hand-harvested to ensure the highest quality. Often referred to as "red gold," this spice is renowned for its intense aroma, striking crimson color, and potent flavor profile.</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-10 p-4 mt-8 border-t border-[#f4f1f0] pt-10">
+<h2 class="text-[#181311] text-2xl font-bold leading-tight">Customer Reviews</h2>
+<div class="grid grid-cols-1 gap-8">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-[#181311] text-base font-medium leading-normal">"The quality of this saffron is unmatched. My risotto has never tasted better!"</p>
+<div class="flex items-center gap-2 text-sm text-[#886e63]">
+<span class="font-bold text-[#181311]">Maria Gonzales</span>
+<span>•</span>
+<span>Oct 24, 2023</span>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star_half</span>
+</div>
+<p class="text-[#181311] text-base font-medium leading-normal">"Fast shipping and great packaging. The threads are a deep red, exactly what you look for."</p>
+<div class="flex items-center gap-2 text-sm text-[#886e63]">
+<span class="font-bold text-[#181311]">David Chen</span>
+<span>•</span>
+<span>Nov 02, 2023</span>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 0;">star</span>
+</div>
+<p class="text-[#181311] text-base font-medium leading-normal">"A bit pricey, but you get what you pay for. Will buy again."</p>
+<div class="flex items-center gap-2 text-sm text-[#886e63]">
+<span class="font-bold text-[#181311]">Sarah J.</span>
+<span>•</span>
+<span>Nov 15, 2023</span>
+</div>
+</div>
+</div>
+<button class="w-full md:w-auto h-10 px-6 rounded-lg border border-[#e6e2e0] bg-white text-[#181311] text-sm font-bold hover:bg-[#f4f1f0] transition-colors self-start">See all reviews</button>
+</div>
+<div class="flex flex-col gap-6 p-4 mt-8 border-t border-[#f4f1f0] pt-10">
+<div class="flex items-center justify-between">
+<h2 class="text-[#181311] text-2xl font-bold leading-tight">Related Products</h2>
+<div class="flex gap-2">
+<button class="size-10 flex items-center justify-center rounded-full bg-[#f4f1f0] hover:bg-[#e6e2e0] text-[#181311]">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="size-10 flex items-center justify-center rounded-full bg-[#f4f1f0] hover:bg-[#e6e2e0] text-[#181311]">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="flex overflow-x-auto gap-6 pb-4 snap-x scrollbar-hide">
+<div class="flex flex-col gap-3 min-w-[240px] snap-start cursor-pointer group">
+<div class="w-full aspect-square bg-center bg-cover rounded-xl bg-[#f4f1f0]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpvldkmdHWoAOManH6UAyKYNHcYGbhY10Ui5UlgCyAIRDf8N_TLudtmkTX8zbBO0ctecAYDHIcV1Px1oEK2Z_ZM9hLB5dDCB8nHiDMPcFw7qVYfxjIISQNqrOh4E8RD3CDllp9h2wkCZ4rP3WX7tQuROM5Xr9woEoU1iHhvl3CA5Fat0j5RqlOaVy31lAs1ObpDIMMZpDBO6TqO6lcZ8xNG5PelLVX-UIprr76w3jUaN81aS75jquyDM5BZVnUzF3MhmvS6HpKY");'></div>
+<div class="flex flex-col">
+<p class="text-[#181311] text-base font-bold leading-normal group-hover:underline">Kashmiri Chilli Powder</p>
+<p class="text-[#886e63] text-sm font-normal">Vibrant red, mild heat</p>
+<p class="text-[#181311] text-base font-bold leading-normal mt-1">$8.50</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 min-w-[240px] snap-start cursor-pointer group">
+<div class="w-full aspect-square bg-center bg-cover rounded-xl bg-[#f4f1f0]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpvldkmdHWoAOManH6UAyKYNHcYGbhY10Ui5UlgCyAIRDf8N_TLudtmkTX8zbBO0ctecAYDHIcV1Px1oEK2Z_ZM9hLB5dDCB8nHiDMPcFw7qVYfxjIISQNqrOh4E8RD3CDllp9h2wkCZ4rP3WX7tQuROM5Xr9woEoU1iHhvl3CA5Fat0j5RqlOaVy31lAs1ObpDIMMZpDBO6TqO6lcZ8xNG5PelLVX-UIprr76w3jUaN81aS75jquyDM5BZVnUzF3MhmvS6HpKY");'></div>
+<div class="flex flex-col">
+<p class="text-[#181311] text-base font-bold leading-normal group-hover:underline">Whole Cardamom Pods</p>
+<p class="text-[#886e63] text-sm font-normal">Aromatic and sweet</p>
+<p class="text-[#181311] text-base font-bold leading-normal mt-1">$14.99</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 min-w-[240px] snap-start cursor-pointer group">
+<div class="w-full aspect-square bg-center bg-cover rounded-xl bg-[#f4f1f0]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpvldkmdHWoAOManH6UAyKYNHcYGbhY10Ui5UlgCyAIRDf8N_TLudtmkTX8zbBO0ctecAYDHIcV1Px1oEK2Z_ZM9hLB5dDCB8nHiDMPcFw7qVYfxjIISQNqrOh4E8RD3CDllp9h2wkCZ4rP3WX7tQuROM5Xr9woEoU1iHhvl3CA5Fat0j5RqlOaVy31lAs1ObpDIMMZpDBO6TqO6lcZ8xNG5PelLVX-UIprr76w3jUaN81aS75jquyDM5BZVnUzF3MhmvS6HpKY");'></div>
+<div class="flex flex-col">
+<p class="text-[#181311] text-base font-bold leading-normal group-hover:underline">Cinnamon Sticks</p>
+<p class="text-[#886e63] text-sm font-normal">True Ceylon cinnamon</p>
+<p class="text-[#181311] text-base font-bold leading-normal mt-1">$9.25</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 min-w-[240px] snap-start cursor-pointer group">
+<div class="w-full aspect-square bg-center bg-cover rounded-xl bg-[#f4f1f0]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpvldkmdHWoAOManH6UAyKYNHcYGbhY10Ui5UlgCyAIRDf8N_TLudtmkTX8zbBO0ctecAYDHIcV1Px1oEK2Z_ZM9hLB5dDCB8nHiDMPcFw7qVYfxjIISQNqrOh4E8RD3CDllp9h2wkCZ4rP3WX7tQuROM5Xr9woEoU1iHhvl3CA5Fat0j5RqlOaVy31lAs1ObpDIMMZpDBO6TqO6lcZ8xNG5PelLVX-UIprr76w3jUaN81aS75jquyDM5BZVnUzF3MhmvS6HpKY");'></div>
+<div class="flex flex-col">
+<p class="text-[#181311] text-base font-bold leading-normal group-hover:underline">Ground Cumin</p>
+<p class="text-[#886e63] text-sm font-normal">Earthy and nutty</p>
+<p class="text-[#181311] text-base font-bold leading-normal mt-1">$6.99</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<%- include("../partials/footer") %>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

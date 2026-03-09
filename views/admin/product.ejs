@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SpiceCart Admin Products Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-[#181611] dark:text-white">
+<div class="h-screen">
+<!-- Sidebar Navigation -->
+<%- include("../partials/sidebar") %>
+<!-- Main Content Area -->
+<!-- <main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark"> -->
+    <main class="flex-1 overflow-y-auto p-8 ml-64">
+<div class="max-w-7xl mx-auto p-8 lg:p-12">
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between items-center gap-6 mb-10">
+<div>
+<h2 class="text-4xl font-black text-[#181611] dark:text-white tracking-tight">Products</h2>
+<p class="text-[#8a7e60] dark:text-gray-400 mt-1 font-medium">Manage your global spice inventory and stock levels.</p>
+</div>
+<a href="/admin/addproduct">
+<button class="flex items-center gap-2 bg-primary text-emerald-dark h-12 px-6 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all active:scale-95">
+<span class="material-symbols-outlined">add</span>
+<span>Add New Product</span>
+</button>
+</a>
+
+</div>
+<!-- Filters & Search -->
+<div class="flex flex-col lg:flex-row gap-4 mb-8">
+<div class="relative flex-1 group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#8a7e60] group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full h-14 pl-12 pr-4 bg-white dark:bg-[#2a2a2a] border border-[#e6e3db] dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-base font-medium placeholder:text-[#8a7e60]/60 transition-all" placeholder="Search spices by name or SKU..." type="text"/>
+</div>
+<div class="w-full lg:w-64 relative group">
+<select class="w-full h-14 px-4 bg-white dark:bg-[#2a2a2a] border border-[#e6e3db] dark:border-gray-700 rounded-xl appearance-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-base font-medium text-[#181611] dark:text-white">
+<option>All Categories</option>
+<option>Ground Spices</option>
+<option>Whole Spices</option>
+<option>Blends</option>
+<option>Seeds</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#8a7e60] pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Products Table Card -->
+<div class="bg-white dark:bg-[#222] rounded-xl border border-[#e6e3db] dark:border-gray-800 shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-gray-50 dark:bg-[#2a2a2a] border-bottom border-[#e6e3db] dark:border-gray-800">
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400">Product</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400">Category</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400">Price</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400">Stock Status</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#e6e3db] dark:divide-gray-800">
+<!-- Row 1 -->
+<tr class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700" data-alt="vibrant orange organic turmeric powder in bowl" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBXcxEjsR138BOI1IvVAxDRU_7rQNM9gMhME5xtbs-BS1xznexqiF1cdx6yhRWn4NoGn7vlPir1gCgSwij7P4vvozlBVJecZH6_A2sphEAcJDZ5YonShtylo8TxxvyuoTkOH51z6rzPr_Uu88RVhQ8xGNCk_4MR628utK1XZKzc6x4Gs8b_zyFWxmHfsssumr-ppVT3ViXRwADIB_5Pzbv10ESSlVDLSysvOl-Ikd0h6MWaKcq79BzHaiK88Wt_iiQmRepCnb9Ok0I');"></div>
+<div>
+<p class="font-bold text-[#181611] dark:text-white">Organic Turmeric Powder</p>
+<p class="text-xs text-[#8a7e60] font-medium">SKU: SP-00124</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm font-medium text-[#181611] dark:text-gray-300">Ground Spices</span>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm font-bold text-emerald-dark dark:text-primary">$12.00</span>
+</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stock-in/10 text-stock-in text-xs font-bold uppercase">
+<span class="size-2 rounded-full bg-stock-in"></span>
+                                            In Stock
+                                        </div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 rounded-lg hover:bg-stock-out/10 text-stock-out transition-all"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700" data-alt="whole star anise spices on wooden surface" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDUI2qiAfqEVdoXM-jIDD73bWzp4VjEXdiJd2Ts8-ej7MNj3BDExzbeQrr285nqX4sPJfM2E7LjDEttx9PEMj2JGSVhson9wrjF5crHgUri1Z4anUpmUCMfHGw9yl5U5vJyeq67QOkprxddO3d4clmcSOqAMRcAqdhKDtUSIWeouCmVdaUm_cIn5_IdEoUMbftptrKGmqVFEqYjvTwMi1NUSEunUBwyekbbOp2UpCrA6PMEYw3s7Cvq-j-qjJ6Kt3cfkfzlii4haDs');"></div>
+<div>
+<p class="font-bold text-[#181611] dark:text-white">Whole Star Anise</p>
+<p class="text-xs text-[#8a7e60] font-medium">SKU: SP-00125</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm font-medium text-[#181611] dark:text-gray-300">Whole Spices</span>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm font-bold text-emerald-dark dark:text-primary">$15.50</span>
+</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stock-low/10 text-stock-low text-xs font-bold uppercase">
+<span class="size-2 rounded-full bg-stock-low"></span>
+                                            Low Stock
+                                        </div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 rounded-lg hover:bg-stock-out/10 text-stock-out transition-all"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700" data-alt="dark red smoked paprika powder texture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBlu7iSUqS7FzbIQb5mHWjGXyKawZGlsfdjil7f3o058jcbW-JL7egmJH2TK1e3LG6dllrvQVnlt9LDEcEip4RqaQKkJ2an43OJKSwxPOyO0ZWV1GdwbzZd3tOE1ixuQXkt2larW9OM4iMysXAYUvYiSE9TmQJzMJMNhmHq59aQpN_tw5Miy8tEpzqoyXDndjUz3uhdRJg-EhSTN49-zZtJC7AczEDDZdHbaKkTybhMERUUg90nSBWlj1496cUa-rZ1sJiYnQB81Bw');"></div>
+<div>
+<p class="font-bold text-[#181611] dark:text-white">Smoked Paprika</p>
+<p class="text-xs text-[#8a7e60] font-medium">SKU: SP-00126</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm font-medium text-[#181611] dark:text-gray-300">Blends</span>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm font-bold text-emerald-dark dark:text-primary">$9.99</span>
+</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stock-out/10 text-stock-out text-xs font-bold uppercase">
+<span class="size-2 rounded-full bg-stock-out"></span>
+                                            Out of Stock
+                                        </div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 rounded-lg hover:bg-stock-out/10 text-stock-out transition-all"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700" data-alt="green cardamom pods in a heap" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCtcRR94-9KmcM6uY9hOuw6TBeZOjHFpGlI6hSTX8XSh2n7Flh2C1Jysx36XEBflhIgKNZsgPbVJ-mt5OOnqyIIAHp9rFg0Z5BFtItwqU-7A7yyaiwtpbwc8YWFkxv4xe5DZJK4IElr1pZNBg0jhVR783d1hpNmx7QW0_00QKTPl_dFfWXWjzmyO4xvwicSWVO5bJHwdBg9MnNN16XOiLTJ2K4AsOq1o8gVGDAEdePCQf8B-AeK4eVtvlDWJGtpLIOfGEGkCy3ZLKQ');"></div>
+<div>
+<p class="font-bold text-[#181611] dark:text-white">Whole Cardamom Pods</p>
+<p class="text-xs text-[#8a7e60] font-medium">SKU: SP-00127</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm font-medium text-[#181611] dark:text-gray-300">Whole Spices</span>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm font-bold text-emerald-dark dark:text-primary">$21.00</span>
+</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stock-in/10 text-stock-in text-xs font-bold uppercase">
+<span class="size-2 rounded-full bg-stock-in"></span>
+                                            In Stock
+                                        </div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-2 rounded-lg hover:bg-stock-out/10 text-stock-out transition-all"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Pagination Section -->
+<div class="flex flex-col sm:flex-row items-center justify-between mt-8 gap-4 px-2">
+<p class="text-sm text-[#8a7e60] font-medium">Showing <span class="text-[#181611] dark:text-white">1 to 4</span> of 124 results</p>
+<div class="flex items-center gap-1">
+<a class="size-10 flex items-center justify-center rounded-lg border border-[#e6e3db] dark:border-gray-700 text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5" href="#">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</a>
+<a class="size-10 flex items-center justify-center rounded-lg bg-primary text-emerald-dark font-bold" href="#">1</a>
+<a class="size-10 flex items-center justify-center rounded-lg text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5 font-medium" href="#">2</a>
+<a class="size-10 flex items-center justify-center rounded-lg text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5 font-medium" href="#">3</a>
+<span class="px-2 text-[#8a7e60]">...</span>
+<a class="size-10 flex items-center justify-center rounded-lg text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5 font-medium" href="#">12</a>
+<a class="size-10 flex items-center justify-center rounded-lg border border-[#e6e3db] dark:border-gray-700 text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5" href="#">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
