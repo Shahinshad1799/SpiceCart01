@@ -66,12 +66,23 @@
 </a>
 
 </div>
-<div class="flex flex-col lg:flex-row gap-4 mb-8">
-<div class="relative flex-1 group">
-<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#8a7e60] group-focus-within:text-primary transition-colors">search</span>
-<input class="w-full h-14 pl-12 pr-4 bg-white dark:bg-[#2a2a2a] border border-[#e6e3db] dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-base font-medium placeholder:text-[#8a7e60]/60 transition-all" placeholder="Search categories..." type="text"/>
-</div>
-</div>
+<form id="searchForm" class="flex items-center gap-2" method="GET" action="/admin/catagory">
+  <div class="relative flex-1">
+    <input
+      type="text"
+      name="q"
+      id="searchInput"
+      value="<%= search %>"
+      placeholder="Search customers by name, email, or ID..."
+      class="w-full bg-transparent border rounded px-4 py-2 text-sm focus:ring-1 focus:ring-primary"
+    />
+    <!-- Clear Button -->
+    <button type="button" id="clearBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 <%= search ? '' : 'hidden' %>">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <button type="submit" class="bg-primary text-white px-4 py-2 rounded text-sm">Search</button>
+</form>
 <div class="bg-white dark:bg-[#222] rounded-xl border border-[#e6e3db] dark:border-gray-800 shadow-sm overflow-hidden">
 <div class="overflow-x-auto">
 <table class="w-full text-left border-collapse">
@@ -84,106 +95,131 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-[#e6e3db] dark:divide-gray-800">
+<% catagory.forEach(catagorys => { %>
+
 <tr class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors group">
+
 <td class="px-6 py-4">
-<div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700 overflow-hidden bg-gray-100" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBXcxEjsR138BOI1IvVAxDRU_7rQNM9gMhME5xtbs-BS1xznexqiF1cdx6yhRWn4NoGn7vlPir1gCgSwij7P4vvozlBVJecZH6_A2sphEAcJDZ5YonShtylo8TxxvyuoTkOH51z6rzPr_Uu88RVhQ8xGNCk_4MR628utK1XZKzc6x4Gs8b_zyFWxmHfsssumr-ppVT3ViXRwADIB_5Pzbv10ESSlVDLSysvOl-Ikd0h6MWaKcq79BzHaiK88Wt_iiQmRepCnb9Ok0I');"></div>
+<div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700 overflow-hidden bg-gray-100"
+style="background-image: url('/uploads/catagory/<%= catagorys.image %>');">
+</div>
 </td>
+
 <td class="px-6 py-4">
 <div>
-<p class="font-bold text-[#181611] dark:text-white">Ground Spices</p>
-<p class="text-xs text-[#8a7e60] font-medium">Finely milled powders</p>
+<p class="font-bold text-[#181611] dark:text-white"><%= catagorys.name %></p>
+<p class="text-xs text-[#8a7e60] font-medium"><%= catagorys.description %></p>
 </div>
 </td>
+
 <td class="px-6 py-4">
-<span class="px-3 py-1 bg-emerald-dark/5 dark:bg-primary/5 text-emerald-dark dark:text-primary rounded-lg text-sm font-bold">42 Products</span>
+<span class="px-3 py-1 bg-emerald-dark/5 dark:bg-primary/5 text-emerald-dark dark:text-primary rounded-lg text-sm font-bold">
+0 Products
+</span>
 </td>
+
 <td class="px-6 py-4 text-right">
-<div class="flex justify-end gap-2">
-<button class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all"><span class="material-symbols-outlined text-lg">edit</span></button>
-<button class="p-2 rounded-lg hover:bg-stock-out/10 text-stock-out transition-all"><span class="material-symbols-outlined text-lg">delete</span></button>
-</div>
+  <div class="flex justify-end gap-2">
+   <a href="/admin/catagory/<%= catagorys._id %>/edit">
+  <button class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all">
+    <span class="material-symbols-outlined text-lg">edit</span>
+  </button>
+</a>
+  
+
+    <% const isActive = catagorys.status === 'Active'; %>
+    <button 
+      type="button" 
+      onclick='confirmAction("<%= catagorys._id %>", "<%= catagorys.status %>", "<%= catagorys.name %>")'
+      class="px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 
+             <%= isActive ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200' 
+                          : 'bg-green-50 hover:bg-green-100 text-green-600 border border-green-200' %>">
+      <span class="material-symbols-outlined text-[18px]">
+        <%= isActive ? 'block' : 'verified_user' %>
+      </span>
+      <%= isActive ? 'Block' : 'Unblock' %>
+    </button>
+
+  </div>
 </td>
+
+
 </tr>
-<tr class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors group">
-<td class="px-6 py-4">
-<div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700 overflow-hidden bg-gray-100" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDUI2qiAfqEVdoXM-jIDD73bWzp4VjEXdiJd2Ts8-ej7MNj3BDExzbeQrr285nqX4sPJfM2E7LjDEttx9PEMj2JGSVhson9wrjF5crHgUri1Z4anUpmUCMfHGw9yl5U5vJyeq67QOkprxddO3d4clmcSOqAMRcAqdhKDtUSIWeouCmVdaUm_cIn5_IdEoUMbftptrKGmqVFEqYjvTwMi1NUSEunUBwyekbbOp2UpCrA6PMEYw3s7Cvq-j-qjJ6Kt3cfkfzlii4haDs');"></div>
-</td>
-<td class="px-6 py-4">
-<div>
-<p class="font-bold text-[#181611] dark:text-white">Whole Spices</p>
-<p class="text-xs text-[#8a7e60] font-medium">Whole seeds, pods, and barks</p>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-3 py-1 bg-emerald-dark/5 dark:bg-primary/5 text-emerald-dark dark:text-primary rounded-lg text-sm font-bold">38 Products</span>
-</td>
-<td class="px-6 py-4 text-right">
-<div class="flex justify-end gap-2">
-<button class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all"><span class="material-symbols-outlined text-lg">edit</span></button>
-<button class="p-2 rounded-lg hover:bg-stock-out/10 text-stock-out transition-all"><span class="material-symbols-outlined text-lg">delete</span></button>
-</div>
-</td>
-</tr>
-<tr class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors group">
-<td class="px-6 py-4">
-<div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700 overflow-hidden bg-gray-100" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBlu7iSUqS7FzbIQb5mHWjGXyKawZGlsfdjil7f3o058jcbW-JL7egmJH2TK1e3LG6dllrvQVnlt9LDEcEip4RqaQKkJ2an43OJKSwxPOyO0ZWV1GdwbzZd3tOE1ixuQXkt2larW9OM4iMysXAYUvYiSE9TmQJzMJMNhmHq59aQpN_tw5Miy8tEpzqoyXDndjUz3uhdRJg-EhSTN49-zZtJC7AczEDDZdHbaKkTybhMERUUg90nSBWlj1496cUa-rZ1sJiYnQB81Bw');"></div>
-</td>
-<td class="px-6 py-4">
-<div>
-<p class="font-bold text-[#181611] dark:text-white">Blends &amp; Mixes</p>
-<p class="text-xs text-[#8a7e60] font-medium">Custom spice combinations</p>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-3 py-1 bg-emerald-dark/5 dark:bg-primary/5 text-emerald-dark dark:text-primary rounded-lg text-sm font-bold">25 Products</span>
-</td>
-<td class="px-6 py-4 text-right">
-<div class="flex justify-end gap-2">
-<button class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all"><span class="material-symbols-outlined text-lg">edit</span></button>
-<button class="p-2 rounded-lg hover:bg-stock-out/10 text-stock-out transition-all"><span class="material-symbols-outlined text-lg">delete</span></button>
-</div>
-</td>
-</tr>
-<tr class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors group">
-<td class="px-6 py-4">
-<div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700 overflow-hidden bg-gray-100" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCtcRR94-9KmcM6uY9hOuw6TBeZOjHFpGlI6hSTX8XSh2n7Flh2C1Jysx36XEBflhIgKNZsgPbVJ-mt5OOnqyIIAHp9rFg0Z5BFtItwqU-7A7yyaiwtpbwc8YWFkxv4xe5DZJK4IElr1pZNBg0jhVR783d1hpNmx7QW0_00QKTPl_dFfWXWjzmyO4xvwicSWVO5bJHwdBg9MnNN16XOiLTJ2K4AsOq1o8gVGDAEdePCQf8B-AeK4eVtvlDWJGtpLIOfGEGkCy3ZLKQ');"></div>
-</td>
-<td class="px-6 py-4">
-<div>
-<p class="font-bold text-[#181611] dark:text-white">Herbs</p>
-<p class="text-xs text-[#8a7e60] font-medium">Dried leaves and aromatic plants</p>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-3 py-1 bg-emerald-dark/5 dark:bg-primary/5 text-emerald-dark dark:text-primary rounded-lg text-sm font-bold">19 Products</span>
-</td>
-<td class="px-6 py-4 text-right">
-<div class="flex justify-end gap-2">
-<button class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all"><span class="material-symbols-outlined text-lg">edit</span></button>
-<button class="p-2 rounded-lg hover:bg-stock-out/10 text-stock-out transition-all"><span class="material-symbols-outlined text-lg">delete</span></button>
-</div>
-</td>
-</tr>
+
+<% }) %>
 </tbody>
 </table>
 </div>
 </div>
-<div class="flex flex-col sm:flex-row items-center justify-between mt-8 gap-4 px-2">
-<p class="text-sm text-[#8a7e60] font-medium">Showing <span class="text-[#181611] dark:text-white">1 to 4</span> of 12 categories</p>
-<div class="flex items-center gap-1">
-<a class="size-10 flex items-center justify-center rounded-lg border border-[#e6e3db] dark:border-gray-700 text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5" href="#">
-<span class="material-symbols-outlined text-lg">chevron_left</span>
-</a>
-<a class="size-10 flex items-center justify-center rounded-lg bg-primary text-emerald-dark font-bold" href="#">1</a>
-<a class="size-10 flex items-center justify-center rounded-lg text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5 font-medium" href="#">2</a>
-<a class="size-10 flex items-center justify-center rounded-lg text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5 font-medium" href="#">3</a>
-<a class="size-10 flex items-center justify-center rounded-lg border border-[#e6e3db] dark:border-gray-700 text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5" href="#">
-<span class="material-symbols-outlined text-lg">chevron_right</span>
-</a>
-</div>
+<div class="flex justify-center mt-6 gap-2">
+  <% if (currentPage > 1) { %>
+    <a href="?q=<%= search %>&page=<%= currentPage - 1 %>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Prev</a>
+  <% } %>
+
+  <% for (let i = 1; i <= totalPages; i++) { %>
+    <a href="?q=<%= search %>&page=<%= i %>" class="px-3 py-1 rounded 
+      <%= i === currentPage ? 'bg-primary text-white' : 'bg-gray-200 hover:bg-gray-300' %>">
+      <%= i %>
+    </a>
+  <% } %>
+
+  <% if (currentPage < totalPages) { %>
+    <a href="?q=<%= search %>&page=<%= currentPage + 1 %>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>
+  <% } %>
 </div>
 </div>
 </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function confirmAction(id, status, name) {
+  const isActive = status === 'Active';
+
+  Swal.fire({
+    title: isActive ? 'Block Category?' : 'Unblock Category?',
+    text: `Are you sure you want to ${isActive ? 'block' : 'unblock'} ${name}?`,
+    icon: isActive ? 'warning' : 'success',
+    showCancelButton: true,
+    confirmButtonText: isActive ? 'Yes, Block!' : 'Yes, Unblock!',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: isActive ? '#ef4444' : '#10b981',
+    cancelButtonColor: '#6b7280',
+    background: '#f9fafb',
+    iconColor: isActive ? '#b91c1c' : '#047857',
+    showClass: {
+      popup: 'animate__animated animate__fadeInDown'
+    },
+    hideClass: {
+      popup: 'animate__animated animate__fadeOutUp'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/admin/catagory/${id}/${isActive ? 'block' : 'unblock'}`;
+
+      document.body.appendChild(form);
+      form.submit();
+    }
+  });
+}</script>
+<script>
+  const searchForm = document.getElementById("searchForm");
+  const searchInput = document.getElementById("searchInput");
+  const clearBtn = document.getElementById("clearBtn");
+
+  // Show/hide clear button
+  searchInput.addEventListener("input", () => {
+    clearBtn.classList.toggle("hidden", searchInput.value.trim() === "");
+  });
+
+  // Clear button functionality
+  clearBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    clearBtn.classList.add("hidden");
+    searchForm.submit(); // reload page with all customers
+  });
+</script>
 
 </body></html>

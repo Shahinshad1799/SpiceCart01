@@ -160,13 +160,13 @@ body {
 <span class="material-symbols-outlined text-xs">chevron_right</span>
 <a class="hover:text-saffron transition-colors" href="/admin/product">Products</a>
 <span class="material-symbols-outlined text-xs">chevron_right</span>
-<span class="text-slate-900 font-medium">Add New Product</span>
+<span class="text-slate-900 font-medium">edit Product</span>
 </div>
-<h1 class="text-2xl font-extrabold text-slate-900">Add New Product</h1>
-<p class="text-slate-500 text-sm">Fill in the details below to add a new spice or product to your inventory.</p>
+<h1 class="text-2xl font-extrabold text-slate-900">Edit Product</h1>
+<p class="text-slate-500 text-sm">Fill in the details below to edit a the existing spice or product in your inventory.</p>
 </header>
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-<form class="p-8" method="post" action="/admin/addproduct" enctype="multipart/form-data">
+<form action="/admin/editproduct/<%= product._id %>" method="POST" enctype="multipart/form-data">
 <div class="space-y-10">
 <section>
 <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
@@ -176,7 +176,7 @@ body {
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <div class="md:col-span-2">
 <label class="form-label" for="product_name">Product Name</label>
-<input class="form-input" id="product_name" placeholder="e.g. Organic Kashmiri Saffron Threads" type="text" name="name" />
+<input class="form-input" id="product_name" placeholder="e.g. Organic Kashmiri Saffron Threads" type="text" name="name" value="<%= product.name %>" />
 </div>
 <div>
 <label class="form-label" for="catagory">Category</label>
@@ -193,7 +193,7 @@ body {
 </div>
 <div class="md:col-span-2">
 <label class="form-label" for="description">Description</label>
-<textarea class="form-input min-h-[120px]" id="description" name="description" placeholder="Provide a detailed description of the product, including its origin, flavor profile, and culinary uses..."></textarea>
+<textarea class="form-input min-h-[120px]" id="description" name="description" placeholder="Provide a detailed description of the product, including its origin, flavor profile, and culinary uses..."><%= product.description %></textarea>
 </div>
 </div>
 </section>
@@ -311,8 +311,15 @@ body {
 
 <% } %>  
 <script>
-let variants = [];
+ let variants = <%- JSON.stringify(product.variants || []) %>;
+</script>
+<script>
 let editIndex = -1;
+
+// ✅ render on page load (IMPORTANT)
+document.addEventListener("DOMContentLoaded", () => {
+  renderVariants();
+});
 
 function addVariant() {
   const name = document.getElementById("variant_name").value;
@@ -331,10 +338,8 @@ function addVariant() {
   };
 
   if (editIndex === -1) {
-    //  ADD
     variants.push(variant);
   } else {
-    //  UPDATE
     variants[editIndex] = variant;
     editIndex = -1;
     document.getElementById("addBtn").innerText = "Add";
@@ -349,10 +354,9 @@ function renderVariants() {
   container.innerHTML = "";
 
   variants.forEach((v, index) => {
-    const div = document.createElement("div");
-    div.className = "flex items-center justify-between bg-white border p-4 rounded-xl";
+    container.innerHTML += `
+    <div class="flex items-center justify-between bg-white border p-4 rounded-xl">
 
-    div.innerHTML = `
       <div class="grid grid-cols-3 flex-1 gap-8">
         <div>
           <span class="text-xs text-gray-400">Variant</span>
@@ -371,34 +375,30 @@ function renderVariants() {
       </div>
 
       <div class="flex gap-2">
-        <button type="button" onclick="editVariant(${index})">Edit</button>
-        <button type="button" onclick="deleteVariant(${index})">Delete</button>
+        <button 
+          type="button"
+          onclick="editVariant(${index})"
+          class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-saffron hover:bg-orange-50">
+          <span class="material-symbols-outlined text-[20px]">edit</span>
+        </button>
+
+        <button 
+          type="button"
+          onclick="deleteVariant(${index})"
+          class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50">
+          <span class="material-symbols-outlined text-[20px]">delete</span>
+        </button>
       </div>
+
+      <!-- ✅ hidden inputs -->
+      <input type="hidden" name="variants[${index}][name]" value="${v.name}">
+      <input type="hidden" name="variants[${index}][price]" value="${v.price}">
+      <input type="hidden" name="variants[${index}][stock]" value="${v.stock}">
+    </div>
     `;
-
-    // ✅ hidden inputs (append separately)
-    const nameInput = document.createElement("input");
-    nameInput.type = "hidden";
-    nameInput.name = `variants[${index}][name]`;
-    nameInput.value = v.name;
-
-    const priceInput = document.createElement("input");
-    priceInput.type = "hidden";
-    priceInput.name = `variants[${index}][price]`;
-    priceInput.value = v.price;
-
-    const stockInput = document.createElement("input");
-    stockInput.type = "hidden";
-    stockInput.name = `variants[${index}][stock]`;
-    stockInput.value = v.stock;
-
-    div.appendChild(nameInput);
-    div.appendChild(priceInput);
-    div.appendChild(stockInput);
-
-    container.appendChild(div);
   });
 }
+
 function editVariant(index) {
   const v = variants[index];
 
@@ -422,8 +422,10 @@ function clearInputs() {
 }
 </script>
 <script>
-let selectedFiles = [];
-
+  let existingImages = <%- JSON.stringify(product.images || []) %>;
+  let selectedFiles = [];
+</script>
+<script>
 function openFilePicker() {
   document.getElementById("imageInput").click();
 }
@@ -431,39 +433,114 @@ function openFilePicker() {
 const input = document.getElementById("imageInput");
 const preview = document.getElementById("imagePreview");
 
+// ✅ Load on page start
+document.addEventListener("DOMContentLoaded", () => {
+  renderImages();
+});
+
+// ✅ When selecting new images
 input.addEventListener("change", function () {
   const files = Array.from(input.files);
+  selectedFiles.push(...files);
 
-  files.forEach(file => {
-    selectedFiles.push(file);
+  renderImages();
+  input.value = ""; // reset input
+});
 
+// ✅ Render BOTH existing + new images
+function renderImages() {
+  preview.innerHTML = "";
+
+  // 🔵 EXISTING IMAGES (from DB)
+  existingImages.forEach((img, index) => {
+    const div = document.createElement("div");
+    div.className = "slot relative";
+
+    div.innerHTML = `
+      <img src="/uploads/product/${img}" 
+           style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+
+      <!-- MINUS -->
+      <button type="button"
+        onclick="removeExisting(${index})"
+        style="position:absolute;top:5px;right:5px;
+               background:rgba(0,0,0,0.6);color:white;
+               border:none;border-radius:50%;
+               width:24px;height:24px;cursor:pointer;">
+        −
+      </button>
+
+      <!--  send remaining old images -->
+      <input type="hidden" name="existingImages[]" value="${img}">
+    `;
+
+    preview.appendChild(div);
+  });
+
+  //  NEW IMAGES
+  selectedFiles.forEach((file, index) => {
     const reader = new FileReader();
 
     reader.onload = function (e) {
       const div = document.createElement("div");
-      div.className = "slot";
+      div.className = "slot relative";
 
       div.innerHTML = `
         <img src="${e.target.result}" 
              style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+
+        <!-- MINUS -->
+        <button type="button"
+          onclick="removeNew(${index})"
+          style="position:absolute;top:5px;right:5px;
+                 background:rgba(0,0,0,0.6);color:white;
+                 border:none;border-radius:50%;
+                 width:24px;height:24px;cursor:pointer;">
+          −
+        </button>
       `;
 
-      const addMoreBtn = document.querySelector(".add-more");
-      preview.insertBefore(div, addMoreBtn);
+      preview.appendChild(div);
     };
 
     reader.readAsDataURL(file);
   });
 
-  // create new FileList using DataTransfer
+  //  Add button
+  const addMore = document.createElement("div");
+  addMore.className = "slot add-more";
+  addMore.onclick = openFilePicker;
+  addMore.innerHTML = `
+    <span class="material-symbols-outlined">add</span>
+    <p>Add Images</p>
+  `;
+  preview.appendChild(addMore);
+
+  syncFiles();
+}
+
+//  Remove existing image
+function removeExisting(index) {
+  existingImages.splice(index, 1);
+  renderImages();
+}
+
+//  Remove new image
+function removeNew(index) {
+  selectedFiles.splice(index, 1);
+  renderImages();
+}
+
+//  Keep input.files updated
+function syncFiles() {
   const dataTransfer = new DataTransfer();
 
   selectedFiles.forEach(file => {
     dataTransfer.items.add(file);
   });
 
-  input.files = dataTransfer.files; // ✅ KEEP FILES
-});
+  input.files = dataTransfer.files;
+}
 </script>
 
 </body></html>

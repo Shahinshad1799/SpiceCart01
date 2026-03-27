@@ -118,7 +118,7 @@ const loadeditprofile = async (req, res) => {
 const updateprofile = async (req, res) => {
   try {
     const userId = req.session.userId;
-
+   console.log("is patch working")
     // Validate using Zod
     const result = editProfileSchema.safeParse(req.body);
 

@@ -2,30 +2,199 @@
 const usermodel = require("../model/usermodel")
 const bcrypt = require("bcrypt"); // only if you hash password
 require("dotenv").config();
+const catagorymodel=require("../model/catagorymodel")
+const productmodel=require("../model/productmodel")
 
 const loadadminlogin=function(req,res){
     res.render("admin/login")
 }
-const loadaddproduct=(req,res)=>{
-  res.render("admin/addproduct")
+// ================= LOAD PAGE =================
+const loadaddproduct = async (req, res) => {
+  try {
+    const categories = await catagorymodel.find({ status: "Active" });
+
+    res.render("admin/addproduct", {
+      catagory: categories // ✅ always array
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.redirect("/admin");
+  }
+};
+
+
+// ================= ADD PRODUCT =================
+const addProduct = async (req, res) => {
+  try {
+    console.log("REQ BODY:", req.body);
+
+    const { name, description, catagory } = req.body;
+
+    // always fetch categories for re-render
+    const categories = await catagorymodel.find({ status: "Active" });
+
+    //  handle images safely
+    const images = req.files && req.files.length > 0
+      ? req.files.map(file => file.filename)
+      : [];
+   console.log(req.files)
+   console.log(req.files.length)
+    // ================= VALIDATION =================
+    if (!name || !description || !catagory) {
+      return res.render("admin/addproduct", {
+        error: "All fields are required",
+        catagory: categories //  FIX
+      });
+    }
+
+    if (images.length < 1) {
+      return res.render("admin/addproduct", {
+        error: "Please upload at least one image",
+        catagory: categories //  FIX
+      });
+    }
+
+    // ================= CATEGORY CHECK =================
+    const categoryExists = await catagorymodel.findById(catagory);
+    if (!categoryExists) {
+      return res.render("admin/addproduct", {
+        error: "Invalid category",
+        catagory: categories //  FIX
+      });
+    }
+
+    // ================= VARIANTS PARSE =================
+let variants = [];
+
+if (req.body.variants) {
+  if (Array.isArray(req.body.variants)) {
+    variants = req.body.variants;
+  } else {
+    variants = Object.values(req.body.variants);
+  }
+
+  variants = variants.map(v => ({
+    name: v.name,
+    price: Number(v.price),
+    stock: Number(v.stock)
+  }));
 }
-const loadproduct=(req,res)=>{
-  res.render("admin/product")
-}
+    // ================= CREATE PRODUCT =================
+    const newProduct = new productmodel({
+      name,
+      description,
+      catagory,
+      variants: variants,
+      images
+    });
+
+    await newProduct.save();
+
+    console.log("Product saved successfully");
+
+    res.redirect("/admin/product");
+
+  } catch (error) {
+    console.log("ERROR:", error.message);
+
+    const categories = await catagorymodel.find({ status: "Active" });
+
+    res.render("admin/addproduct", {
+      error: "Something went wrong",
+      catagory: categories // ✅ FIX
+    });
+  }
+};
+const loadproduct = async (req, res) => {
+  try {
+    const search = req.query.q || "";
+    const catagory = req.query.catagory || ""; // ✅ use catagory
+    const page = parseInt(req.query.page) || 1;
+
+    const limit = 3;
+    const skip = (page - 1) * limit;
+
+    let searchQuery = {
+      name: { $regex: search, $options: "i" }
+    };
+
+    if (catagory) {
+      searchQuery.catagory = catagory; // ✅ IMPORTANT
+    }
+
+    const products = await productmodel
+      .find(searchQuery)
+      .populate("catagory") // ✅ keep same
+      .skip(skip)
+      .limit(limit);
+
+    const totalProducts = await productmodel.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    const categories = await catagorymodel.find({ status: "Active" });
+
+    res.render("admin/product", {
+      catagory: categories,
+      product: products,
+      search,
+      selectedCatagory: catagory, // ✅ send this
+      currentPage: page,
+      totalPages
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.redirect("/admin");
+  }
+};
 const loadaddcatagory=(req,res)=>{
   res.render("admin/addcatagory")
 }
-const loadcatagory=(req,res)=>{
-  res.render("admin/catagory")
-}
+
+
+
+const addingcatagory = async (req, res) => {
+  try {
+
+    const { name, description } = req.body;
+
+    const existing_catagory = await catagorymodel.findOne({ name });
+
+    if (existing_catagory) {
+
+      const catagory = await catagorymodel.find();
+
+      return res.render("admin/addcatagory", {
+        catagory,
+        error: "Category already exists"
+      });
+    }
+
+    const image = req.file ? req.file.filename : null;
+
+    const new_catagory = new catagorymodel({
+      name,
+      description,
+      image
+    });
+
+    await new_catagory.save();
+
+    res.redirect("/admin/catagory");
+
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Compare with ENV values
+    
     if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
-      // Redirect back to login with an error message
+      
       req.session.loginError = "Invalid email or password"; // optional for showing message in EJS
       return res.redirect("/admin/login");
     }
@@ -46,6 +215,40 @@ const adminLogin = async (req, res) => {
 const loaddashboard=function(req,res){
     res.render("admin/dashboard")
 }
+const loadcatagory = async (req, res) => {
+  try {
+
+    const search = req.query.q || "";
+    const page = parseInt(req.query.page) || 1;
+
+    const limit = 3;
+    const skip = (page - 1) * limit;
+
+    const searchQuery = {
+      name: { $regex: search, $options: "i" }
+    };
+
+    const catagory = await catagorymodel
+      .find(searchQuery)
+      .skip(skip)
+      .limit(limit);
+
+    const totalCategories = await catagorymodel.countDocuments(searchQuery);
+
+    const totalPages = Math.ceil(totalCategories / limit);
+
+    res.render("admin/catagory", {
+      catagory,
+      search,
+      currentPage: page,
+      totalPages
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.redirect("/admin/category");
+  }
+};
 const loadcustomer = async (req, res) => {
   try {
     const search = req.query.q || "";
@@ -106,11 +309,188 @@ const unblockcustomer= async (req, res) => {
     res.status(500).send("Server Error");
   }
 }
+const blockcatagory= async (req, res) => {
+  try {
+    const id = req.params.id;
+    await catagorymodel.findByIdAndUpdate(id, { status: "Blocked" });
+    res.redirect("/admin/catagory");
+  } catch (error) {
+    console.log("Block Error:", error);
+    res.status(500).send("Server Error");
+  }
+}
+const unblockcatagory= async (req, res) => {
+  try {
+    const id = req.params.id;
+    await catagorymodel.findByIdAndUpdate(id, { status: "Active" });
+    res.redirect("/admin/catagory");
+  } catch (error) {
+    console.log("Unblock Error:", error);
+    res.status(500).send("Server Error");
+  }
+}
 const logout=function(req, res){
   req.session.destroy(() => {
     res.redirect("/login");
   });
 }
+const blockproduct= async (req, res) => {
+  try {
+    const id = req.params.id;
+    await productmodel.findByIdAndUpdate(id, { status: "Blocked" });
+    res.redirect("/admin/product");
+  } catch (error) {
+    console.log("Block Error:", error);
+    res.status(500).send("Server Error");
+  }
+}
+const unblockproduct= async (req, res) => {
+  try {
+    const id = req.params.id;
+    await productmodel.findByIdAndUpdate(id, { status: "Active" });
+    res.redirect("/admin/product");
+  } catch (error) {
+    console.log("Unblock Error:", error);
+    res.status(500).send("Server Error");
+  }
+}
+
+const loadEditCatagory = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const catagory = await catagorymodel.findById(id);
+
+    if (!catagory) {
+      return res.redirect('/admin/catagory');
+    }
+
+    res.render('admin/editcatagory', {
+      catagory
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.redirect('/admin/catagory');
+  }
+};
+const updateCategory = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { name, description } = req.body;
+
+    // optional: check duplicate name
+    const existing = await catagorymodel.findOne({
+      name: name.trim(),
+      _id: { $ne: id }
+    });
+
+    if (existing) {
+      return res.render('admin/editcatagory', {
+        catagory: { _id: id, name, description },
+        error: 'Category already exists'
+      });
+    }
+
+    const updateData = {
+      name: name.trim(),
+      description: description.trim()
+    };
+
+    // if image uploaded
+    if (req.file) {
+      updateData.image = req.file.filename;
+    }
+
+    await catagorymodel.findByIdAndUpdate(id, updateData);
+
+    res.redirect('/admin/catagory');
+
+  } catch (error) {
+    console.log(error);
+    res.redirect('/admin/catagory');
+  }
+};
+const loadeditproduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    //  Get product with category
+    const product = await productmodel
+      .findById(productId)
+      .populate("catagory");
+
+    // Get all categories
+    const categories = await catagorymodel.find({ status: "Active" });
+
+    // If product not found
+    if (!product) {
+      return res.redirect("/admin/product");
+    }
+
+    res.render("admin/editproduct", {
+      product,
+        variants: product?.variants || [],
+      catagory: categories
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.redirect("/admin/product");
+  }
+};
+
+
+const editproduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const { name, description, catagory } = req.body;
+
+    //  1. Handle Variants
+    let variants = [];
+
+    if (req.body.variants) {
+      variants = Object.values(req.body.variants).map(v => ({
+        name: v.name,
+        price: Number(v.price),
+        stock: Number(v.stock)
+      }));
+    }
+
+    //  2. Handle Images
+    // images user kept
+    let existingImages = req.body.existingImages || [];
+
+    // make sure it's always array
+    if (!Array.isArray(existingImages)) {
+      existingImages = [existingImages];
+    }
+
+    // new uploaded images
+    const newImages = req.files?.map(file => file.filename) || [];
+
+    // final images
+    const finalImages = [...existingImages, ...newImages];
+
+    //  3. Update product
+    await productmodel.findByIdAndUpdate(productId, {
+      name,
+      description,
+      catagory,
+      variants,
+      images: finalImages
+    });
+
+    res.redirect("/admin/product");
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error updating product");
+  }
+};
+
+
 
 module.exports={
     loadadminlogin,
@@ -119,9 +499,19 @@ module.exports={
     adminLogin,
     blockcustomer,
     unblockcustomer,
+    blockcatagory,
+    unblockcatagory,
     loadaddproduct,
     loadproduct,
     loadcatagory,
     loadaddcatagory,
+    addingcatagory,
+    loadEditCatagory,
+    updateCategory,
+    addProduct,
+    loadeditproduct,
+    editproduct,
+    blockproduct,
+    unblockproduct,
     logout
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -131,7 +131,7 @@ accept="image/*"
 </label>
 </div>
 
-<p id="image-error" class="text-red-500 text-sm hidden">Please upload an image</p>
+<p id="image-error" class="text-red-500 text-sm hidden">update an image</p>
 
 </div>
 
@@ -141,7 +141,7 @@ Cancel
 </a>
 
 <button class="h-14 px-10 bg-primary text-emerald-dark rounded-xl font-extrabold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95" type="submit">
-Save Category
+edit Category
 </button>
 
 </div>
@@ -271,4 +271,239 @@ if(imageInput.files.length === 0){
 });
 
 </script>
-</body></html>
+</body></html> -->
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Edit Catagory</title>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+
+<style>
+body { font-family: 'Manrope', sans-serif; }
+</style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark min-h-screen">
+
+<div class="flex h-screen overflow-hidden">
+
+<%- include("../partials/sidebar") %>
+
+<main class="flex-1 overflow-y-auto p-8 ml-64">
+
+<div class="max-w-4xl mx-auto">
+
+<!-- HEADER -->
+<div class="mb-10">
+<h2 class="text-4xl font-black tracking-tight">Edit Catagory</h2>
+<p class="text-gray-500 mt-2">Update your catagory details</p>
+</div>
+
+<!-- FORM CARD -->
+<div class="bg-white dark:bg-[#222] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+
+<form 
+action="/admin/catagory/<%= catagory._id %>/edit"
+method="POST"
+enctype="multipart/form-data"
+class="p-8 flex flex-col gap-8"
+>
+
+<!-- NAME -->
+<div>
+<label class="text-sm font-bold">Catagory Name</label>
+
+<input
+type="text"
+name="name"
+id="catagory-name"
+value="<%= catagory.name %>"
+class="w-full h-12 px-4 mt-2 bg-white dark:bg-[#2a2a2a] border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+/>
+
+<p id="name-error" class="text-red-500 text-sm hidden"></p>
+</div>
+
+<!-- DESCRIPTION -->
+<div>
+<label class="text-sm font-bold">Description</label>
+
+<textarea
+name="description"
+id="catagory-description"
+rows="4"
+class="w-full p-4 mt-2 bg-white dark:bg-[#2a2a2a] border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+><%= catagory.description %></textarea>
+
+<p id="desc-error" class="text-red-500 text-sm hidden"></p>
+</div>
+
+<!-- IMAGE -->
+<div>
+  <label class="text-sm font-bold">Catagory Image</label>
+
+  <div class="mt-4 flex flex-col items-center gap-4">
+
+    <!-- IMAGE PREVIEW -->
+    <img 
+      id="imagePreview"
+      src="/uploads/catagory/<%= catagory.image %>"
+      class="w-40 h-40 object-cover rounded-xl border shadow"
+    />
+
+    <!-- HIDDEN INPUT -->
+    <input 
+      type="file"
+      name="image"
+      id="profileImageInput"
+      class="hidden"
+      accept="image/*"
+      onchange="previewImage(event)"
+    >
+
+    <!-- BUTTON -->
+    <button 
+      type="button"
+      onclick="document.getElementById('profileImageInput').click()"
+      class="px-5 py-2.5 rounded-lg bg-[#181311] dark:bg-white text-white dark:text-[#181311] text-sm font-bold hover:opacity-90 transition-all shadow-sm flex items-center gap-2"
+    >
+      <span class="material-symbols-outlined text-sm">upload</span>
+      Upload New Image
+    </button>
+
+    <p class="text-xs text-gray-500">Leave it unchanged if you don’t want to update</p>
+
+  </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+
+<a href="/admin/catagory"
+class="px-6 py-3 rounded-lg font-bold text-gray-600 hover:bg-gray-100">
+Cancel
+</a>
+
+<button 
+type="submit"
+class="px-8 py-3 bg-primary text-white rounded-lg font-bold hover:opacity-90 transition-all">
+Update Catagory
+</button>
+
+</div>
+
+</form>
+</div>
+
+</div>
+</main>
+</div>
+
+<!-- JS -->
+<script>
+
+// IMAGE PREVIEW
+const fileInput = document.getElementById("dropzone-file");
+const preview = document.getElementById("image-preview");
+
+fileInput.addEventListener("change", function () {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// VALIDATION
+const form = document.querySelector("form");
+
+const nameInput = document.getElementById("catagory-name");
+const descInput = document.getElementById("catagory-description");
+
+const nameError = document.getElementById("name-error");
+const descError = document.getElementById("desc-error");
+
+form.addEventListener("submit", function(e){
+
+    let valid = true;
+
+    nameError.classList.add("hidden");
+    descError.classList.add("hidden");
+
+    if(nameInput.value.trim() === ""){
+        nameError.textContent = "Catagory name is required";
+        nameError.classList.remove("hidden");
+        valid = false;
+    }
+
+    if(descInput.value.trim().length < 10){
+        descError.textContent = "Description must be at least 10 characters";
+        descError.classList.remove("hidden");
+        valid = false;
+    }
+
+    if(!valid){
+        e.preventDefault();
+    }
+
+});
+</script>
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById("imagePreview");
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        };
+
+        reader.readAsDataURL(file);
+    }
+}
+</script>
+
+</body>
+</html>

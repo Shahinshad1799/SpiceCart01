@@ -30,7 +30,7 @@ route.get("/successpassword", userauth.isLogout, user.loadsuccess);
 
 route.get("/profile", userauth.isLogin, checkstatus, user.loadprofile);
 route.get("/editprofile", userauth.isLogin, checkstatus, user.loadeditprofile);
-route.post("/editprofile", userauth.isLogin, upload.single("profileImage"), user.updateprofile);
+route.patch("/editprofile", userauth.isLogin, upload.single("profileImage"), user.updateprofile);
 
 route.get("/changepassword", userauth.isLogin, checkstatus, user.loadchangepassword);
 route.post("/changepassword", userauth.isLogin, user.changepassword);
