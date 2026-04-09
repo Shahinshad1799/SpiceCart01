@@ -96,7 +96,7 @@
         <!-- REMOVE -->
         <form action="/cart/remove" method="POST">
   <input type="hidden" name="productId" value="<%= item.productId._id %>">
-  <input type="hidden" name="variantId" value="<%= item.variantId %>"> <!-- ✅ ADD THIS -->
+  <input type="hidden" name="variantId" value="<%= item.variantId %>"> 
 
   <button type="submit" class="text-red-500 text-sm mt-2">
     Remove
@@ -109,7 +109,7 @@
     <div class="flex justify-center md:col-span-2">
      <form action="/cart/update" method="POST" class="flex items-center">
   <input type="hidden" name="productId" value="<%= item.productId._id %>">
-  <input type="hidden" name="variantId" value="<%= item.variantId %>"> <!-- ✅ ADD THIS -->
+  <input type="hidden" name="variantId" value="<%= item.variantId %>">
 
   <button type="submit" name="change" value="-1">-</button>
 

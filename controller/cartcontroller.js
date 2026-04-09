@@ -4,7 +4,7 @@ const Cart = require("../model/cartmodel");
 const product=require("../model/productmodel")
 
 
-exports.getCartPage = async (req, res) => {
+const getCartPage = async (req, res) => {
   try {
     const userId = req.session.userId;
 
@@ -21,7 +21,7 @@ exports.getCartPage = async (req, res) => {
     let totalItems = 0;
 
     cartItems.forEach(item => {
-      const price = item.productId?.variants?.[0]?.price || 0; // ✅ FIX
+      const price = item.productId?.variants?.[0]?.price || 0; 
       const qty = item.quantity || 0;
 
       subtotal += price * qty;
@@ -47,7 +47,7 @@ exports.getCartPage = async (req, res) => {
   }
 };
 
-exports.addToCart = async (req, res) => {
+const addToCart = async (req, res) => {
   try {
     const userId = req.session.userId;
     const { productId, variantId, quantity = 1 } = req.body;
@@ -62,7 +62,7 @@ exports.addToCart = async (req, res) => {
       return res.status(404).send("Product not found");
     }
 
-    // ✅ find selected variant
+  
     const selectedVariant = prod.variants.id(variantId);
 
     if (!selectedVariant) {
@@ -78,7 +78,7 @@ exports.addToCart = async (req, res) => {
           productId,
           variantId,
           quantity: Number(quantity),
-          price: selectedVariant.price   // ✅ store price
+          price: selectedVariant.price  
         }]
       });
     } else {
@@ -95,7 +95,7 @@ exports.addToCart = async (req, res) => {
           productId,
           variantId,
           quantity: Number(quantity),
-          price: selectedVariant.price   // ✅ store price
+          price: selectedVariant.price
         });
       }
     }
@@ -110,7 +110,7 @@ exports.addToCart = async (req, res) => {
   }
 };
 
-exports.updateCart = async (req, res) => {
+const updateCart = async (req, res) => {
   try {
     const userId = req.session.userId;
 const { productId, variantId, change } = req.body;
@@ -153,8 +153,8 @@ res.redirect("/cart");
   }
 };
 
-// 🟢 4. REMOVE ITEM
-exports.removeFromCart = async (req, res) => {
+
+const removeFromCart = async (req, res) => {
   try {
     const userId = req.session.userId;
     const { productId, variantId } = req.body;
@@ -179,7 +179,7 @@ exports.removeFromCart = async (req, res) => {
 
     await cart.save();
 
-    // ✅ if using form → redirect
+  
     res.redirect("/cart");
 
   } catch (err) {
@@ -190,17 +190,11 @@ exports.removeFromCart = async (req, res) => {
 
 
 
-//🟢 5. CLEAR CART (optional)
-exports.clearCart = async (req, res) => {
-  try {
-    const userId = req.session.userId;
 
-    await Cart.findOneAndDelete({ user: userId });
 
-    res.json({ success: true });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
-  }
-};
+module.exports={
+  getCartPage,
+  updateCart,
+  removeFromCart,
+  addToCart
+}

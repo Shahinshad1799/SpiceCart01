@@ -221,7 +221,7 @@
       `url('/uploads/product/${img}')`;
   }
 
-  // ✅ FIX VARIANT
+  //  FIX VARIANT
   function selectVariant(variantId, price, el) {
     // update price
     document.getElementById("price").innerText = price;
@@ -238,7 +238,7 @@
     el.classList.add("bg-black","text-white");
   }
 
-  // ✅ FIX QUANTITY
+  //  FIX QUANTITY
   function changeQty(val) {
     let qty = document.getElementById("qty");
     let current = parseInt(qty.value) || 1;
@@ -252,7 +252,7 @@
     }
   }
 
-  // ✅ ALSO HANDLE MANUAL INPUT
+  // ALSO HANDLE MANUAL INPUT
   document.getElementById("qty").addEventListener("input", function() {
     let val = parseInt(this.value) || 1;
     if (val < 1) val = 1;

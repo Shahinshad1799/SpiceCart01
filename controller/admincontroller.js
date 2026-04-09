@@ -15,7 +15,7 @@ const loadaddproduct = async (req, res) => {
     const categories = await catagorymodel.find({ status: "Active" });
 
     res.render("admin/addproduct", {
-      catagory: categories // ✅ always array
+      catagory: categories 
     });
 
   } catch (error) {
@@ -25,7 +25,7 @@ const loadaddproduct = async (req, res) => {
 };
 
 
-// ================= ADD PRODUCT =================
+// ADD PRODUCT
 const addProduct = async (req, res) => {
   try {
     const categories = await catagorymodel.find({ status: "Active" });
@@ -35,7 +35,7 @@ const addProduct = async (req, res) => {
       ? req.files.map(file => file.filename)
       : [];
 
-    // ================= VARIANTS PARSE =================
+    //VARIANTS PARSE 
     let variants = [];
 
     if (req.body.variants) {
@@ -52,7 +52,7 @@ const addProduct = async (req, res) => {
       }));
     }
 
-    // ================= ZOD VALIDATION =================
+    // ZOD VALIDATION 
     const parsed = productSchema.safeParse({
       name: req.body.name,
       description: req.body.description,
@@ -69,15 +69,15 @@ const addProduct = async (req, res) => {
       });
     }
 
-    // ================= IMAGE VALIDATION =================
+    // IMAGE VALIDATION 
     if (images.length < 3) {
       return res.render("admin/addproduct", {
-        error: "Please upload at least one image",
+        error: "Please upload at least 3 image",
         catagory: categories
       });
     }
 
-    // ================= CATEGORY CHECK =================
+    //  CATEGORY CHECK 
     const categoryExists = await catagorymodel.findById(parsed.data.catagory);
 
     if (!categoryExists) {
@@ -87,7 +87,7 @@ const addProduct = async (req, res) => {
       });
     }
 
-    // ================= CREATE PRODUCT =================
+    //  CREATE PRODUCT
     const newProduct = new productmodel({
       ...parsed.data,
       images
@@ -111,7 +111,7 @@ const addProduct = async (req, res) => {
 const loadproduct = async (req, res) => {
   try {
     const search = req.query.q || "";
-    const catagory = req.query.catagory || ""; // ✅ use catagory
+    const catagory = req.query.catagory || ""; 
     const page = parseInt(req.query.page) || 1;
 
     const limit = 3;
@@ -122,12 +122,12 @@ const loadproduct = async (req, res) => {
     };
 
     if (catagory) {
-      searchQuery.catagory = catagory; // ✅ IMPORTANT
+      searchQuery.catagory = catagory;
     }
 
     const products = await productmodel
       .find(searchQuery)
-      .populate("catagory") // ✅ keep same
+      .populate("catagory") 
       .skip(skip)
       .limit(limit);
 
@@ -140,7 +140,7 @@ const loadproduct = async (req, res) => {
       catagory: categories,
       product: products,
       search,
-      selectedCatagory: catagory, // ✅ send this
+      selectedCatagory: catagory, 
       currentPage: page,
       totalPages
     });
@@ -197,12 +197,12 @@ const adminLogin = async (req, res) => {
     
     if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
       
-      req.session.loginError = "Invalid email or password"; // optional for showing message in EJS
+      req.session.loginError = "Invalid email or password"; 
       return res.redirect("/admin/login");
     }
 
     // Set session
-    req.session.admin = "admin"; // simple identifier for session
+    req.session.admin = "admin"; 
 
     // Redirect to admin dashboard
     return res.redirect("/admin/customer");
@@ -314,11 +314,11 @@ const unblockcustomer= async (req, res) => {
 const blockcatagory = async (req, res) => {
   try {
     const id = req.params.id;
-    const page = req.query.page || 1; // ✅ get current page
+    const page = req.query.page || 1; 
 
     await catagorymodel.findByIdAndUpdate(id, { status: "Blocked" });
 
-    res.redirect(`/admin/catagory?page=${page}`); // ✅ stay on same page
+    res.redirect(`/admin/catagory?page=${page}`); 
 
   } catch (error) {
     console.log("Block Error:", error);
@@ -329,11 +329,11 @@ const blockcatagory = async (req, res) => {
 const unblockcatagory = async (req, res) => {
   try {
     const id = req.params.id;
-    const page = req.query.page || 1; // ✅ get current page
+    const page = req.query.page || 1; 
 
     await catagorymodel.findByIdAndUpdate(id, { status: "Active" });
 
-    res.redirect(`/admin/catagory?page=${page}`); // ✅ stay on same page
+    res.redirect(`/admin/catagory?page=${page}`); 
 
   } catch (error) {
     console.log("Unblock Error:", error);
