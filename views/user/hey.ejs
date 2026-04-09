@@ -1,0 +1,24 @@
+  RELATED PRODUCTS -->
+   <div class="mt-10">
+    <h2 class="text-2xl font-bold mb-4">Related Products</h2>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <% relatedProducts.forEach(p => { %>
+
+        <a href="/product/<%= p._id %>" class="block">
+
+          <img 
+            src="/uploads/product/<%= p.images[0] %>" 
+            class="w-full h-40 object-cover rounded"
+          />
+
+          <p class="font-semibold mt-2"><%= p.name %></p>
+          <p class="text-sm text-gray-500">
+            ₹<%= p.variants[0]?.price %>
+          </p>
+
+        </a>
+
+      <% }) %>
+    </div>
+  </div>

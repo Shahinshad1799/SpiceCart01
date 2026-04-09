@@ -9,8 +9,8 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 </head>
 <body>
-<div class="relative flex h-auto min-h-screen w-full flex-col bg-white group/design-root overflow-x-hidden" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
-<div class="layout-container flex h-full grow flex-col">
+<div class="w-full flex flex-1 py-5">
+<div class="w-full px-10">
 <%- include("../partials/header")%>
 <div class="px-40 flex flex-1 justify-center py-5">
 <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
@@ -33,121 +33,69 @@
 </div>
 </button>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10 p-4">
-<div class="flex flex-col gap-3 pb-3">
-<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA8aKWp-KalDBXegooWYYPZiDxcovkAYUs6UBfyUGS0h9BsOJHwXknKAtO_SPqqyh7knzu2yQQKh1PNKEdqokCN1YWNHmaQ4EhR0p73zdgkW_3LnRzOA26jwPkI-SyFtPmR7N60Jt7734zL60xOrAWYVZOI7QPQHiJ7XxAhhU4ue3w7yD_1gwpSwPBecN2G2rv6UQTFeGVW5_LN8VzSw_Bxk73SBg4sibUHNcOVTH6_LqUYmh9JYeHykzWdzlEq-oAhI1KrmUKdRCg");'></div>
-<div class="flex flex-col gap-2">
-<div>
-<p class="text-[#181311] text-base font-bold leading-normal">Cinnamon Sticks</p>
-<p class="text-[#886e63] text-sm font-normal leading-normal">Warm, aromatic spice</p>
-</div>
-<p class="text-[#181311] text-base font-bold leading-normal">$5.99</p>
-<div class="flex gap-2">
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#181311] text-white text-sm font-bold leading-normal tracking-[0.015em]">Buy Now</button>
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f4f1f0] text-[#181311] text-sm font-bold leading-normal tracking-[0.015em]">Add to Cart</button>
-</div>
-</div>
-</div>
-<div class="flex flex-col gap-3 pb-3">
-<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB31y82eLgYF3Ts1bML7L-o6sk7y6BBtL_dLMvHTfQ1RprS2J7drj-DwYkocTN-0JDWLt0lqNhqW3A3Zswr1QHpUd13Msj_SW7dC7z-VDuAkSOoQ7RakRUo3s1gx6oVTtU5saoBsElBeTBYd3P2VQPNOs3TOKixh5Mm7q5NhWP7Fbmq2IVuNrW9c-ocRYq_PLa6N9u8_uLEdSBjluygknTL7H7o5RbWYVw76Tkt14SqJtGecMBLF8uDJwOnoxtu5YrSYW-4VeSUtUs");'></div>
-<div class="flex flex-col gap-2">
-<div>
-<p class="text-[#181311] text-base font-bold leading-normal">Turmeric Powder</p>
-<p class="text-[#886e63] text-sm font-normal leading-normal">Earthy, vibrant powder</p>
-</div>
-<p class="text-[#181311] text-base font-bold leading-normal">$4.50</p>
-<div class="flex gap-2">
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#181311] text-white text-sm font-bold leading-normal tracking-[0.015em]">Buy Now</button>
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f4f1f0] text-[#181311] text-sm font-bold leading-normal tracking-[0.015em]">Add to Cart</button>
-</div>
-</div>
-</div>
-<div class="flex flex-col gap-3 pb-3">
-<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBZ56LALWuztUyA7p5i08wm-RElmXiesg5F9tzz31UOKvVWZ4_s1nwIuuJ-nzOJT9GpjyPy0DEbvqPLMwxSPoeTNFwTss5glCpZyKqih2RvYcuPWznXI4DvCMAbiCF33plcZ6E5Byeo9gIkxjJsyNs6a-NdzV_bN14cxPuLDQ0Upq0CTqCEOlyvqCnDeJfkTv0xWg_bBvVo2RyaUc0CfmQG40INaGWWfur-1zq2jR1LOQJGnLn7tJIMAwL4TrHtvJoAmOETWHZ1M94");'></div>
-<div class="flex flex-col gap-2">
-<div>
-<p class="text-[#181311] text-base font-bold leading-normal">Smoked Paprika</p>
-<p class="text-[#886e63] text-sm font-normal leading-normal">Rich, smoky flavor</p>
-</div>
-<p class="text-[#181311] text-base font-bold leading-normal">$6.25</p>
-<div class="flex gap-2">
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#181311] text-white text-sm font-bold leading-normal tracking-[0.015em]">Buy Now</button>
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f4f1f0] text-[#181311] text-sm font-bold leading-normal tracking-[0.015em]">Add to Cart</button>
-</div>
-</div>
-</div>
-<div class="flex flex-col gap-3 pb-3">
-<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBz56mvzmWrCCGTN9aD85AwIo-Hl4rft4VN_k47HH-BLbbbLhljVFrCIybbOQ9MM6XpdtlbE_LpILyWFAlWiUUZFX6RXlrZeYiPZaJnwFbCYfrj_euADPR2zAo_fCNhNMP6uM6QxhgLqsPsy-5wXbxkC2kMNfXOMgZrXrVaBa2A8OTK5Y6328IyNU54PHrzaVndNJkGQTV3NIgLmH-GwW4noCQgjSbziyiEbWnA_rWLxqNoERJrr-zGxCY8z39AAgh4jiNsppeqPWM");'></div>
-<div class="flex flex-col gap-2">
-<div>
-<p class="text-[#181311] text-base font-bold leading-normal">Black Peppercorns</p>
-<p class="text-[#886e63] text-sm font-normal leading-normal">Classic, bold peppercorns</p>
-</div>
-<p class="text-[#181311] text-base font-bold leading-normal">$7.00</p>
-<div class="flex gap-2">
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#181311] text-white text-sm font-bold leading-normal tracking-[0.015em]">Buy Now</button>
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f4f1f0] text-[#181311] text-sm font-bold leading-normal tracking-[0.015em]">Add to Cart</button>
-</div>
-</div>
-</div>
-<div class="flex flex-col gap-3 pb-3">
-<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCuTfh10kgXXPr5l9gwBqhPKp4bIeTDtLQtHgXMA_cOoyghdWfA4PKxUKy34BC5jEwYczxv77bgU9KgL5e9gieBU0CIHQ1ucTNhK7C8GDrAA577cGYhymsWm_WXhbHNGSrk5i-wRVaMBJoq-6Y4Cveo8sqF12APQldJfr5BKJn2sa6U-fMao-dlhA7B7pHi2Ygix4Izx-KR8fSNPkHwb5FmSCqwy977u-_2snVMwled1o0rRKMPzD9mexD8acBowcVTcG5ZhwKbsMI");'></div>
-<div class="flex flex-col gap-2">
-<div>
-<p class="text-[#181311] text-base font-bold leading-normal">Cumin Seeds</p>
-<p class="text-[#886e63] text-sm font-normal leading-normal">Nutty, earthy seeds</p>
-</div>
-<p class="text-[#181311] text-base font-bold leading-normal">$3.99</p>
-<div class="flex gap-2">
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#181311] text-white text-sm font-bold leading-normal tracking-[0.015em]">Buy Now</button>
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f4f1f0] text-[#181311] text-sm font-bold leading-normal tracking-[0.015em]">Add to Cart</button>
-</div>
-</div>
-</div>
-<div class="flex flex-col gap-3 pb-3">
-<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD7tSgcFB_p-mNSNfplF5ZHebFY0941_Rf4DokbF1FAmUzzsX-Kl-9L5djAV5ByHEzFZr4Tc-9srIep5p8HVLZP5MO9jSoEzyc4hFHy1xBMRzTLdIYrUjevL6SNoxHw2BVyqhxFHym0fs-ioxDGQVib4DGPJhryTd6FkYfiV36zpnfjOz4Gu1cap85O-aaJC3En4h8bKBlaHXigPnoKrFBEiAk7DMZeHaD1-oktrnohV-AFxwGfMBkWyCLKB97DkQouYBhdadlCnpo");'></div>
-<div class="flex flex-col gap-2">
-<div>
-<p class="text-[#181311] text-base font-bold leading-normal">Chili Flakes</p>
-<p class="text-[#886e63] text-sm font-normal leading-normal">Fiery, versatile flakes</p>
-</div>
-<p class="text-[#181311] text-base font-bold leading-normal">$4.25</p>
-<div class="flex gap-2">
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#181311] text-white text-sm font-bold leading-normal tracking-[0.015em]">Buy Now</button>
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f4f1f0] text-[#181311] text-sm font-bold leading-normal tracking-[0.015em]">Add to Cart</button>
-</div>
-</div>
-</div>
-<div class="flex flex-col gap-3 pb-3">
-<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDk8XXzIG3OqGTGR0uTou-7_UnEJs97iT7Lzr-ZeAyN8Jo_5A0N-sY3HoO3KvaFuczCV8gvH9vEYxcTMmWLVVpEf2w9S7kZduoedH42xb455KHGzmxzk60MiUGlzYQ2TuQLq4ethXtlRfynfSArmDBHXAfuOHFnmBCuj0fRB3NEazzTWghcYW39UADeNHuxcGmOjpIr6X8w_L30hzw7GC_JL_1CYjGIsqIVTDwgvToX9Wk13j2di4w0IO5Yfm4b7jeCe0mtI1mIdr8");'></div>
-<div class="flex flex-col gap-2">
-<div>
-<p class="text-[#181311] text-base font-bold leading-normal">Ginger Root</p>
-<p class="text-[#886e63] text-sm font-normal leading-normal">Zesty, aromatic root</p>
-</div>
-<p class="text-[#181311] text-base font-bold leading-normal">$5.50</p>
-<div class="flex gap-2">
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#181311] text-white text-sm font-bold leading-normal tracking-[0.015em]">Buy Now</button>
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f4f1f0] text-[#181311] text-sm font-bold leading-normal tracking-[0.015em]">Add to Cart</button>
-</div>
-</div>
-</div>
-<div class="flex flex-col gap-3 pb-3">
-<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxSpvldkmdHWoAOManH6UAyKYNHcYGbhY10Ui5UlgCyAIRDf8N_TLudtmkTX8zbBO0ctecAYDHIcV1Px1oEK2Z_ZM9hLB5dDCB8nHiDMPcFw7qVYfxjIISQNqrOh4E8RD3CDllp9h2wkCZ4rP3WX7tQuROM5Xr9woEoU1iHhvl3CA5Fat0j5RqlOaVy31lAs1ObpDIMMZpDBO6TqO6lcZ8xNG5PelLVX-UIprr76w3jUaN81aS75jquyDM5BZVnUzF3MhmvS6HpKY");'></div>
-<div class="flex flex-col gap-2">
-<div>
-<p class="text-[#181311] text-base font-bold leading-normal">Saffron Threads</p>
-<p class="text-[#886e63] text-sm font-normal leading-normal">Delicate, prized threads</p>
-</div>
-<p class="text-[#181311] text-base font-bold leading-normal">$18.99</p>
-<div class="flex gap-2">
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#181311] text-white text-sm font-bold leading-normal tracking-[0.015em]">Buy Now</button>
-<button class="flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f4f1f0] text-[#181311] text-sm font-bold leading-normal tracking-[0.015em]">Add to Cart</button>
-</div>
-</div>
-</div>
-</div>
-</div>
+<div class="px-6 w-full py-5">
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+
+    <% if (products && products.length > 0) { %>
+
+      <% products.forEach(product => { %>
+
+        <a href="/productdetails/<%= product._id %>" 
+           class="flex flex-col gap-3 group cursor-pointer hover:shadow-lg p-3 rounded-lg transition bg-white">
+
+          <!-- Image -->
+          <% const img = product.images && product.images.length > 0 
+            ? product.images[0] 
+            : "/images/default.png"; %>
+
+          <img 
+            src="/uploads/product/<%= img %>" 
+            class="w-full aspect-square object-cover rounded-lg group-hover:scale-105 transition"
+          />
+
+          <!-- Details -->
+          <div class="flex flex-col gap-2">
+
+            <div>
+              <p class="text-[#181311] text-base font-bold">
+                <%= product.name %>
+              </p>
+
+              <p class="text-[#886e63] text-sm line-clamp-2">
+                <%= product.description %>
+              </p>
+            </div>
+
+            <!-- Price + Arrow -->
+            <div class="flex items-center justify-between mt-2">
+
+              <p class="text-[#181311] text-base font-bold">
+                ₹<%= product.variants[0]?.price || "N/A" %>
+              </p>
+
+              <span class="material-symbols-outlined text-orange-500 group-hover:translate-x-1 transition">
+                arrow_forward
+              </span>
+
+            </div>
+
+          </div>
+
+        </a>
+
+      <% }) %>
+
+    <% } else { %>
+
+      <p class="text-center col-span-3 text-gray-500">
+        No products available
+      </p>
+
+    <% } %>
+
+  </div>
+
 </div>
 <%- include("../partials/footer") %>
 </div>

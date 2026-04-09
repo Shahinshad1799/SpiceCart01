@@ -1,6 +1,7 @@
 const usermodel = require("../model/usermodel");
 const otpmodel = require("../model/otpcontroller");
 const addressmodel = require("../model/addressmodel");
+const productmodel=require("../model/productmodel")
 const generateOTP = require("../utils/otpmanagment");
 const bcrypt = require("bcrypt");
 const saltround = 10;
@@ -8,6 +9,7 @@ const transporter = require("../utils/emailer");
 const { render } = require("ejs");
  const passport = require("passport");
  const { editProfileSchema } = require("../validators/uservalidator");
+ const Product = require("../model/productmodel");
 
 // =======================
 // Load Views
@@ -50,15 +52,59 @@ const loadaddaddress = (req, res) => {
 const loadchangeemail=(req,res)=>{
   res.render("user/changeemail")
 }
-const loadshop=(req,res)=>{
-  res.render("user/shop")
-}
+const loadshop = async (req, res) => {
+  try {
+    const products = await productmodel.find(); // fetch from DB
+
+    res.render("user/shop", { products });
+  } catch (err) {
+    console.log(err);
+  }
+};
 const loadcart=(req,res)=>{
   res.render("user/cart")
 }
-const loaddetails=(req,res)=>{
-   res.render("user/productdetails")
-}
+
+
+
+
+const loaddetails = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const product = await Product.findById(productId);
+
+    // ✅ SELECT VARIANT
+    let selectedVariant = null;
+
+    // from URL (?variantId=...)
+    if (req.query.variantId) {
+      selectedVariant = product.variants.id(req.query.variantId);
+    }
+
+    // fallback → first variant
+    if (!selectedVariant) {
+      selectedVariant = product.variants[0];
+    }
+
+    // related products
+    const relatedProducts = await Product.find({
+      catagory: product.catagory,
+      _id: { $ne: productId },
+      status: "Active"
+    }).limit(4);
+
+    res.render("user/productdetails", {
+      product,
+      relatedProducts,
+      selectedVariant   // ✅ THIS WAS MISSING
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.redirect("/");
+  }
+};
 
 const loadverify = async (req, res) => {
   try {

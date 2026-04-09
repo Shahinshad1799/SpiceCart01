@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt"); // only if you hash password
 require("dotenv").config();
 const catagorymodel=require("../model/catagorymodel")
 const productmodel=require("../model/productmodel")
+const { productSchema } = require("../validators/productvalidator");
 
 const loadadminlogin=function(req,res){
     res.render("admin/login")
@@ -27,71 +28,72 @@ const loadaddproduct = async (req, res) => {
 // ================= ADD PRODUCT =================
 const addProduct = async (req, res) => {
   try {
-    console.log("REQ BODY:", req.body);
-
-    const { name, description, catagory } = req.body;
-
-    // always fetch categories for re-render
     const categories = await catagorymodel.find({ status: "Active" });
 
-    //  handle images safely
+    // ✅ handle images
     const images = req.files && req.files.length > 0
       ? req.files.map(file => file.filename)
       : [];
-   console.log(req.files)
-   console.log(req.files.length)
-    // ================= VALIDATION =================
-    if (!name || !description || !catagory) {
+
+    // ================= VARIANTS PARSE =================
+    let variants = [];
+
+    if (req.body.variants) {
+      if (Array.isArray(req.body.variants)) {
+        variants = req.body.variants;
+      } else {
+        variants = Object.values(req.body.variants);
+      }
+
+      variants = variants.map(v => ({
+        name: v.name,
+        price: v.price,
+        stock: v.stock
+      }));
+    }
+
+    // ================= ZOD VALIDATION =================
+    const parsed = productSchema.safeParse({
+      name: req.body.name,
+      description: req.body.description,
+      catagory: req.body.catagory,
+      variants
+    });
+
+    if (!parsed.success) {
+      const errorMessage = parsed.error.errors[0].message;
+
       return res.render("admin/addproduct", {
-        error: "All fields are required",
-        catagory: categories //  FIX
+        error: errorMessage,
+        catagory: categories
       });
     }
 
-    if (images.length < 1) {
+    // ================= IMAGE VALIDATION =================
+    if (images.length < 3) {
       return res.render("admin/addproduct", {
         error: "Please upload at least one image",
-        catagory: categories //  FIX
+        catagory: categories
       });
     }
 
     // ================= CATEGORY CHECK =================
-    const categoryExists = await catagorymodel.findById(catagory);
+    const categoryExists = await catagorymodel.findById(parsed.data.catagory);
+
     if (!categoryExists) {
       return res.render("admin/addproduct", {
         error: "Invalid category",
-        catagory: categories //  FIX
+        catagory: categories
       });
     }
 
-    // ================= VARIANTS PARSE =================
-let variants = [];
-
-if (req.body.variants) {
-  if (Array.isArray(req.body.variants)) {
-    variants = req.body.variants;
-  } else {
-    variants = Object.values(req.body.variants);
-  }
-
-  variants = variants.map(v => ({
-    name: v.name,
-    price: Number(v.price),
-    stock: Number(v.stock)
-  }));
-}
     // ================= CREATE PRODUCT =================
     const newProduct = new productmodel({
-      name,
-      description,
-      catagory,
-      variants: variants,
+      ...parsed.data,
       images
     });
 
     await newProduct.save();
-
-    console.log("Product saved successfully");
 
     res.redirect("/admin/product");
 
@@ -102,7 +104,7 @@ if (req.body.variants) {
 
     res.render("admin/addproduct", {
       error: "Something went wrong",
-      catagory: categories // ✅ FIX
+      catagory: categories
     });
   }
 };
@@ -309,26 +311,35 @@ const unblockcustomer= async (req, res) => {
     res.status(500).send("Server Error");
   }
 }
-const blockcatagory= async (req, res) => {
+const blockcatagory = async (req, res) => {
   try {
     const id = req.params.id;
+    const page = req.query.page || 1; // ✅ get current page
+
     await catagorymodel.findByIdAndUpdate(id, { status: "Blocked" });
-    res.redirect("/admin/catagory");
+
+    res.redirect(`/admin/catagory?page=${page}`); // ✅ stay on same page
+
   } catch (error) {
     console.log("Block Error:", error);
     res.status(500).send("Server Error");
   }
-}
-const unblockcatagory= async (req, res) => {
+};
+
+const unblockcatagory = async (req, res) => {
   try {
     const id = req.params.id;
+    const page = req.query.page || 1; // ✅ get current page
+
     await catagorymodel.findByIdAndUpdate(id, { status: "Active" });
-    res.redirect("/admin/catagory");
+
+    res.redirect(`/admin/catagory?page=${page}`); // ✅ stay on same page
+
   } catch (error) {
     console.log("Unblock Error:", error);
     res.status(500).send("Server Error");
   }
-}
+};
 const logout=function(req, res){
   req.session.destroy(() => {
     res.redirect("/login");
@@ -460,13 +471,11 @@ const editproduct = async (req, res) => {
 
     //  2. Handle Images
     // images user kept
-    let existingImages = req.body.existingImages || [];
+let existingImages = req.body.existingImages || [];
 
-    // make sure it's always array
-    if (!Array.isArray(existingImages)) {
-      existingImages = [existingImages];
-    }
-
+if (!Array.isArray(existingImages)) {
+  existingImages = [existingImages];
+}
     // new uploaded images
     const newImages = req.files?.map(file => file.filename) || [];
 
@@ -481,7 +490,7 @@ const editproduct = async (req, res) => {
       variants,
       images: finalImages
     });
-
+  console.log("FILES:", req.files);
     res.redirect("/admin/product");
 
   } catch (error) {

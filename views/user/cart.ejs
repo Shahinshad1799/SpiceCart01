@@ -46,7 +46,7 @@
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
 <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
-<%- include("../partials/header", { title: "Address" }) %>
+<%- include("../partials/header") %>
 <main class="flex-1 py-10 lg:py-16 px-6 lg:px-20 xl:px-40 bg-background-light dark:bg-background-dark">
 <div class="mx-auto max-w-[1280px]">
 <div class="flex items-center gap-2 mb-8 text-sm text-[#886e63] dark:text-[#9CA3AF]">
@@ -64,111 +64,80 @@
 <div class="col-span-2 text-right">Price</div>
 <div class="col-span-2 text-right">Total</div>
 </div>
-<div class="flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-4 items-center border-b border-[#E6E0DC] dark:border-[#3E302A] p-6 last:border-0 hover:bg-[#fcfbfb] dark:hover:bg-[#211611]/50 transition-colors group">
-<div class="flex items-center gap-5 w-full md:col-span-6">
-<div class="size-24 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-[#E6E0DC] dark:border-[#3E302A]">
-<img alt="Royal Saffron" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUIWBWulpXFANZEOcYmZ_31c5gAQzcejD0AH6ro-HM_5x0dMwCPD_LvOH8-es1W76XXqMZmmrYto0IisGo5vLmApGP9QSEb6WA-F67o5SofMmL05wDPw9S7r95OKCMkmHeI2PnonWHKLwXbZ_vXC8QspHgDVx_hkw-1MHCSD2oDXyCNUBFh3Fu3PmSxaQ0ajlWK9ngtJD6HCtBPsD4_uEB5j2rtUdmzI046GzOmhezYxrg7AEr908MiF1oubouj1myjU-cS5lBgTc"/>
-</div>
-<div class="flex flex-col gap-1">
-<h3 class="font-bold text-lg text-[#181311] dark:text-white leading-tight">Royal Saffron Threads</h3>
-<p class="text-sm text-[#886e63] dark:text-[#9CA3AF]">2g Jar • Origin: Iran</p>
-<button class="text-[#886e63] hover:text-red-500 text-sm mt-2 flex items-center gap-1 transition-colors w-fit">
-<span class="material-symbols-outlined text-[18px]">delete</span>
-<span class="font-medium">Remove</span>
-</button>
-</div>
-</div>
-<div class="flex items-center justify-between md:justify-center w-full md:col-span-2">
-<span class="md:hidden font-bold text-[#5C4D46] dark:text-[#A8A29E]">Quantity</span>
-<div class="flex items-center border border-[#E6E0DC] dark:border-[#3E302A] rounded-lg bg-white dark:bg-[#2C201A]">
-<button class="size-9 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-[#5C4D46] dark:text-[#A8A29E] rounded-l-lg">
-<span class="material-symbols-outlined text-sm">remove</span>
-</button>
-<input class="w-10 text-center bg-transparent border-none p-0 text-[#181311] dark:text-white font-medium focus:ring-0" readonly="" type="text" value="1"/>
-<button class="size-9 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-[#5C4D46] dark:text-[#A8A29E] rounded-r-lg">
-<span class="material-symbols-outlined text-sm">add</span>
-</button>
-</div>
-</div>
-<div class="hidden md:block col-span-2 text-right font-medium text-[#5C4D46] dark:text-[#A8A29E]">
-                                        $28.00
-                                    </div>
-<div class="flex justify-between md:block w-full md:col-span-2 text-right font-bold text-[#181311] dark:text-white text-lg md:text-base">
-<span class="md:hidden text-[#5C4D46] dark:text-[#A8A29E]">Total</span>
-                                        $28.00
-                                    </div>
-</div>
-<div class="flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-4 items-center border-b border-[#E6E0DC] dark:border-[#3E302A] p-6 last:border-0 hover:bg-[#fcfbfb] dark:hover:bg-[#211611]/50 transition-colors group">
-<div class="flex items-center gap-5 w-full md:col-span-6">
-<div class="size-24 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-[#E6E0DC] dark:border-[#3E302A]">
-<img alt="Smoked Paprika" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB57wCUrHqr1bJmfsAcPDN36yftPiNGg_lN0dXp5CwzuwTN2q9nXcYjuDAD8U8jw-mb-HqA7c_5aaTAk-jWY4fuJ8xk1vlZEIt2TS52byXQ-bstINyZRG86-YLqnPCBjrce9UpzfHWeouglKIqmIYqlRLWK-TF6tFN9h6ONx2u656HR6hQ431otQgZ5zNb2uqszjnmIeuVc9-HhhnmyjiVN0jRlR9M999Pxj30WMGYPKn-ii-cIClGUGza5nhp2nchgI8nHOS0OIpU"/>
-</div>
-<div class="flex flex-col gap-1">
-<h3 class="font-bold text-lg text-[#181311] dark:text-white leading-tight">Smoked Paprika</h3>
-<p class="text-sm text-[#886e63] dark:text-[#9CA3AF]">60g Jar • Origin: Spain</p>
-<button class="text-[#886e63] hover:text-red-500 text-sm mt-2 flex items-center gap-1 transition-colors w-fit">
-<span class="material-symbols-outlined text-[18px]">delete</span>
-<span class="font-medium">Remove</span>
-</button>
-</div>
-</div>
-<div class="flex items-center justify-between md:justify-center w-full md:col-span-2">
-<span class="md:hidden font-bold text-[#5C4D46] dark:text-[#A8A29E]">Quantity</span>
-<div class="flex items-center border border-[#E6E0DC] dark:border-[#3E302A] rounded-lg bg-white dark:bg-[#2C201A]">
-<button class="size-9 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-[#5C4D46] dark:text-[#A8A29E] rounded-l-lg">
-<span class="material-symbols-outlined text-sm">remove</span>
-</button>
-<input class="w-10 text-center bg-transparent border-none p-0 text-[#181311] dark:text-white font-medium focus:ring-0" readonly="" type="text" value="2"/>
-<button class="size-9 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-[#5C4D46] dark:text-[#A8A29E] rounded-r-lg">
-<span class="material-symbols-outlined text-sm">add</span>
-</button>
-</div>
-</div>
-<div class="hidden md:block col-span-2 text-right font-medium text-[#5C4D46] dark:text-[#A8A29E]">
-                                        $9.50
-                                    </div>
-<div class="flex justify-between md:block w-full md:col-span-2 text-right font-bold text-[#181311] dark:text-white text-lg md:text-base">
-<span class="md:hidden text-[#5C4D46] dark:text-[#A8A29E]">Total</span>
-                                        $19.00
-                                    </div>
-</div>
-<div class="flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-4 items-center p-6 hover:bg-[#fcfbfb] dark:hover:bg-[#211611]/50 transition-colors group">
-<div class="flex items-center gap-5 w-full md:col-span-6">
-<div class="size-24 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-[#E6E0DC] dark:border-[#3E302A]">
-<img alt="Whole Cumin" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd3Xu7S2sitvbp_EBJsRyxataKV_463ubW3Nq8KQ1XFZPLem6UjFilpFMNhDCO_IW-ZFy6SZPuabGdsrsFuxjmhJOCKs4GVKxaxMsvfdfUWA5BYIyg5PObamyuzERDY-NrH0Vwiw3qjdinn21IIB59BqyHt-ka985LV26OugQ0Sh_NhHP9B0jxmTIl0icnQVDtN5YRlY6BuPbVTbBbY2j73Ofu5qDYmOmxAfzvq21oh-7EocbrSeGAaF396BlwZ6JBoyWrEObiizk"/>
-</div>
-<div class="flex flex-col gap-1">
-<h3 class="font-bold text-lg text-[#181311] dark:text-white leading-tight">Whole Cumin Seeds</h3>
-<p class="text-sm text-[#886e63] dark:text-[#9CA3AF]">50g Jar • Origin: India</p>
-<button class="text-[#886e63] hover:text-red-500 text-sm mt-2 flex items-center gap-1 transition-colors w-fit">
-<span class="material-symbols-outlined text-[18px]">delete</span>
-<span class="font-medium">Remove</span>
-</button>
-</div>
-</div>
-<div class="flex items-center justify-between md:justify-center w-full md:col-span-2">
-<span class="md:hidden font-bold text-[#5C4D46] dark:text-[#A8A29E]">Quantity</span>
-<div class="flex items-center border border-[#E6E0DC] dark:border-[#3E302A] rounded-lg bg-white dark:bg-[#2C201A]">
-<button class="size-9 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-[#5C4D46] dark:text-[#A8A29E] rounded-l-lg">
-<span class="material-symbols-outlined text-sm">remove</span>
-</button>
-<input class="w-10 text-center bg-transparent border-none p-0 text-[#181311] dark:text-white font-medium focus:ring-0" readonly="" type="text" value="1"/>
-<button class="size-9 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-[#5C4D46] dark:text-[#A8A29E] rounded-r-lg">
-<span class="material-symbols-outlined text-sm">add</span>
-</button>
-</div>
-</div>
-<div class="hidden md:block col-span-2 text-right font-medium text-[#5C4D46] dark:text-[#A8A29E]">
-                                        $8.00
-                                    </div>
-<div class="flex justify-between md:block w-full md:col-span-2 text-right font-bold text-[#181311] dark:text-white text-lg md:text-base">
-<span class="md:hidden text-[#5C4D46] dark:text-[#A8A29E]">Total</span>
-                                        $8.00
-                                    </div>
-</div>
+<% if (cartItems.length > 0) { %>
+  <% cartItems.forEach(item => { %>
+
+  <div class="flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-4 items-center border-b border-[#E6E0DC] dark:border-[#3E302A] p-6">
+
+    <!-- PRODUCT -->
+    <div class="flex items-center gap-5 w-full md:col-span-6">
+      <div class="size-24 rounded-xl overflow-hidden bg-gray-100 border">
+       <img 
+  src="/uploads/product/<%= item.productId?.images?.[0] || 'default.png' %>" 
+  class="w-full h-full object-cover"
+/>
+      </div>
+
+      <div>
+        <h3 class="font-bold text-lg">
+          <%= item.productId.name %>
+        </h3>
+
+        <%
+  const variant = item.productId.variants.find(v => 
+    v._id.toString() === item.variantId?.toString()
+  );
+%>
+
+<p class="text-sm text-gray-500">
+  <%= variant ? variant.name : "Variant not selected" %>
+</p>
+
+        <!-- REMOVE -->
+        <form action="/cart/remove" method="POST">
+  <input type="hidden" name="productId" value="<%= item.productId._id %>">
+  <input type="hidden" name="variantId" value="<%= item.variantId %>"> <!-- ✅ ADD THIS -->
+
+  <button type="submit" class="text-red-500 text-sm mt-2">
+    Remove
+  </button>
+</form>
+      </div>
+    </div>
+
+    <!-- QUANTITY -->
+    <div class="flex justify-center md:col-span-2">
+     <form action="/cart/update" method="POST" class="flex items-center">
+  <input type="hidden" name="productId" value="<%= item.productId._id %>">
+  <input type="hidden" name="variantId" value="<%= item.variantId %>"> <!-- ✅ ADD THIS -->
+
+  <button type="submit" name="change" value="-1">-</button>
+
+  <input value="<%= item.quantity %>" readonly class="w-10 text-center">
+
+  <button type="submit" name="change" value="1">+</button>
+</form>
+    </div>
+
+    <!-- PRICE -->
+    <div class="text-right md:col-span-2">
+      ₹ <%= item.productId?.variants?.[0]?.price || 0 %>
+    </div>
+
+    <!-- TOTAL -->
+    <div class="text-right md:col-span-2 font-bold">
+      ₹ <%= (item.productId?.variants?.[0]?.price || 0) * item.quantity %>
+    </div>
+
+  </div>
+
+  <% }) %>
+<% } else { %>
+  <p class="p-6 text-center">Your cart is empty</p>
+<% } %>
 </div>
 <div class="mt-8">
-<a class="inline-flex items-center gap-2 text-primary font-bold hover:text-primary/80 transition-colors" href="#">
+<a class="inline-flex items-center gap-2 text-primary font-bold hover:text-primary/80 transition-colors" href="/shop">
 <span class="material-symbols-outlined">arrow_back</span>
                                 Continue Shopping
                             </a>
@@ -177,19 +146,24 @@
 <div class="lg:col-span-4">
 <div class="bg-white dark:bg-[#1A120E] border border-[#E6E0DC] dark:border-[#3E302A] rounded-2xl p-6 lg:p-8 shadow-lg lg:sticky lg:top-32">
 <h2 class="text-xl font-bold mb-6 text-[#181311] dark:text-white">Order Summary</h2>
-<div class="flex flex-col gap-4 mb-6 text-[#5C4D46] dark:text-[#A8A29E] text-sm md:text-base font-body">
-<div class="flex justify-between items-center">
-<span>Subtotal (4 items)</span>
-<span class="font-medium text-[#181311] dark:text-white">$55.00</span>
+<<div class="flex justify-between">
+  <span>Subtotal (<%= totalItems %> items)</span>
+  <span>₹ <%= subtotal.toFixed(2) %></span>
 </div>
-<div class="flex justify-between items-center">
-<span>Shipping estimate</span>
-<span class="font-medium text-[#181311] dark:text-white">$5.00</span>
+
+<div class="flex justify-between">
+  <span>Shipping</span>
+  <span>₹ <%= shipping %></span>
 </div>
-<div class="flex justify-between items-center">
-<span>Tax estimate</span>
-<span class="font-medium text-[#181311] dark:text-white">$4.40</span>
+
+<div class="flex justify-between">
+  <span>Tax</span>
+  <span>₹ <%= tax.toFixed(2) %></span>
 </div>
+
+<div class="flex justify-between font-bold text-lg">
+  <span>Total</span>
+  <span>₹ <%= total.toFixed(2) %></span>
 </div>
 <div class="mb-6">
 <div class="flex gap-2">

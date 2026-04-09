@@ -1,5 +1,6 @@
  const express=require("express")
  const user=require("../controller/usercontroller")
+ const cartController=require("../controller/cartcontroller")
  const userauth=require("../middleware/userAuth")
  const route=express.Router()
  const passport = require("passport");
@@ -52,8 +53,15 @@ route.get("/changeemail",user.loadchangeemail)
 route.post("/changeemail",user.changeemail)
 
 route.get("/shop",user.loadshop)
-route.get("/cart",user.loadcart)
-route.get("/details",user.loaddetails)
+
+route.get("/productdetails/:id",user.loaddetails)
+
+route.get("/cart", cartController.getCartPage);
+
+route.post("/cart/add", cartController.addToCart);
+route.post("/cart/update", cartController.updateCart);
+route.post("/cart/remove", cartController.removeFromCart);
+
 
 
 route.get("/auth/google",user.googleAuth);
