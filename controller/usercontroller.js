@@ -10,6 +10,8 @@ const { render } = require("ejs");
  const passport = require("passport");
  const { editProfileSchema } = require("../validators/uservalidator");
  const Product = require("../model/productmodel");
+ const catagory=require("../model/catagorymodel");
+const catagorymodel = require("../model/catagorymodel");
 
 // =======================
 // Load Views
@@ -54,16 +56,46 @@ const loadchangeemail=(req,res)=>{
 }
 const loadshop = async (req, res) => {
   try {
-    const products = await productmodel.find(); // fetch from DB
+    const { category, maxPrice } = req.query;
 
-    res.render("user/shop", { products });
+    let filter = {};
+     let selectedCategoryName = "All Categories";
+
+  
+    if (category && category !== "All Categories") {
+      const cat = await catagorymodel.findOne({ name: category });
+
+      if (cat) {
+        filter.catagory = cat._id;
+        selectedCategoryName = cat.name;
+      }
+    }
+    
+
+    if (maxPrice) {
+      filter.variants = {
+        $elemMatch: {
+          price: { $lte: Number(maxPrice) }
+        }
+      };
+    }
+
+    const products = await productmodel.find(filter);
+
+    const catagory = await catagorymodel.find();
+
+    res.render("user/shop", {
+      products,
+      catagory,
+      selectedCategory: category || "All Categories",
+       selectedCategoryName,
+      selectedPrice: maxPrice || 1000
+    });
+
   } catch (err) {
     console.log(err);
   }
 };
-const loadcart=(req,res)=>{
-  res.render("user/cart")
-}
 
 
 
@@ -74,7 +106,11 @@ const loaddetails = async (req, res) => {
 
     const product = await Product.findById(productId);
 
-    // ✅ SELECT VARIANT
+   if (!product || product.status === "Blocked") {
+  return res.redirect("/shop?error=Product is blocked");
+}
+
+    //  SELECT VARIANT
     let selectedVariant = null;
 
     // from URL (?variantId=...)
@@ -97,7 +133,7 @@ const loaddetails = async (req, res) => {
     res.render("user/productdetails", {
       product,
       relatedProducts,
-      selectedVariant   // ✅ THIS WAS MISSING
+      selectedVariant   // THIS WAS MISSING
     });
 
   } catch (error) {
@@ -710,7 +746,6 @@ module.exports = {
   loadchangeemail,
   changeemail,
   loadshop,
-  loadcart,
   loaddetails,
   logout
 };

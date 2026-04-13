@@ -120,7 +120,7 @@ const changeValue = parseInt(change);
 const cart = await Cart.findOne({ user: userId });
 
 if (!cart) {
-  return res.json({ success: false });
+ res.redirect("/login")
 }
 
 const item = cart.items.find(
@@ -166,7 +166,7 @@ const removeFromCart = async (req, res) => {
     const cart = await Cart.findOne({ user: userId });
 
     if (!cart) {
-      return res.json({ success: false });
+      res.redirect("/login")
     }
 
     cart.items = cart.items.filter(
