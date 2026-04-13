@@ -4,12 +4,6 @@
 <meta charset="utf-8"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com"></script>
-<style>
-  #mainImage:hover {
-    transform: scale(1.5);
-    cursor: zoom-in;
-  }
-</style>
 </head>
 
 
@@ -26,10 +20,11 @@
 
   <!-- Main Image -->
   <div class="w-full aspect-square overflow-hidden rounded-xl">
-  <div id="mainImage"
-    class="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-300"
-    style="background-image: url('/uploads/product/<%= product.images[0] %>')">
-  </div>
+  <div 
+  id="mainImage"
+  class="w-full h-full bg-no-repeat bg-cover rounded-xl"
+  style="background-image: url('/uploads/product/<%= product.images[0] %>'); background-size: 200%;">
+</div>
 </div>
 
   <!-- Thumbnails -->
@@ -213,7 +208,23 @@
 </div>
 
 <%- include("../partials/footer") %>
+</body>
+<script>
+const mainImage = document.getElementById("mainImage");
 
+mainImage.addEventListener("mousemove", (e) => {
+  const rect = mainImage.getBoundingClientRect();
+
+  const x = ((e.clientX - rect.left) / rect.width) * 100;
+  const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+  mainImage.style.backgroundPosition = `${x}% ${y}%`;
+});
+
+mainImage.addEventListener("mouseleave", () => {
+  mainImage.style.backgroundPosition = "center";
+});
+</script>
 <!-- SCRIPT -->
 <script>
   function changeImage(img) {
@@ -261,3 +272,14 @@
     document.getElementById("finalQty").value = val;
   });
 </script>
+<script>
+function changeImage(img) {
+  const main = document.getElementById("mainImage");
+
+  main.style.backgroundImage = `url('/uploads/product/${img}')`;
+  main.style.backgroundPosition = "center";
+}
+</script>
+
+
+</html>
