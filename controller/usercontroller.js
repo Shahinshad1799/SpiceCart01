@@ -56,22 +56,27 @@ const loadchangeemail=(req,res)=>{
 }
 const loadshop = async (req, res) => {
   try {
-    const { category, maxPrice } = req.query;
-
+    const { category, maxPrice, error } = req.query;
+    const search = req.query.q || "";
     let filter = {};
-     let selectedCategoryName = "All Categories";
+    let selectedCategoryName = "All Categories";
 
-  
-    if (category && category !== "All Categories") {
-      const cat = await catagorymodel.findOne({ name: category });
+    // ✅ SEARCH FIX
+    if (search) {
+      filter.name = { $regex: search, $options: "i" };
+    }
+
+    // ✅ CATEGORY
+    if (category && category !== "All") {
+      const cat = await catagorymodel.findById(category);
 
       if (cat) {
         filter.catagory = cat._id;
         selectedCategoryName = cat.name;
       }
     }
-    
 
+    // ✅ PRICE
     if (maxPrice) {
       filter.variants = {
         $elemMatch: {
@@ -81,23 +86,22 @@ const loadshop = async (req, res) => {
     }
 
     const products = await productmodel.find(filter);
-
     const catagory = await catagorymodel.find();
 
     res.render("user/shop", {
       products,
       catagory,
-      selectedCategory: category || "All Categories",
-       selectedCategoryName,
-      selectedPrice: maxPrice || 1000
+      selectedCategory: category || "All",
+      selectedCategoryName,
+      selectedPrice: maxPrice || 1000,
+      error,
+      search
     });
 
   } catch (err) {
     console.log(err);
   }
 };
-
-
 
 
 const loaddetails = async (req, res) => {

@@ -9,10 +9,32 @@
 
 <body class="bg-white">
 <%- include("../partials/header") %>
+   
 
 <div class="px-5 md:px-40 flex flex-1 justify-center py-5">
+
 <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
 
+<div class="mb-8 flex items-center gap-2 text-sm text-[#886e63]">
+  
+  <a href="/shop" class="hover:text-primary">Shop</a>
+
+  <% if (product.catagory) { %>
+    <span class="material-symbols-outlined text-xs">chevron_right</span>
+
+    <a href="/shop?category=<%= product.catagory._id %>" 
+       class="hover:text-primary">
+      <%= product.catagory.name %>
+    </a>
+  <% } %>
+
+  <span class="material-symbols-outlined text-xs">chevron_right</span>
+
+  <span class="text-[#181311] font-medium">
+    <%= product.name %>
+  </span>
+
+</div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 p-4">
 
 <!-- LEFT: Images -->
