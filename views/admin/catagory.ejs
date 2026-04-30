@@ -113,11 +113,10 @@ style="background-image: url('/uploads/catagory/<%= catagorys.image %>');">
 </td>
 
 <td class="px-6 py-4">
-<span class="px-3 py-1 bg-emerald-dark/5 dark:bg-primary/5 text-emerald-dark dark:text-primary rounded-lg text-sm font-bold">
-0 Products
-</span>
+  <span class="px-3 py-1 bg-emerald-dark/5 dark:bg-primary/5 text-emerald-dark dark:text-primary rounded-lg text-sm font-bold">
+    <%= catagorys.productCount %> <%= catagorys.productCount === 1 ? 'Product' : 'Products' %>
+  </span>
 </td>
-
 <td class="px-6 py-4 text-right">
   <div class="flex justify-end gap-2">
    <a href="/admin/catagory/<%= catagorys._id %>/edit">

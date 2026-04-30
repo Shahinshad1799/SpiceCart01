@@ -64,6 +64,12 @@ route.post("/cart/remove", cartController.removeFromCart);
 
 
 
+
+route.get('/wishlist',user.loadWishlist);
+route.post('/wishlist/toggle',user.toggleWishlist);
+
+
+
 route.get("/auth/google",user.googleAuth);
 route.get("/auth/google/callback",user.googleCallback);
 

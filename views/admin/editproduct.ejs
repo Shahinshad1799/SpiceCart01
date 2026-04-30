@@ -5,6 +5,8 @@
 <title>SpiceCart Admin - Add New Product</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css">
+<script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -424,128 +426,145 @@ function clearInputs() {
 <script>
   let existingImages = <%- JSON.stringify(product.images || []) %>;
   let selectedFiles = [];
-</script>
-<script>
-function openFilePicker() {
-  document.getElementById("imageInput").click();
-}
-document.querySelector("form").addEventListener("submit", () => {
-  syncFiles();
-  console.log("FILES BEFORE SUBMIT:", input.files);
-});
+  let cropper;
+  let currentFileIndex = null;
 
+  const input = document.getElementById("imageInput");
+  const preview = document.getElementById("imagePreview");
 
-const input = document.getElementById("imageInput");
-const preview = document.getElementById("imagePreview");
-
-// ✅ Load on page start
-document.addEventListener("DOMContentLoaded", () => {
-  renderImages();
-});
-
-// ✅ When selecting new images
-input.addEventListener("change", function () {
-  const files = Array.from(input.files);
-  selectedFiles.push(...files);
-
-  renderImages();
-  input.value = ""; // reset input
-});
-
-// ✅ Render BOTH existing + new images
-function renderImages() {
-  preview.innerHTML = "";
-
-  // 🔵 EXISTING IMAGES (from DB)
-  existingImages.forEach((img, index) => {
-    const div = document.createElement("div");
-    div.className = "slot relative";
-
-    div.innerHTML = `
-      <img src="/uploads/product/${img}" 
-           style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
-
-      <!-- MINUS -->
-      <button type="button"
-        onclick="removeExisting(${index})"
-        style="position:absolute;top:5px;right:5px;
-               background:rgba(0,0,0,0.6);color:white;
-               border:none;border-radius:50%;
-               width:24px;height:24px;cursor:pointer;">
-        −
-      </button>
-
-      <!--  send remaining old images -->
-      <input type="hidden" name="existingImages[]" value="${img}">
-    `;
-
-    preview.appendChild(div);
+  document.addEventListener("DOMContentLoaded", () => {
+    renderImages();
   });
 
-  //  NEW IMAGES
-  selectedFiles.forEach((file, index) => {
-    const reader = new FileReader();
+  function openFilePicker() {
+    input.click();
+  }
 
-    reader.onload = function (e) {
+  input.addEventListener("change", function () {
+    const files = Array.from(input.files);
+    selectedFiles.push(...files);
+    renderImages();
+    input.value = "";
+  });
+
+  function renderImages() {
+    preview.innerHTML = "";
+
+    // existing images from DB
+    existingImages.forEach((img, index) => {
       const div = document.createElement("div");
       div.className = "slot relative";
-
       div.innerHTML = `
-        <img src="${e.target.result}" 
+        <img src="/uploads/product/${img}"
              style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
-
-        <!-- MINUS -->
-        <button type="button"
-          onclick="removeNew(${index})"
-          style="position:absolute;top:5px;right:5px;
-                 background:rgba(0,0,0,0.6);color:white;
-                 border:none;border-radius:50%;
-                 width:24px;height:24px;cursor:pointer;">
-          −
-        </button>
+        <button type="button" onclick="removeExisting(${index})"
+          style="position:absolute;top:5px;right:5px;background:rgba(220,38,38,0.9);
+                 color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;">✕</button>
+        <input type="hidden" name="existingImages[]" value="${img}">
       `;
-
       preview.appendChild(div);
-    };
+    });
 
-    reader.readAsDataURL(file);
+    // new images
+    selectedFiles.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const div = document.createElement("div");
+        div.className = "slot relative";
+        div.id = `new-slot-${index}`;
+        div.innerHTML = `
+          <img src="${e.target.result}" onclick="openCrop(${index})"
+               style="width:100%;height:100%;object-fit:cover;border-radius:10px;cursor:pointer;">
+          <button type="button" onclick="removeNew(${index})"
+            style="position:absolute;top:5px;right:5px;background:rgba(220,38,38,0.9);
+                   color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;">✕</button>
+          <div style="position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,0.5);
+                      color:white;font-size:9px;padding:2px 5px;border-radius:4px;">tap to crop</div>
+        `;
+        preview.appendChild(div);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // add more button
+    const addMore = document.createElement("div");
+    addMore.className = "slot add-more";
+    addMore.onclick = openFilePicker;
+    addMore.innerHTML = `<span class="material-symbols-outlined">add</span><p>Add Images</p>`;
+    preview.appendChild(addMore);
+
+    syncFiles();
+  }
+
+  function openCrop(index) {
+    currentFileIndex = index;
+    const file = selectedFiles[index];
+    const url = URL.createObjectURL(file);
+
+    const img = document.getElementById("cropImage");
+    img.src = url;
+
+    const modal = document.getElementById("cropModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    setTimeout(() => {
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(img, {
+        aspectRatio: 1,
+        viewMode: 1,
+        autoCropArea: 1,
+        responsive: true,
+        background: false,
+        zoomable: true
+      });
+    }, 100);
+  }
+
+  function applyCrop() {
+    const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+    canvas.toBlob((blob) => {
+      const file = new File([blob], Date.now() + ".jpg", { type: "image/jpeg" });
+      selectedFiles[currentFileIndex] = file;
+      renderImages();
+      syncFiles();
+      closeCrop();
+    });
+  }
+
+  function closeCrop() {
+    document.getElementById("cropModal").classList.add("hidden");
+    document.getElementById("cropModal").classList.remove("flex");
+    if (cropper) { cropper.destroy(); cropper = null; }
+  }
+
+  function removeExisting(index) {
+    existingImages.splice(index, 1);
+    renderImages();
+  }
+
+  function removeNew(index) {
+    selectedFiles.splice(index, 1);
+    renderImages();
+  }
+
+  function syncFiles() {
+    const dataTransfer = new DataTransfer();
+    selectedFiles.forEach(file => dataTransfer.items.add(file));
+    input.files = dataTransfer.files;
+  }
+
+  document.querySelector("form").addEventListener("submit", () => {
+    syncFiles();
   });
-
-  //  Add button
-  const addMore = document.createElement("div");
-  addMore.className = "slot add-more";
-  addMore.onclick = openFilePicker;
-  addMore.innerHTML = `
-    <span class="material-symbols-outlined">add</span>
-    <p>Add Images</p>
-  `;
-  preview.appendChild(addMore);
-
-  syncFiles();
-}
-
-//  Remove existing image
-function removeExisting(index) {
-  existingImages.splice(index, 1);
-  renderImages();
-}
-
-//  Remove new image
-function removeNew(index) {
-  selectedFiles.splice(index, 1);
-  renderImages();
-}
-
-//  Keep input.files updated
-function syncFiles() {
-  const dataTransfer = new DataTransfer();
-
-  selectedFiles.forEach(file => {
-    dataTransfer.items.add(file);
-  });
-
-  input.files = dataTransfer.files;
-}
 </script>
-
+<div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white p-5 rounded-xl w-[90vw] max-w-[600px]">
+    <img id="cropImage" class="w-full h-[400px] object-contain">
+    <div class="flex justify-end gap-3 mt-4">
+      <button onclick="closeCrop()" class="px-4 py-2 border rounded">Cancel</button>
+      <button onclick="applyCrop()" class="px-4 py-2 bg-orange-500 text-white rounded">Crop</button>
+    </div>
+  </div>
+</div>
 </body></html>

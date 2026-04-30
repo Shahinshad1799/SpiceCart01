@@ -31,16 +31,22 @@ placeholder="Search for saffron, curry..." />
 
 <div class="flex items-center gap-3">
 <a href="/cart">
-<button class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors relative">
-<span class="material-symbols-outlined">shopping_cart</span>
-<span class="absolute top-1 right-1 size-2.5 bg-primary rounded-full border-2 border-white"></span>
-</button>
+  <button class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors relative">
+    <span class="material-symbols-outlined">shopping_cart</span>
+    <% if (locals.cartCount && cartCount > 0) { %>
+      <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+        <%= cartCount > 99 ? '99+' : cartCount %>
+      </span>
+    <% } %>
+  </button>
 </a>
 
-
+<a href="/wishlist">
 <button class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors">
 <span class="material-symbols-outlined">favorite</span>
 </button>
+</a>
+
 
 <div class="relative">
 

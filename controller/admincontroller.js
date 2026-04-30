@@ -30,7 +30,7 @@ const addProduct = async (req, res) => {
   try {
     const categories = await catagorymodel.find({ status: "Active" });
 
-    // ✅ handle images
+    //  handle images
     const images = req.files && req.files.length > 0
       ? req.files.map(file => file.filename)
       : [];
@@ -219,10 +219,8 @@ const loaddashboard=function(req,res){
 }
 const loadcatagory = async (req, res) => {
   try {
-
     const search = req.query.q || "";
     const page = parseInt(req.query.page) || 1;
-
     const limit = 3;
     const skip = (page - 1) * limit;
 
@@ -232,15 +230,23 @@ const loadcatagory = async (req, res) => {
 
     const catagory = await catagorymodel
       .find(searchQuery)
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
     const totalCategories = await catagorymodel.countDocuments(searchQuery);
-
     const totalPages = Math.ceil(totalCategories / limit);
 
+    // count products for each category
+    const categoryWithCount = await Promise.all(
+      catagory.map(async (cat) => {
+        const productCount = await productmodel.countDocuments({ catagory: cat._id });
+        return { ...cat.toObject(), productCount };
+      })
+    );
+
     res.render("admin/catagory", {
-      catagory,
+      catagory: categoryWithCount,
       search,
       currentPage: page,
       totalPages

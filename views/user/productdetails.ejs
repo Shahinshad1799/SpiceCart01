@@ -6,302 +6,349 @@
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-
 <body class="bg-white">
 <%- include("../partials/header") %>
-   
 
 <div class="px-5 md:px-40 flex flex-1 justify-center py-5">
-
 <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
 
-<div class="mb-8 flex items-center gap-2 text-sm text-[#886e63]">
-  
-  <a href="/shop" class="hover:text-primary">Shop</a>
-
-  <% if (product.catagory) { %>
+  <!-- Breadcrumb -->
+  <div class="mb-8 flex items-center gap-2 text-sm text-[#886e63]">
+    <a href="/shop" class="hover:text-primary">Shop</a>
     <span class="material-symbols-outlined text-xs">chevron_right</span>
+    <span class="text-[#181311] font-medium"><%= product.name %></span>
+  </div>
 
-    <a href="/shop?category=<%= product.catagory._id %>" 
-       class="hover:text-primary">
-      <%= product.catagory.name %>
-    </a>
-  <% } %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 p-4">
 
-  <span class="material-symbols-outlined text-xs">chevron_right</span>
+    <!-- LEFT: Images -->
+    <div class="flex flex-col gap-4">
 
-  <span class="text-[#181311] font-medium">
-    <%= product.name %>
-  </span>
+      <!-- Zoom container — only wraps the main image -->
+      <div id="zoomWrapper" style="position: relative; width: 100%;">
 
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 p-4">
+        <!-- Main Image -->
+        <div
+          id="mainImage"
+          class="w-full bg-no-repeat bg-center rounded-xl"
+          style="
+            background-image: url('/uploads/product/<%= product.images[0] %>');
+            background-size: cover;
+            aspect-ratio: 1 / 1;
+            cursor: crosshair;
+          ">
+        </div>
 
-<!-- LEFT: Images -->
-<div class="flex flex-col gap-4">
+        <!-- Lens -->
+        <div id="lens" style="
+          position: absolute; top: 0; left: 0;
+          pointer-events: none; display: none;
+          border: 2px solid #e77600;
+          background: rgba(255,232,180,0.35);
+        "></div>
 
-  <!-- Main Image -->
-  <div class="w-full aspect-square overflow-hidden rounded-xl">
-  <div 
-  id="mainImage"
-  class="w-full h-full bg-no-repeat bg-cover rounded-xl"
-  style="background-image: url('/uploads/product/<%= product.images[0] %>'); background-size: 200%;">
-</div>
-</div>
+        <!-- Zoom result panel (floats right) -->
+        <div id="zoomResult" style="
+          position: absolute;
+          left: calc(100% + 12px);
+          top: 0;
+          width: 450px;
+          height: 450px;
+          border: 1px solid #ccc;
+          background-color: #fff;
+          background-repeat: no-repeat;
+          display: none;
+          z-index: 100;
+          border-radius: 8px;
+        "></div>
 
-  <!-- Thumbnails -->
-  <div class="grid grid-cols-4 gap-3">
-    <% product.images.forEach((img, i) => { %>
-      <div 
-        onclick="changeImage('<%= img %>')"
-        class="aspect-square rounded-lg bg-center bg-cover cursor-pointer <%= i === 0 ? 'border-2 border-black' : 'opacity-60 hover:opacity-100' %>"
-        style="background-image: url('/uploads/product/<%= img %>')">
       </div>
-    <% }) %>
-  </div>
 
+      <!-- Thumbnails -->
+  <div class="grid grid-cols-4 gap-3" id="thumbnailGrid">
+  <% product.images.forEach((img, i) => { %>
+    <div
+      onclick="changeImage('<%= img %>', this)"
+      class="thumbnail aspect-square rounded-lg bg-center bg-cover cursor-pointer <%= i === 0 ? 'border-2 border-black' : 'opacity-60' %>"
+      style="background-image: url('/uploads/product/<%= img %>')">
+    </div>
+  <% }) %>
 </div>
 
-<!-- RIGHT: DETAILS -->
-<div class="flex flex-col gap-6">
-
-  <!-- Name + short desc -->
-  <div>
-    <h1 class="text-[#181311] text-4xl font-bold">
-      <%= product.name %>
-    </h1>
-   <p class="text-[#886e63] text-lg mt-2">
-  <%= product.description.split('.')[0] + '.' %>
-</p>
-  </div>
-
-  <!-- Price -->
-  <div class="flex items-center gap-3">
-    <div class="text-3xl font-bold">
-      ₹<span id="price"><%= product.variants[0]?.price || 0 %></span>
     </div>
-  </div>
 
-  <!-- Variants -->
-  <div>
-    <p class="font-bold">Weight</p>
-    <div class="flex gap-3 flex-wrap mt-2">
-  
-       <% product.variants.forEach((v, i) => { %>
-  <button 
-    type="button"
-    onclick="selectVariant('<%= v._id %>', '<%= v.price %>', this)"
-    class="variant-btn h-10 px-4 rounded-lg border 
-    <%= i === 0 ? 'bg-black text-white border-black' : 'bg-white' %>">
-    
-    <%= v.name %>
-  </button>
-<% }) %>
-    </div>
-  </div>
+    <!-- RIGHT: Details -->
+    <div class="flex flex-col gap-6">
 
-  <!-- Quantity -->
-  <div>
-    <p class="font-bold">Quantity</p>
-    <div class="flex items-center w-32 h-10 border rounded-lg bg-gray-100 mt-2">
-      <button onclick="changeQty(-1)" class="w-10">-</button>
-      <input id="qty" type="number" value="1" class="w-12 text-center bg-transparent">
-      <button onclick="changeQty(1)" class="w-10">+</button>
-    </div>
-  </div>
+      <div>
+        <h1 class="text-[#181311] text-4xl font-bold"><%= product.name %></h1>
+        <p class="text-[#886e63] text-lg mt-2"><%= product.description.split('.')[0] + '.' %></p>
+      </div>
 
-  <!-- Buttons -->
-  <div class="flex flex-col gap-3 mt-2">
-    <button class="w-full h-12 rounded-lg bg-black text-white font-bold">
-      Buy Now
+      <div class="flex items-center gap-3">
+        <div class="text-3xl font-bold">₹<span id="price"><%= product.variants[0]?.price || 0 %></span></div>
+      </div>
+
+      <div>
+        <p class="font-bold">Weight</p>
+        <div class="flex gap-3 flex-wrap mt-2">
+          <% product.variants.forEach((v, i) => { %>
+            <button
+              type="button"
+              onclick="selectVariant('<%= v._id %>', '<%= v.price %>', this)"
+              class="variant-btn h-10 px-4 rounded-lg border <%= i === 0 ? 'bg-black text-white border-black' : 'bg-white' %>">
+              <%= v.name %>
+            </button>
+          <% }) %>
+        </div>
+      </div>
+
+      <div>
+        <p class="font-bold">Quantity</p>
+        <div class="flex items-center w-32 h-10 border rounded-lg bg-gray-100 mt-2">
+          <button onclick="changeQty(-1)" class="w-10">-</button>
+          <input id="qty" type="number" value="1" class="w-12 text-center bg-transparent">
+          <button onclick="changeQty(1)" class="w-10">+</button>
+        </div>
+      </div>
+
+    <div class="flex flex-col gap-3 mt-2">
+  <div class="flex gap-3 mt-4">
+    <form action="/cart/add" method="POST" class="flex-1">
+      <input type="hidden" name="productId" value="<%= product._id %>">
+      <input type="hidden" name="variantId" id="variantId" value="<%= product.variants[0]._id %>">
+      <input type="hidden" name="quantity" id="finalQty" value="1">
+      <button type="submit" class="w-full h-12 rounded-lg bg-gray-200 font-bold">Add to Cart</button>
+    </form>
+
+    <!-- WISHLIST BUTTON -->
+    <button
+      id="wishlistBtn"
+      data-id="<%= product._id %>"
+      data-wishlisted="<%= (typeof wishlist !== 'undefined' && wishlist) ? 'true' : 'false' %>"
+      data-variant-id="<%= product.variants[0]._id %>"
+      data-variant-name="<%= product.variants[0].name %>"
+      data-variant-price="<%= product.variants[0].price %>"
+      data-variant-stock="<%= product.variants[0].stock %>"
+      class="h-12 w-14 flex items-center justify-center rounded-lg border border-gray-200 hover:border-red-300 hover:bg-red-50 transition-colors shrink-0"
+      title="Add to Wishlist">
+      <svg viewBox="0 0 24 24" width="20" height="20"
+        id="wishlistHeart"
+        fill="<%= (typeof wishlist !== 'undefined' && wishlist) ? '#E24B4A' : 'none' %>"
+        stroke="<%= (typeof wishlist !== 'undefined' && wishlist) ? '#E24B4A' : '#886e63' %>"
+        stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
     </button>
-<form action="/cart/add" method="POST">
-
-  <!-- Product -->
-  <input type="hidden" name="productId" value="<%= product._id %>">
-
-  <!-- ✅ FIX: dynamic variant -->
-  <input type="hidden" name="variantId" id="variantId" value="<%= product.variants[0]._id %>">
-
-  <!-- ✅ FIX: dynamic quantity -->
-  <input type="hidden" name="quantity" id="finalQty" value="1">
-
-  <button type="submit"
-    class="w-full h-12 mt-4 rounded-lg bg-gray-200 font-bold">
-    Add to Cart
-  </button>
-
-</form>
-   
-  </div>
-
-  <!-- Description -->
-  <div class="border-t pt-6">
-    <h2 class="text-2xl font-bold">Product Description</h2>
-    <p class="mt-2 text-gray-600">
-      <%= product.description %>
-    </p>
-  </div>
-
-</div>
-</div>
-<div class="flex flex-col gap-10 p-4 mt-8 border-t border-[#f4f1f0] pt-10">
-<h2 class="text-[#181311] text-2xl font-bold leading-tight">Customer Reviews</h2>
-<div class="grid grid-cols-1 gap-8">
-<div class="flex flex-col gap-2">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-</div>
-<p class="text-[#181311] text-base font-medium leading-normal">"The quality of this saffron is unmatched. My risotto has never tasted better!"</p>
-<div class="flex items-center gap-2 text-sm text-[#886e63]">
-<span class="font-bold text-[#181311]">Maria Gonzales</span>
-<span>•</span>
-<span>Oct 24, 2023</span>
-</div>
-</div>
-<div class="flex flex-col gap-2">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star_half</span>
-</div>
-<p class="text-[#181311] text-base font-medium leading-normal">"Fast shipping and great packaging. The threads are a deep red, exactly what you look for."</p>
-<div class="flex items-center gap-2 text-sm text-[#886e63]">
-<span class="font-bold text-[#181311]">David Chen</span>
-<span>•</span>
-<span>Nov 02, 2023</span>
-</div>
-</div>
-<div class="flex flex-col gap-2">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 0;">star</span>
-</div>
-<p class="text-[#181311] text-base font-medium leading-normal">"A bit pricey, but you get what you pay for. Will buy again."</p>
-<div class="flex items-center gap-2 text-sm text-[#886e63]">
-<span class="font-bold text-[#181311]">Sarah J.</span>
-<span>•</span>
-<span>Nov 15, 2023</span>
-</div>
-</div>
-</div>
-<button class="w-full md:w-auto h-10 px-6 rounded-lg border border-[#e6e2e0] bg-white text-[#181311] text-sm font-bold hover:bg-[#f4f1f0] transition-colors self-start">See all reviews</button>
-</div>
-
-<% if (relatedProducts.length > 0) { %>
-
-<div class="mt-10">
-  <h2 class="text-2xl font-bold mb-4">Related Products</h2>
-
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-    <% relatedProducts.forEach(p => { %>
-
-     
-         <a href="/productdetails/<%= p._id %>">
-
-        <img 
-          src="/uploads/product/<%= p.images[0] %>" 
-          class="w-full h-40 object-cover rounded"
-        />
-
-        <p class="font-semibold mt-2"><%= p.name %></p>
-        <p class="text-sm text-gray-500">
-          ₹<%= p.variants[0]?.price || "N/A" %>
-        </p>
-
-      </a>
-
-    <% }) %>
   </div>
 </div>
 
-<% } %>
+      <div class="border-t pt-6">
+        <h2 class="text-2xl font-bold">Product Description</h2>
+        <p class="mt-2 text-gray-600"><%= product.description %></p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Reviews -->
+  <div class="flex flex-col gap-10 p-4 mt-8 border-t border-[#f4f1f0] pt-10">
+    <h2 class="text-[#181311] text-2xl font-bold leading-tight">Customer Reviews</h2>
+    <div class="grid grid-cols-1 gap-8">
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+        </div>
+        <p class="text-[#181311] text-base font-medium leading-normal">"The quality of this saffron is unmatched. My risotto has never tasted better!"</p>
+        <div class="flex items-center gap-2 text-sm text-[#886e63]">
+          <span class="font-bold text-[#181311]">Maria Gonzales</span><span>•</span><span>Oct 24, 2023</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star_half</span>
+        </div>
+        <p class="text-[#181311] text-base font-medium leading-normal">"Fast shipping and great packaging. The threads are a deep red, exactly what you look for."</p>
+        <div class="flex items-center gap-2 text-sm text-[#886e63]">
+          <span class="font-bold text-[#181311]">David Chen</span><span>•</span><span>Nov 02, 2023</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 0;">star</span>
+        </div>
+        <p class="text-[#181311] text-base font-medium leading-normal">"A bit pricey, but you get what you pay for. Will buy again."</p>
+        <div class="flex items-center gap-2 text-sm text-[#886e63]">
+          <span class="font-bold text-[#181311]">Sarah J.</span><span>•</span><span>Nov 15, 2023</span>
+        </div>
+      </div>
+    </div>
+    <button class="w-full md:w-auto h-10 px-6 rounded-lg border border-[#e6e2e0] bg-white text-[#181311] text-sm font-bold hover:bg-[#f4f1f0] transition-colors self-start">See all reviews</button>
+  </div>
+
+  <!-- Related Products -->
+  <% if (relatedProducts.length > 0) { %>
+  <div class="mt-10">
+    <h2 class="text-2xl font-bold mb-4">Related Products</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <% relatedProducts.forEach(p => { %>
+        <a href="/productdetails/<%= p._id %>">
+          <img src="/uploads/product/<%= p.images[0] %>" class="w-full h-40 object-cover rounded"/>
+          <p class="font-semibold mt-2"><%= p.name %></p>
+          <p class="text-sm text-gray-500">₹<%= p.variants[0]?.price || "N/A" %></p>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
 
 </div>
 </div>
 
 <%- include("../partials/footer") %>
 </body>
+
+<!-- SINGLE SCRIPT BLOCK — no duplicates -->
 <script>
-const mainImage = document.getElementById("mainImage");
+  const wrapper    = document.getElementById('zoomWrapper');
+  const mainImage  = document.getElementById('mainImage');
+  const lens       = document.getElementById('lens');
+  const zoomResult = document.getElementById('zoomResult');
+  const ZOOM = 2.5;
 
-mainImage.addEventListener("mousemove", (e) => {
-  const rect = mainImage.getBoundingClientRect();
-
-  const x = ((e.clientX - rect.left) / rect.width) * 100;
-  const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-  mainImage.style.backgroundPosition = `${x}% ${y}%`;
-});
-
-mainImage.addEventListener("mouseleave", () => {
-  mainImage.style.backgroundPosition = "center";
-});
-</script>
-<!-- SCRIPT -->
-<script>
-  function changeImage(img) {
-    document.getElementById("mainImage").style.backgroundImage =
-      `url('/uploads/product/${img}')`;
+  function initZoom() {
+    const iw = mainImage.offsetWidth;
+    const ih = mainImage.offsetHeight;
+    lens.style.width  = (iw / ZOOM) + 'px';
+    lens.style.height = (ih / ZOOM) + 'px';
+    zoomResult.style.backgroundImage = mainImage.style.backgroundImage;
+    zoomResult.style.backgroundSize  = `${iw * ZOOM}px ${ih * ZOOM}px`;
+    zoomResult.style.height = ih + 'px';
   }
 
-  //  FIX VARIANT
+  wrapper.addEventListener('mouseenter', () => {
+    initZoom();
+    lens.style.display       = 'block';
+    zoomResult.style.display = 'block';
+  });
+
+  wrapper.addEventListener('mouseleave', () => {
+    lens.style.display       = 'none';
+    zoomResult.style.display = 'none';
+  });
+
+  wrapper.addEventListener('mousemove', (e) => {
+    const rect = mainImage.getBoundingClientRect();
+    const iw = mainImage.offsetWidth;
+    const ih = mainImage.offsetHeight;
+    const lw = parseFloat(lens.style.width)  || iw / ZOOM;
+    const lh = parseFloat(lens.style.height) || ih / ZOOM;
+
+    let x = e.clientX - rect.left - lw / 2;
+    let y = e.clientY - rect.top  - lh / 2;
+
+    x = Math.max(0, Math.min(x, iw - lw));
+    y = Math.max(0, Math.min(y, ih - lh));
+
+    lens.style.left = x + 'px';
+    lens.style.top  = y + 'px';
+
+    zoomResult.style.backgroundPosition = `-${x * ZOOM}px -${y * ZOOM}px`;
+  });
+
+function changeImage(imgName, el) {
+  mainImage.style.backgroundImage    = `url('/uploads/product/${imgName}')`;
+  mainImage.style.backgroundPosition = 'center';
+  initZoom();
+
+  // update thumbnail active state
+  document.querySelectorAll('.thumbnail').forEach(thumb => {
+    thumb.classList.remove('border-2', 'border-black');
+    thumb.classList.add('opacity-60');
+  });
+  el.classList.remove('opacity-60');
+  el.classList.add('border-2', 'border-black');
+}
+
   function selectVariant(variantId, price, el) {
-    // update price
-    document.getElementById("price").innerText = price;
-
-    // update hidden input
-    document.getElementById("variantId").value = variantId;
-
-    // UI active state
-    document.querySelectorAll(".variant-btn").forEach(btn => {
-      btn.classList.remove("bg-black","text-white");
-      btn.classList.add("bg-white");
+    document.getElementById('price').innerText    = price;
+    document.getElementById('variantId').value    = variantId;
+    document.querySelectorAll('.variant-btn').forEach(btn => {
+      btn.classList.remove('bg-black', 'text-white');
+      btn.classList.add('bg-white');
     });
-
-    el.classList.add("bg-black","text-white");
+    el.classList.add('bg-black', 'text-white');
   }
 
-  //  FIX QUANTITY
   function changeQty(val) {
-    let qty = document.getElementById("qty");
-    let current = parseInt(qty.value) || 1;
-
-    if (current + val > 0) {
-      let newQty = current + val;
-      qty.value = newQty;
-
-      // update hidden input
-      document.getElementById("finalQty").value = newQty;
+    const qty = document.getElementById('qty');
+    const current = parseInt(qty.value) || 1;
+    if (current + val >= 1) {
+      qty.value = current + val;
+      document.getElementById('finalQty').value = current + val;
     }
   }
 
-  // ALSO HANDLE MANUAL INPUT
-  document.getElementById("qty").addEventListener("input", function() {
-    let val = parseInt(this.value) || 1;
-    if (val < 1) val = 1;
-
+  document.getElementById('qty').addEventListener('input', function () {
+    const val = Math.max(1, parseInt(this.value) || 1);
     this.value = val;
-    document.getElementById("finalQty").value = val;
+    document.getElementById('finalQty').value = val;
   });
 </script>
 <script>
-function changeImage(img) {
-  const main = document.getElementById("mainImage");
+  document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-  main.style.backgroundImage = `url('/uploads/product/${img}')`;
-  main.style.backgroundPosition = "center";
-}
+      const productId = btn.dataset.id;
+      const variantId = btn.dataset.variantId;
+      const variantName = btn.dataset.variantName;
+      const variantPrice = btn.dataset.variantPrice;
+      const variantStock = btn.dataset.variantStock;
+      const isWishlisted = btn.dataset.wishlisted === 'true';
+      const svg = btn.querySelector('svg');
+
+      try {
+        const res = await fetch('/wishlist/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            productId,
+            variant: {
+              variantId,
+              name: variantName,
+              price: Number(variantPrice),
+              stock: Number(variantStock)
+            }
+          })
+        });
+
+        if (res.ok) {
+          const nowWishlisted = !isWishlisted;
+          btn.dataset.wishlisted = String(nowWishlisted);
+          svg.setAttribute('fill', nowWishlisted ? '#E24B4A' : 'none');
+          svg.setAttribute('stroke', nowWishlisted ? '#E24B4A' : '#886e63');
+          btn.style.transform = 'scale(1.3)';
+          setTimeout(() => btn.style.transform = '', 200);
+        }
+      } catch (err) {
+        console.error('Wishlist error:', err);
+      }
+    });
+  });
 </script>
-
-
 </html>

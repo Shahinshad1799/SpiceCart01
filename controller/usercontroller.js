@@ -12,7 +12,8 @@ const { render } = require("ejs");
  const Product = require("../model/productmodel");
  const catagory=require("../model/catagorymodel");
 const catagorymodel = require("../model/catagorymodel");
-
+const Wishlist = require('../model/wishlistmodel');
+const Cart=require("../model/cartmodel")
 // =======================
 // Load Views
 // =======================
@@ -54,55 +55,172 @@ const loadaddaddress = (req, res) => {
 const loadchangeemail=(req,res)=>{
   res.render("user/changeemail")
 }
+
+
+const toggleWishlist = async (req, res) => {
+  try {
+    const { productId, variant } = req.body;
+    const userId = req.session.userId;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Not logged in' });
+    }
+
+  const cart = await Cart.findOne({ user: userId });
+const inCart = cart?.items?.some(item => 
+  item.product && item.product.toString() === productId  // ✅ null check added
+);
+
+if (inCart) {
+  return res.status(400).json({ 
+    success: false, 
+    message: 'This item is already in your cart' 
+  });
+}
+
+    let wishlist = await Wishlist.findOne({ user: userId });
+    if (!wishlist) {
+      wishlist = new Wishlist({ user: userId, products: [] });
+    }
+
+    const index = wishlist.products.findIndex(item => {
+      if (!item.product) return false;
+      return item.product.toString() === productId;
+    });
+
+    if (index === -1) {
+      // ✅ Always fetch from DB — never trust variant from body
+      const product = await productmodel.findById(productId);
+      const first = product?.variants?.[0];
+
+      if (!first) {
+        return res.status(404).json({ success: false, message: 'Product variant not found' });
+      }
+
+      wishlist.products.push({
+        product: productId,
+        variant: {
+          variantId: first._id,
+          name: first.name,
+          price: Number(first.price),
+          stock: Number(first.stock)
+        }
+      });
+    } else {
+      wishlist.products.splice(index, 1);
+    }
+
+    await wishlist.save();
+    res.status(200).json({ success: true });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false });
+  }
+};
+
+const loadWishlist = async (req, res) => {
+  try {
+    const wishlist = await Wishlist.findOne({ user: req.session.userId })
+      .populate('products.product');
+
+    // Filter out any items where the product was deleted or not found
+    const wishlistItems = (wishlist?.products || []).filter(
+      (item) => item.product !== null && item.product !== undefined
+    );
+
+    res.render('user/wishlist', {
+      wishlistItems
+    });
+  } catch (err) {
+    console.log(err);
+    res.redirect('/');
+  }
+};
 const loadshop = async (req, res) => {
   try {
-    const { category, maxPrice, error } = req.query;
+    const { category, maxPrice, error, sort } = req.query;
     const search = req.query.q || "";
-    let filter = {};
+    const page = parseInt(req.query.page) || 1;
+    const limit = 6;
+    const skip = (page - 1) * limit;
+
+    let filter = { status: "Active" };
+    let sortOption = {};
     let selectedCategoryName = "All Categories";
 
-    // ✅ SEARCH FIX
+    const activeCategories = await catagorymodel
+      .find({ status: "Active" })
+      .select("_id name");
+
+    const activeCategoryIds = activeCategories.map(c => c._id);
+
     if (search) {
       filter.name = { $regex: search, $options: "i" };
     }
 
-    // ✅ CATEGORY
     if (category && category !== "All") {
-      const cat = await catagorymodel.findById(category);
-
+      const cat = activeCategories.find(c => c._id.toString() === category);
       if (cat) {
         filter.catagory = cat._id;
         selectedCategoryName = cat.name;
+      } else {
+        filter.catagory = null;
       }
+    } else {
+      filter.catagory = { $in: activeCategoryIds };
     }
 
-    // ✅ PRICE
     if (maxPrice) {
       filter.variants = {
-        $elemMatch: {
-          price: { $lte: Number(maxPrice) }
-        }
+        $elemMatch: { price: { $lte: Number(maxPrice) } }
       };
     }
 
-    const products = await productmodel.find(filter);
-    const catagory = await catagorymodel.find();
+    switch (sort) {
+      case "price-high": sortOption = { "variants.0.price": -1 }; break;
+      case "price-low":  sortOption = { "variants.0.price": 1 };  break;
+      case "name-az":    sortOption = { name: 1 };                 break;
+      case "name-za":    sortOption = { name: -1 };                break;
+      default:           sortOption = { createdAt: -1 };
+    }
+
+    const totalProducts = await productmodel.countDocuments(filter);
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    const products = await productmodel
+      .find(filter)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limit);
+
+    // ✅ Fixed wishlist extraction
+    let wishlist = [];
+    if (req.session?.userId) {
+      const wishlistDoc = await Wishlist.findOne({ user: req.session.userId });
+      wishlist = wishlistDoc?.products
+        ?.map(p => p.product?.toString())
+        .filter(Boolean) || [];
+    }
 
     res.render("user/shop", {
       products,
-      catagory,
+      catagory: activeCategories,
       selectedCategory: category || "All",
       selectedCategoryName,
+      wishlist,
       selectedPrice: maxPrice || 1000,
       error,
-      search
+      search,
+      sort,
+      currentPage: page,
+      totalPages,
     });
 
   } catch (err) {
     console.log(err);
   }
 };
-
 
 const loaddetails = async (req, res) => {
   try {
@@ -751,5 +869,7 @@ module.exports = {
   changeemail,
   loadshop,
   loaddetails,
+  toggleWishlist,
+ loadWishlist,
   logout
 };
