@@ -59,7 +59,7 @@
 <div class="flex items-center gap-2 mb-6">
 <a class="text-[#67837a] hover:text-primary transition-colors text-sm font-medium" href="#">Dashboard</a>
 <span class="text-[#67837a] text-sm font-medium">/</span>
-<a class="text-[#67837a] hover:text-primary transition-colors text-sm font-medium" href="#">Orders</a>
+<a class="text-[#67837a] hover:text-primary transition-colors text-sm font-medium" href="">Orders</a>
 <span class="text-[#67837a] text-sm font-medium">/</span>
 <span class="text-[#121715] dark:text-white text-sm font-bold">Order #<%= order._id.toString().slice(-6).toUpperCase() %></span>
 </div>
@@ -150,7 +150,9 @@ Returned
 
           <p>
             <span class="font-semibold">Requested At:</span>
-            <%= order.returnRequest.requestedAt.toDateString() %>
+            <%= order.returnRequest?.requestedAt
+ ? new Date(order.returnRequest.requestedAt).toDateString()
+ : "No Request Date" %>
           </p>
 
         </div>
