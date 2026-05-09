@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>SpiceCart Admin Orders Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181610] dark:text-[#f8f7f5]">
+<div class="flex h-screen overflow-hidden">
+  <%- include("../partials/sidebar") %>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 overflow-y-auto p-8 ml-64">
+    <div class="flex-1 overflow-y-auto p-8 space-y-6">
+
+      <!-- Page Heading -->
+      <div class="flex items-end justify-between">
+        <div>
+          <h2 class="text-3xl font-black text-[#181610] dark:text-white tracking-tight">Order Management</h2>
+          <p class="text-[#8d7f5e] mt-1">Manage and track all customer orders from one place.</p>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────────────────────────
+           FILTERS BAR — single <form> wraps everything
+           so every control submits together via GET
+      ─────────────────────────────────────────────── -->
+      <form
+        id="filters-form"
+        action="/admin/order"
+        method="GET"
+        class="bg-white dark:bg-[#2c2415] rounded-xl p-4 border border-[#e7e3da] dark:border-white/10 shadow-sm flex flex-wrap gap-4 items-center"
+      >
+
+        <!-- Search -->
+        <div class="relative flex-1 min-w-[300px]">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#8d7f5e]">search</span>
+          <input
+            type="text"
+            name="search"
+            value="<%= search || '' %>"
+            placeholder="Search by status, payment or customer..."
+            class="w-full bg-background-light dark:bg-background-dark border-none rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-[#8d7f5e]"
+          />
+        </div>
+
+        <!-- Status Filter -->
+        <div class="w-48">
+          <select
+            name="status"
+            onchange="document.getElementById('filters-form').submit()"
+            class="w-full bg-background-light dark:bg-background-dark border-none rounded-lg py-2.5 text-sm focus:ring-2 focus:ring-primary/20 text-[#181610] dark:text-white"
+          >
+            <option value="">All Statuses</option>
+            <option value="pending"    <%= (status === 'pending')    ? 'selected' : '' %>>Pending</option>
+            <option value="processing" <%= (status === 'processing') ? 'selected' : '' %>>Processing</option>
+            <option value="shipped"    <%= (status === 'shipped')    ? 'selected' : '' %>>Shipped</option>
+            <option value="delivered"  <%= (status === 'delivered')  ? 'selected' : '' %>>Delivered</option>
+            <option value="cancelled"  <%= (status === 'cancelled')  ? 'selected' : '' %>>Cancelled</option>
+          </select>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="w-48">
+          <select
+            name="dateRange"
+            onchange="document.getElementById('filters-form').submit()"
+            class="w-full bg-background-light dark:bg-background-dark border-none rounded-lg py-2.5 text-sm focus:ring-2 focus:ring-primary/20 text-[#181610] dark:text-white"
+          >
+            <option value=""       <%= (!dateRange)              ? 'selected' : '' %>>All Time</option>
+            <option value="today"  <%= (dateRange === 'today')   ? 'selected' : '' %>>Today</option>
+            <option value="7days"  <%= (dateRange === '7days')   ? 'selected' : '' %>>Last 7 Days</option>
+            <option value="30days" <%= (dateRange === '30days')  ? 'selected' : '' %>>Last 30 Days</option>
+            <option value="year"   <%= (dateRange === 'year')    ? 'selected' : '' %>>This Year</option>
+          </select>
+        </div>
+
+        <!-- Explicit Search Button (for keyboard/enter) -->
+        <button
+          type="submit"
+          class="px-4 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1"
+        >
+          <span class="material-symbols-outlined text-base">filter_list</span>
+          Apply
+        </button>
+
+        <!-- Clear Filters — only shown when any filter is active -->
+        <% if (search || status || dateRange) { %>
+          <a
+            href="/admin/order"
+            class="px-3 py-2.5 text-sm font-semibold text-[#8d7f5e] hover:text-primary transition-colors flex items-center gap-1"
+            title="Clear all filters"
+          >
+            <span class="material-symbols-outlined text-base">close</span>
+            Clear
+          </a>
+        <% } %>
+
+      </form>
+
+      <!-- Active filter pills (visual feedback) -->
+      <% if (search || status || dateRange) { %>
+        <div class="flex flex-wrap gap-2 -mt-2">
+          <% if (search) { %>
+            <span class="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full">
+              <span class="material-symbols-outlined text-sm">search</span>
+              "<%= search %>"
+            </span>
+          <% } %>
+          <% if (status) { %>
+            <span class="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full capitalize">
+              <span class="material-symbols-outlined text-sm">label</span>
+              <%= status %>
+            </span>
+          <% } %>
+          <% if (dateRange) { %>
+            <%
+              const rangeLabels = { today: 'Today', '7days': 'Last 7 Days', '30days': 'Last 30 Days', year: 'This Year' };
+            %>
+            <span class="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full">
+              <span class="material-symbols-outlined text-sm">calendar_today</span>
+              <%= rangeLabels[dateRange] || dateRange %>
+            </span>
+          <% } %>
+        </div>
+      <% } %>
+
+      <!-- Orders Table -->
+      <div class="bg-white dark:bg-[#2c2415] rounded-xl border border-[#e7e3da] dark:border-white/10 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-[#e7e3da] dark:border-white/10 bg-[#faf9f6] dark:bg-white/5">
+                <th class="px-6 py-4 text-xs font-bold text-[#8d7f5e] uppercase tracking-wider">Order ID</th>
+                <th class="px-6 py-4 text-xs font-bold text-[#8d7f5e] uppercase tracking-wider">Date</th>
+                <th class="px-6 py-4 text-xs font-bold text-[#8d7f5e] uppercase tracking-wider">Customer Name</th>
+                <th class="px-6 py-4 text-xs font-bold text-[#8d7f5e] uppercase tracking-wider">Total Amount</th>
+                <th class="px-6 py-4 text-xs font-bold text-[#8d7f5e] uppercase tracking-wider">Payment Method</th>
+                <th class="px-6 py-4 text-xs font-bold text-[#8d7f5e] uppercase tracking-wider text-center">Status</th>
+                <th class="px-6 py-4 text-xs font-bold text-[#8d7f5e] uppercase tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#e7e3da] dark:divide-white/5">
+
+              <% if (orders.length === 0) { %>
+              <tr>
+                <td colspan="7" class="px-6 py-16 text-center text-[#8d7f5e]">
+                  <span class="material-symbols-outlined text-4xl block mb-2 opacity-40">inventory_2</span>
+                  No orders found.
+                </td>
+              </tr>
+              <% } %>
+
+              <% orders.forEach(order => { %>
+              <%
+                const statusStyles = {
+                  pending:    'bg-orange-100 text-orange-700',
+                  processing: 'bg-yellow-100 text-yellow-700',
+                  shipped:    'bg-blue-100 text-blue-700',
+                  delivered:  'bg-green-100 text-green-700',
+                  cancelled:  'bg-red-100 text-red-700',
+                };
+                const badge = statusStyles[order.status] || statusStyles['pending'];
+                const label = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+              %>
+              <tr class="hover:bg-[#fbfaf8] dark:hover:bg-white/5 transition-colors">
+                <td class="px-6 py-4 text-sm font-bold text-primary">
+                  #<%= order._id.toString().slice(-6).toUpperCase() %>
+                </td>
+                <td class="px-6 py-4 text-sm text-[#181610] dark:text-[#f8f7f5]">
+                  <%= new Date(order.createdAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) %>
+                </td>
+                <td class="px-6 py-4 text-sm font-medium text-[#181610] dark:text-[#f8f7f5]">
+                  <%= order.shippingAddress?.fullname|| 'Unknown' %>
+                </td>
+                <td class="px-6 py-4 text-sm font-semibold text-[#181610] dark:text-[#f8f7f5]">
+                  ₹<%= order.total.toFixed(2) %>
+                </td>
+                <td class="px-6 py-4 text-sm text-[#8d7f5e] capitalize">
+                  <%= order.paymentMethod.replace(/_/g, ' ') %>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex justify-center">
+                    <span class="px-3 py-1 text-xs font-bold rounded-full <%= badge %>"><%= label %></span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <a href="/admin/orders/<%= order._id %>">
+                    <button class="text-primary hover:text-primary/70 transition-colors p-1 rounded-full hover:bg-primary/10">
+                      <span class="material-symbols-outlined">visibility</span>
+                    </button>
+                  </a>
+                </td>
+              </tr>
+              <% }) %>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination — preserves all active filters in links -->
+        <div class="flex justify-center mt-6 mb-4 gap-2">
+          <% const qParams = `search=${search || ''}&status=${status || ''}&dateRange=${dateRange || ''}` %>
+
+          <% if (currentPage > 1) { %>
+            <a href="?<%= qParams %>&page=<%= currentPage - 1 %>"
+               class="px-3 py-1 bg-gray-200 dark:bg-white/10 rounded hover:bg-gray-300 dark:hover:bg-white/20 text-sm">Prev</a>
+          <% } %>
+
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <a href="?<%= qParams %>&page=<%= i %>"
+               class="px-3 py-1 rounded text-sm <%= i === currentPage ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-white/10 hover:bg-gray-300 dark:hover:bg-white/20' %>">
+              <%= i %>
+            </a>
+          <% } %>
+
+          <% if (currentPage < totalPages) { %>
+            <a href="?<%= qParams %>&page=<%= currentPage + 1 %>"
+               class="px-3 py-1 bg-gray-200 dark:bg-white/10 rounded hover:bg-gray-300 dark:hover:bg-white/20 text-sm">Next</a>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

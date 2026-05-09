@@ -122,24 +122,26 @@
     </form>
 
     <!-- WISHLIST BUTTON -->
-    <button
-      id="wishlistBtn"
-      data-id="<%= product._id %>"
-      data-wishlisted="<%= (typeof wishlist !== 'undefined' && wishlist) ? 'true' : 'false' %>"
-      data-variant-id="<%= product.variants[0]._id %>"
-      data-variant-name="<%= product.variants[0].name %>"
-      data-variant-price="<%= product.variants[0].price %>"
-      data-variant-stock="<%= product.variants[0].stock %>"
-      class="h-12 w-14 flex items-center justify-center rounded-lg border border-gray-200 hover:border-red-300 hover:bg-red-50 transition-colors shrink-0"
-      title="Add to Wishlist">
-      <svg viewBox="0 0 24 24" width="20" height="20"
-        id="wishlistHeart"
-        fill="<%= (typeof wishlist !== 'undefined' && wishlist) ? '#E24B4A' : 'none' %>"
-        stroke="<%= (typeof wishlist !== 'undefined' && wishlist) ? '#E24B4A' : '#886e63' %>"
-        stroke-width="2">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-      </svg>
-    </button>
+   <% const isWishlisted = (typeof wishlist !== 'undefined' && wishlist); %>
+
+<button
+  class="wishlist-btn h-12 w-14 flex items-center justify-center rounded-lg border transition-colors shrink-0
+         <%= isWishlisted ? 'border-red-200 bg-red-50' : 'border-[#E6E0DC] hover:bg-red-50' %>"
+  data-id="<%= product._id %>"
+  data-wishlisted="<%= isWishlisted %>"
+  data-variant-id="<%= product.variants[0]._id %>"
+  data-variant-name="<%= product.variants[0].name %>"
+  data-variant-price="<%= product.variants[0].price %>"
+  data-variant-stock="<%= product.variants[0].stock %>"
+  title="<%= isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist' %>">
+
+  <span
+    class="material-symbols-outlined text-[22px] pointer-events-none"
+    style="font-variation-settings: 'FILL' <%= isWishlisted ? 1 : 0 %>; color: <%= isWishlisted ? '#E24B4A' : '#886e63' %>;">
+    favorite
+  </span>
+
+</button>
   </div>
 </div>
 
@@ -349,6 +351,88 @@ function changeImage(imgName, el) {
         console.error('Wishlist error:', err);
       }
     });
+  });
+
+  
+</script>
+<script>
+  document.querySelectorAll('.wishlist-btn').forEach(btn => {
+
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const productId = btn.dataset.id;
+      const variantId = btn.dataset.variantId;
+      const variantName = btn.dataset.variantName;
+      const variantPrice = btn.dataset.variantPrice;
+      const variantStock = btn.dataset.variantStock;
+
+      const isWishlisted = btn.dataset.wishlisted === 'true';
+
+      const icon = btn.querySelector('.material-symbols-outlined');
+
+      try {
+
+        const res = await fetch('/wishlist/toggle', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            productId,
+            variant: {
+              variantId,
+              name: variantName,
+              price: Number(variantPrice),
+              stock: Number(variantStock)
+            }
+          })
+        });
+
+        if (res.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
+
+        if (res.ok) {
+
+          const nowWishlisted = !isWishlisted;
+
+          btn.dataset.wishlisted = String(nowWishlisted);
+
+          // icon fill
+          icon.style.fontVariationSettings =
+            `'FILL' ${nowWishlisted ? 1 : 0}`;
+
+          // icon color
+          icon.style.color =
+            nowWishlisted ? '#E24B4A' : '#886e63';
+
+          // button bg/border
+          btn.classList.toggle('border-red-200', nowWishlisted);
+          btn.classList.toggle('bg-red-50', nowWishlisted);
+
+          btn.classList.toggle('border-[#E6E0DC]', !nowWishlisted);
+
+          // animation
+          btn.style.transform = 'scale(1.2)';
+
+          setTimeout(() => {
+            btn.style.transform = '';
+          }, 200);
+
+        }
+
+      } catch (err) {
+
+        console.error('Wishlist error:', err);
+
+      }
+
+    });
+
   });
 </script>
 </html>

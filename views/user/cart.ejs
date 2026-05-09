@@ -230,10 +230,13 @@
           <p class="text-xs text-[#886e63] dark:text-[#9CA3AF] mt-2 text-right">Taxes calculated at checkout</p>
         </div>
 
-        <button class="w-full h-14 bg-primary text-white rounded-lg font-bold text-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 group">
-          Proceed to Checkout
-          <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-        </button>
+        <form action="/checkout" method="GET">
+  <button type="submit"
+    class="w-full h-14 bg-primary text-white rounded-lg font-bold text-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 group">
+    Proceed to Checkout
+    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+  </button>
+</form>
 
         <div class="mt-6 flex items-center justify-center gap-2 text-xs text-[#886e63] dark:text-[#9CA3AF]">
           <span class="material-symbols-outlined text-sm">lock</span>

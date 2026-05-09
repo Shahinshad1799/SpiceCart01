@@ -29,7 +29,16 @@ adminroute.post("/product/:id/unblock",admin.unblockproduct);
 adminroute.get('/catagory/:id/edit',admin.loadEditCatagory);
 adminroute.post('/catagory/:id/edit',uploadcatagory.single("image"),admin.updateCategory);
 
+
+adminroute.get("/order",admin.loadorder)
+adminroute.get("/orders/:id",admin.loadorderdetails)
+adminroute.post("/orders/:id/status",admin.updateOrderStatus);
+adminroute.post("/orders/:id/approve-return",admin.approveReturn);
+
+adminroute.post("/orders/:id/reject-return",admin.rejectReturn);
+
 adminroute.post("/logout", admin.logout);
+
 
 
 module.exports=adminroute

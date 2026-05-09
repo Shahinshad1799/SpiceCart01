@@ -14,6 +14,8 @@ const { render } = require("ejs");
 const catagorymodel = require("../model/catagorymodel");
 const Wishlist = require('../model/wishlistmodel');
 const Cart=require("../model/cartmodel")
+const Order=require("../model/ordermodel")
+   const mongoose = require("mongoose")
 // =======================
 // Load Views
 // =======================
@@ -45,6 +47,7 @@ const loadsuccess = (req, res) => {
   res.render("user/successpassword");
 };
 
+
 const loadchangepassword = (req, res) => {
   res.render("user/changepassword");
 };
@@ -55,6 +58,129 @@ const loadaddaddress = (req, res) => {
 const loadchangeemail=(req,res)=>{
   res.render("user/changeemail")
 }
+
+const loadcheckout = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+
+    const cart = await Cart.findOne({ user: userId })
+      .populate("items.productId");
+
+    const addresses = await addressmodel.find({ userId: userId });
+
+    if (!cart || cart.items.length === 0) {
+      return res.render("user/checkout", {
+        cartItems: [],
+        addresses: addresses || [],
+        subtotal: 0,
+        shipping: 0,
+        tax: 0,
+        total: 0
+      });
+    }
+
+    let subtotal = 0;
+
+    cart.items.forEach(item => {
+      const variant = item.productId.variants.id(item.variantId);
+      if (variant) {
+        subtotal += variant.price * item.quantity;
+      }
+    });
+
+    const shipping = 50;
+    const tax = subtotal * 0.05;
+    const total = subtotal + shipping + tax;
+
+    res.render("user/checkout", {
+      cartItems: cart.items,
+      addresses: addresses || [],
+      subtotal,
+      shipping,
+      tax,
+      total
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.redirect("/cart");
+  }
+};
+
+
+// ── ADD ADDRESS ──────────────────────────────────────────────
+const addAddress = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { fullname, address, city, state, zipcode, phonenumber } = req.body;
+
+    // Validate
+    if (!fullname || !address || !city || !state || !zipcode || !phonenumber) {
+      return res.json({ success: false, message: "All fields are required" });
+    }
+
+    // If no address exists yet, make this one default
+    const existingCount = await addressmodel.countDocuments({ userId });
+    const isdefault = existingCount === 0;
+
+    const newAddress = new addressmodel({
+      userId,
+      fullname,
+      address,
+      city,
+      state,
+      zipcode,
+      phonenumber,
+      isdefault
+    });
+
+    await newAddress.save();
+
+    res.json({ success: true, message: "Address added successfully" });
+
+  } catch (err) {
+    console.log(err);
+    res.json({ success: false, message: "Something went wrong" });
+  }
+};
+
+
+// ── EDIT ADDRESS ─────────────────────────────────────────────
+const editAddress = async (req, res) => {
+  try {
+    const userId    = req.session.userId;
+    const addressId = req.params.addressId;
+    const { fullname, address, city, state, zipcode, phonenumber } = req.body;
+
+    // Validate
+    if (!fullname || !address || !city || !state || !zipcode || !phonenumber) {
+      return res.json({ success: false, message: "All fields are required" });
+    }
+
+    // Make sure the address belongs to this user
+    const existing = await addressmodel.findOne({ _id: addressId, userId });
+
+    if (!existing) {
+      return res.json({ success: false, message: "Address not found" });
+    }
+
+    await addressmodel.findByIdAndUpdate(addressId, {
+      fullname,
+      address,
+      city,
+      state,
+      zipcode,
+      phonenumber
+    });
+
+    res.json({ success: true, message: "Address updated successfully" });
+
+  } catch (err) {
+    console.log(err);
+    res.json({ success: false, message: "Something went wrong" });
+  }
+};
+
 
 
 const toggleWishlist = async (req, res) => {
@@ -823,9 +949,298 @@ const googleCallback = [
     }
   }
 ];
+const placeorder = async (req, res) => {
+    try {
+        const userId = new mongoose.Types.ObjectId(req.session.userId)
+        const { addressId } = req.body
+
+        console.log("userId    :", userId)
+        console.log("addressId :", addressId)
+
+        // ── 1. Validate ───────────────────────────────────────────────────────
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Please login to continue" })
+        }
+
+        if (!addressId) {
+            return res.status(400).json({ success: false, message: "Please select a delivery address" })
+        }
+
+        // ── 2. Fetch address ──────────────────────────────────────────────────
+        const address = await addressmodel.findOne({ _id: addressId, userId })
+        console.log("address   :", address)
+
+        if (!address) {
+            return res.status(404).json({ success: false, message: "Address not found" })
+        }
+
+        // ── 3. Fetch cart (one doc with items array) ──────────────────────────
+        const cart = await Cart.findOne({ user: userId }).populate("items.productId")
+        console.log("cart      :", cart)
+
+        if (!cart || cart.items.length === 0) {
+            return res.status(400).json({ success: false, message: "Your cart is empty" })
+        }
+
+        // ── 4. Build order items ──────────────────────────────────────────────
+        const items = []
+
+        for (const cartItem of cart.items) {
+            const product = cartItem.productId
+
+            if (!product) {
+                return res.status(400).json({ success: false, message: "A product in your cart was not found" })
+            }
+
+            const variant = product.variants.find(
+                v => v._id.toString() === cartItem.variantId?.toString()
+            )
+
+            if (!variant) {
+                return res.status(400).json({ success: false, message: `Variant not found for "${product.name}"` })
+            }
+
+            items.push({
+                productId:    product._id,
+                variantId:    variant._id,
+                productName:  product.name,
+                productImage: product.images?.[0] || "",
+                unitPrice:    variant.price,
+                quantity:     cartItem.quantity,
+                lineTotal:    variant.price * cartItem.quantity
+            })
+        }
+
+        // ── 5. Calculate totals ───────────────────────────────────────────────
+        const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0)
+        const shipping = subtotal > 500 ? 0 : 50
+        const tax      = parseFloat((subtotal * 0.05).toFixed(2))
+        const total    = parseFloat((subtotal + shipping + tax).toFixed(2))
+
+        console.log("subtotal  :", subtotal, "total :", total)
+
+        // ── 6. Create order ───────────────────────────────────────────────────
+        const order = await Order.create({
+            userId,
+            shippingAddress: {
+                addressId:   address._id,
+                fullname:    address.fullname,
+                phonenumber: address.phonenumber,
+                address:     address.address,
+                appartment:  address.appartment,
+                city:        address.city,
+                state:       address.state,
+                zipcode:     address.zipcode
+            },
+            items,
+            paymentMethod: "cash_on_delivery",
+            paymentStatus: "pending",
+            status:        "pending",
+            subtotal,
+            shipping,
+            tax,
+            total
+        })
+
+        console.log("order created :", order._id)
+
+        // ── 7. Save orderId to session ────────────────────────────────────────
+        req.session.lastOrderId = order._id  // ✅ was `newOrder._id` (undefined)
+
+        // ── 8. Clear cart ─────────────────────────────────────────────────────
+        await Cart.findOneAndUpdate(
+            { user: userId },
+            { $set: { items: [] } }
+        )
+
+        // ── 9. Return JSON so frontend can redirect ───────────────────────────
+        return res.status(201).json({ success: true, orderId: order._id })
+
+    } catch (err) {
+        console.error("Place order error:", err.message)
+        console.error(err.stack)
+        return res.status(500).json({ success: false, message: err.message || "Something went wrong" })
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const loadordersuccess = async (req, res) => {
+    try {
+        const orderId = req.session.lastOrderId
+
+        if (!orderId) {
+            return res.redirect("/")
+        }
+
+        const order = await Order.findById(orderId)
+
+        if (!order) {
+            return res.redirect("/")
+        }
+
+        // Map to the shape the EJS template expects
+        const orderData = {
+            id:       order._id,
+            subtotal: order.subtotal,
+            shipping: order.shipping,
+            tax:      order.tax,
+            total:    order.total,
+            items: order.items.map((item) => ({
+                name:     item.productName,
+                image:    item.productImage,
+                price:    item.unitPrice,
+                quantity: item.quantity,
+            })),
+        }
+
+        // Clear from session so stale data isn't shown on refresh
+        req.session.lastOrderId = null
+
+        res.render("user/ordersuccess", { order: orderData })
+
+    } catch (error) {
+        console.error("Error loading order success page:", error)
+        res.redirect("/")
+    }
+}
 
 
+const loadorder = async (req, res) => {
+  try {
+    const userId = req.session.userId
+    const page   = parseInt(req.query.page) || 1
+    const limit  = 10
+    const skip   = (page - 1) * limit
 
+    const [user, orders, totalOrders] = await Promise.all([
+      usermodel.findById(userId).select("name email profileImage createdAt"),
+      Order.find({ userId })
+        .sort({ createdAt: -1 })   // newest first
+        .skip(skip)
+        .limit(limit),
+      Order.countDocuments({ userId })
+    ])
+
+    if (!user) return res.redirect("/login")
+
+    res.render("user/order", {
+      user,
+      orders,
+      totalOrders,
+      currentPage: page,
+    })
+
+  } catch (err) {
+    console.error("Load orders error:", err)
+    res.redirect("/")
+  }
+}
+const loadorderdetails=async(req,res)=>{
+    try {
+    const userId  = req.session.userId
+    const orderId = req.params.id
+ 
+    const [user, order, totalOrders] = await Promise.all([
+      usermodel.findById(userId).select("name email profileImage createdAt"),
+      Order.findOne({ _id: orderId, userId }),   // userId check prevents accessing other users' orders
+      Order.countDocuments({ userId })
+    ])
+ 
+    if (!user)  return res.redirect("/login")
+    if (!order) return res.redirect("/orders")   // order not found or doesn't belong to user
+ 
+    res.render("user/orderdetails", { user, order, totalOrders })
+ 
+  } catch (err) {
+    console.error("Load order details error:", err)
+    res.redirect("/orders")
+  }
+}
+const cancelOrder = async (req, res) => {
+  try {
+    const { id }     = req.params;
+    const { reason } = req.body;
+    const userId     = req.session.userId;  // ✅ correct
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found." });
+    }
+
+    // ✅ use order.userId, not order.user
+    if (order.userId.toString() !== userId.toString()) {
+      return res.status(403).json({ success: false, message: "Unauthorised." });
+    }
+
+    if (order.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: `Order cannot be cancelled because it is already ${order.status}.`,
+      });
+    }
+
+    order.status       = "cancelled";
+    order.cancelReason = reason || "No reason provided";
+    order.cancelledAt  = new Date();
+
+    await order.save();
+
+    return res.status(200).json({ success: true, message: "Order cancelled successfully." });
+
+  } catch (err) {
+    console.error("cancelOrder error:", err);
+    return res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+const returnorder = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    if (order.status !== "delivered") {
+      return res.json({
+        success: false,
+        message: "Only delivered orders can be returned"
+      });
+    }
+
+    order.returnRequest = {
+      status: "requested",
+      reason,
+      requestedAt: new Date()
+    };
+
+    await order.save();
+
+    res.json({
+      success: true
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.json({
+      success: false,
+      message: "Something went wrong"
+    });
+
+  }
+};
 
 const logout= function(req, res){
   req.session.destroy(() => {
@@ -871,5 +1286,14 @@ module.exports = {
   loaddetails,
   toggleWishlist,
  loadWishlist,
+ loadcheckout,
+ addAddress,
+  editAddress,
+  loadordersuccess,
+  placeorder,
+  loadorder,
+  loadorderdetails,
+  cancelOrder,
+  returnorder,
   logout
 };

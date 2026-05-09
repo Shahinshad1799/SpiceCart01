@@ -69,6 +69,22 @@ route.get('/wishlist',user.loadWishlist);
 route.post('/wishlist/toggle',user.toggleWishlist);
 
 
+route.get("/checkout",user.loadcheckout)
+route.post("/address/add",user.addAddress);
+route.put("/address/edit/:addressId",user.editAddress);
+
+
+route.get("/ordersuccess",user.loadordersuccess)
+route.post("/place-order",user.placeorder)
+
+
+
+route.get("/order",user.loadorder)
+route.get("/orders/:id",user.loadorderdetails)
+route.patch("/orders/:id/cancel",user.cancelOrder)
+route.patch("/orders/:id/return",user.returnorder);
+
+
 
 route.get("/auth/google",user.googleAuth);
 route.get("/auth/google/callback",user.googleCallback);

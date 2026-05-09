@@ -162,34 +162,48 @@
   <%- include("../partials/footer") %>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-  async function removeFromWishlist(productId, btn) {
+  // ── HELPERS ──────────────────────────────────────────────────────────────
+
+  function updateItemCount() {
+    const remaining = document.querySelectorAll('.wishlist-row').length;
+    const countEl   = document.querySelector('.item-count');
+    if (countEl) {
+      countEl.textContent = `${remaining} item${remaining !== 1 ? 's' : ''} saved`;
+    }
+    return remaining;
+  }
+
+  function removeRow(productId) {
+    document.querySelector(`.wishlist-row[data-id="${productId}"]`)?.remove();
+  }
+
+  async function toggleWishlist(productId) {
+    await fetch('/wishlist/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ productId })
+    });
+  }
+
+  // ── REMOVE FROM WISHLIST ─────────────────────────────────────────────────
+
+  async function removeFromWishlist(productId) {
     try {
-      const res = await fetch('/wishlist/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ productId })
-      });
-
-      if (res.ok) {
-        const row = document.querySelector(`.wishlist-row[data-id="${productId}"]`);
-        row?.remove();
-
-        const remaining = document.querySelectorAll('.wishlist-row').length;
-        document.querySelector('.item-count').textContent =
-          `${remaining} item${remaining !== 1 ? 's' : ''} saved`;
-
-        if (remaining === 0) location.reload();
-      }
+      const res = await toggleWishlist(productId);
+      removeRow(productId);
+      const remaining = updateItemCount();
+      if (remaining === 0) location.reload();
     } catch (err) {
       console.error('Remove wishlist error:', err);
     }
   }
-</script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
+  // ── ADD TO CART ──────────────────────────────────────────────────────────
+
   async function addToCart(productId, variantId) {
     try {
       const res = await fetch('/cart/add', {
@@ -204,42 +218,27 @@
         return;
       }
 
-      if (res.ok) {
-        // ✅ Remove from wishlist
-        await fetch('/wishlist/toggle', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ productId })
-        });
+      if (!res.ok) throw new Error('Cart add failed');
 
-        // ✅ Remove row from UI
-        const row = document.querySelector(`.wishlist-row[data-id="${productId}"]`);
-        row?.remove();
+      await toggleWishlist(productId);
+      removeRow(productId);
+      const remaining = updateItemCount();
 
-        // ✅ Update count
-        const remaining = document.querySelectorAll('.wishlist-row').length;
-        const countEl = document.querySelector('.item-count');
-        if (countEl) {
-          countEl.textContent = `${remaining} item${remaining !== 1 ? 's' : ''} saved`;
-        }
+      const result = await Swal.fire({
+        icon: 'success',
+        title: 'Added to Cart!',
+        text: 'Item removed from wishlist and added to your cart.',
+        showCancelButton: true,
+        confirmButtonText: 'Go to Cart',
+        cancelButtonText: 'Continue Shopping',
+        confirmButtonColor: '#cd4e18',
+        cancelButtonColor: '#886e63',
+      });
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Added to Cart!',
-          text: 'Item removed from wishlist and added to your cart.',
-          showCancelButton: true,
-          confirmButtonText: 'Go to Cart',
-          cancelButtonText: 'Continue Shopping',
-          confirmButtonColor: '#cd4e18',
-          cancelButtonColor: '#886e63',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.location.href = '/cart';
-          } else if (remaining === 0) {
-            location.reload(); // show empty state
-          }
-        });
+      if (result.isConfirmed) {
+        window.location.href = '/cart';
+      } else if (remaining === 0) {
+        location.reload();
       }
 
     } catch (err) {
