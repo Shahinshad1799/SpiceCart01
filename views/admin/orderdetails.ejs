@@ -77,18 +77,15 @@
 </div>
 
 <div class="flex items-center gap-3">
+<% if (order.status === 'cancelled' || order.status === 'returned') { %>
 
-  <% if (order.status === 'cancelled') { %>
+  <% const isReturned = order.status === 'returned'; %>
+  <span class="px-4 py-2 <%= isReturned ? 'bg-purple-100 text-purple-600 border-purple-200' : 'bg-red-100 text-red-600 border-red-200' %> border rounded-lg text-sm font-bold flex items-center gap-2 cursor-not-allowed">
+    <span class="material-symbols-outlined text-base">lock</span>
+    <%= isReturned ? 'Returned' : 'Cancelled' %>
+  </span>
 
-    <%# 🔒 Cancelled — show locked badge, no dropdown %>
-    <div class="flex items-center gap-2">
-      <span class="px-4 py-2 bg-red-100 text-red-600 border border-red-200 rounded-lg text-sm font-bold flex items-center gap-2 cursor-not-allowed">
-        <span class="material-symbols-outlined text-base">lock</span>
-        Cancelled
-      </span>
-    </div>
-
-  <% } else { %>
+<% } else { %>
 
     <%# ✅ Active order — show dropdown %>
     <form action="/admin/orders/<%= order._id %>/status" method="POST">
@@ -103,10 +100,7 @@
         <option value="shipped"    <%= order.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
         <option value="delivered"  <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
         <option value="cancelled"  <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-        <option value="returned"
-<%= order.status === 'returned' ? 'selected' : '' %>>
-Returned
-</option>
+       
       </select>
     </form>
 
@@ -123,7 +117,11 @@ Returned
   </div>
 </div>
 <% } %>
-<% if (order.returnRequest && order.returnRequest.status === 'requested') { %>
+<% if (
+  order.returnRequest &&
+  order.returnRequest.reason &&
+  order.returnRequest.status === 'requested'
+) { %>
 
 <div class="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-5">
 

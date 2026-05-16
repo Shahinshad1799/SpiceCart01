@@ -183,13 +183,14 @@ body {
 <div>
 <label class="form-label" for="catagory">Category</label>
 <select class="form-input" name="catagory" required>
- <option value="">Select a category</option>
+  <option value="">Select a category</option>
 
-<% catagory.forEach(cat => { %>
-  <option value="<%= cat._id %>">
-    <%= cat.name %>
-  </option>
-<% }) %>
+  <% catagory.forEach(cat => { %>
+    <option value="<%= cat._id %>" 
+      <%= cat._id.toString() === product.catagory._id.toString() ? 'selected' : '' %>>
+      <%= cat.name %>
+    </option>
+  <% }) %>
 
 </select>
 </div>

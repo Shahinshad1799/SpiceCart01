@@ -59,9 +59,19 @@ const loadchangeemail=(req,res)=>{
   res.render("user/changeemail")
 }
 
+
+
+
 const loadcheckout = async (req, res) => {
   try {
     const userId = req.session.userId;
+
+    // Check if user is blocked
+    const user = await usermodel.findById(userId);
+    if (!user || user.isBlocked) {
+      req.session.destroy();
+      return res.redirect('/login');
+    }
 
     const cart = await Cart.findOne({ user: userId })
       .populate("items.productId");
@@ -79,9 +89,36 @@ const loadcheckout = async (req, res) => {
       });
     }
 
-    let subtotal = 0;
+    // Filter out blocked products from cart
+    const activeItems = cart.items.filter(
+      item => item.productId && !item.productId.isBlocked  // ✅ skip blocked products
+    );
 
-    cart.items.forEach(item => {
+    // If any items were blocked, update the cart in DB to remove them
+    if (activeItems.length !== cart.items.length) {
+      const blockedIds = cart.items
+        .filter(item => !item.productId || item.productId.isBlocked)
+        .map(item => item._id);
+
+      await Cart.findOneAndUpdate(
+        { user: userId },
+        { $pull: { items: { _id: { $in: blockedIds } } } }
+      );
+    }
+
+    if (activeItems.length === 0) {
+      return res.render("user/checkout", {
+        cartItems: [],
+        addresses: addresses || [],
+        subtotal: 0,
+        shipping: 0,
+        tax: 0,
+        total: 0
+      });
+    }
+
+    let subtotal = 0;
+    activeItems.forEach(item => {
       const variant = item.productId.variants.id(item.variantId);
       if (variant) {
         subtotal += variant.price * item.quantity;
@@ -93,7 +130,7 @@ const loadcheckout = async (req, res) => {
     const total = subtotal + shipping + tax;
 
     res.render("user/checkout", {
-      cartItems: cart.items,
+      cartItems: activeItems,  // ✅ only non-blocked items
       addresses: addresses || [],
       subtotal,
       shipping,
@@ -182,87 +219,112 @@ const editAddress = async (req, res) => {
 };
 
 
-
 const toggleWishlist = async (req, res) => {
   try {
-    const { productId, variant } = req.body;
+    const { productId, variantId } = req.body;  // ✅ moved to top, available everywhere
     const userId = req.session.userId;
 
     if (!userId) {
       return res.status(401).json({ success: false, message: 'Not logged in' });
     }
 
-  const cart = await Cart.findOne({ user: userId });
-const inCart = cart?.items?.some(item => 
-  item.product && item.product.toString() === productId  // ✅ null check added
-);
-
-if (inCart) {
-  return res.status(400).json({ 
-    success: false, 
-    message: 'This item is already in your cart' 
-  });
-}
-
-    let wishlist = await Wishlist.findOne({ user: userId });
-    if (!wishlist) {
-      wishlist = new Wishlist({ user: userId, products: [] });
+    // Cart check
+    const cart = await Cart.findOne({ user: userId });
+    const inCart = cart?.items?.some(item =>
+      item.product && item.product.toString() === productId
+    );
+    if (inCart) {
+      return res.status(400).json({ success: false, message: 'This item is already in your cart' });
     }
 
-    const index = wishlist.products.findIndex(item => {
-      if (!item.product) return false;
-      return item.product.toString() === productId;
-    });
+    // Check if already in wishlist
+    const wishlist = await Wishlist.findOne({ user: userId });
+    const alreadyExists = wishlist?.products.some(
+      item => item.product && item.product.toString() === productId
+    );
 
-    if (index === -1) {
-      // ✅ Always fetch from DB — never trust variant from body
-      const product = await productmodel.findById(productId);
-      const first = product?.variants?.[0];
+    if (alreadyExists) {
+      await Wishlist.findOneAndUpdate(
+        { user: userId },
+        { $pull: { products: { product: productId } } }
+      );
+      return res.status(200).json({ success: true, wishlisted: false });
 
-      if (!first) {
+    } else {
+      const product = await Product.findById(productId);
+      const variant = product.variants.id(variantId);  // ✅ fixed typo: varient → variant
+
+      if (!variant) {  // ✅ fixed typo: varient → variant
         return res.status(404).json({ success: false, message: 'Product variant not found' });
       }
 
-      wishlist.products.push({
-        product: productId,
-        variant: {
-          variantId: first._id,
-          name: first.name,
-          price: Number(first.price),
-          stock: Number(first.stock)
-        }
-      });
-    } else {
-      wishlist.products.splice(index, 1);
+      await Wishlist.findOneAndUpdate(
+        { user: userId },
+        {
+          $push: {
+            products: {
+              product: productId,
+              variant: {
+                variantId: variant._id,    // ✅ was: first._id
+                name: variant.name,        // ✅ was: first.name
+                price: Number(variant.price),  // ✅ was: first.price
+                stock: Number(variant.stock)   // ✅ was: first.stock
+              }
+            }
+          }
+        },
+        { upsert: true, new: true }
+      );
+      return res.status(200).json({ success: true, wishlisted: true });
     }
-
-    await wishlist.save();
-    res.status(200).json({ success: true });
 
   } catch (err) {
     console.log(err);
     res.status(500).json({ success: false });
   }
 };
-
 const loadWishlist = async (req, res) => {
   try {
-    const wishlist = await Wishlist.findOne({ user: req.session.userId })
+    const userId = req.session.userId;
+
+    const user = await usermodel.findById(userId);
+    if (!user || user.isBlocked) {
+      req.session.destroy();
+      return res.redirect('/login');
+    }
+
+    const wishlist = await Wishlist.findOne({ user: userId })
       .populate('products.product');
 
-    // Filter out any items where the product was deleted or not found
-    const wishlistItems = (wishlist?.products || []).filter(
-      (item) => item.product !== null && item.product !== undefined
+    const allItems = wishlist?.products || [];
+
+    // Separate blocked/deleted from active
+    const blockedItems = allItems.filter(
+      item => !item.product || item.product.status === 'Blocked'  // ✅ matches your schema
+    );
+    const wishlistItems = allItems.filter(
+      item => item.product && item.product.status === 'Active'    // ✅ matches your schema
     );
 
-    res.render('user/wishlist', {
-      wishlistItems
-    });
+    // Auto-remove blocked/deleted products from wishlist in DB
+    if (blockedItems.length > 0) {
+      const blockedProductIds = blockedItems.map(item => item.product?._id || item.product);
+      await Wishlist.findOneAndUpdate(
+        { user: userId },
+        { $pull: { products: { product: { $in: blockedProductIds } } } }  // ✅ pull by product field
+      );
+    }
+
+    res.render('user/wishlist', { wishlistItems });
+
   } catch (err) {
     console.log(err);
     res.redirect('/');
   }
 };
+
+
+
 const loadshop = async (req, res) => {
   try {
     const { category, maxPrice, error, sort } = req.query;
@@ -320,7 +382,7 @@ const loadshop = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    // ✅ Fixed wishlist extraction
+    // Fixed wishlist extraction
     let wishlist = [];
     if (req.session?.userId) {
       const wishlistDoc = await Wishlist.findOne({ user: req.session.userId });
@@ -352,36 +414,40 @@ const loaddetails = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    const product = await Product.findById(productId);
+    const product = await productmodel.findById(productId);
 
-   if (!product || product.status === "Blocked") {
-  return res.redirect("/shop?error=Product is blocked");
-}
+    if (!product || product.status === "Blocked") {
+      return res.redirect("/shop?error=Product is blocked");
+    }
 
-    //  SELECT VARIANT
     let selectedVariant = null;
-
-    // from URL (?variantId=...)
     if (req.query.variantId) {
       selectedVariant = product.variants.id(req.query.variantId);
     }
-
-    // fallback → first variant
     if (!selectedVariant) {
       selectedVariant = product.variants[0];
     }
 
-    // related products
     const relatedProducts = await Product.find({
       catagory: product.catagory,
       _id: { $ne: productId },
       status: "Active"
     }).limit(4);
 
+    //  fetch wishlist and pass as boolean
+    let isWishlisted = false;
+    if (req.session?.userId) {
+      const wishlistDoc = await Wishlist.findOne({ user: req.session.userId });
+      isWishlisted = wishlistDoc
+        ? wishlistDoc.products.some(p => p.product.toString() === productId)
+        : false;
+    }
+
     res.render("user/productdetails", {
       product,
       relatedProducts,
-      selectedVariant   // THIS WAS MISSING
+      selectedVariant,
+      wishlist: isWishlisted  //  now passed correctly
     });
 
   } catch (error) {
@@ -1042,8 +1108,18 @@ const placeorder = async (req, res) => {
             total
         })
 
-        console.log("order created :", order._id)
-
+       // ── 7. Deduct stock ───────────────────────────────────────────────────
+for (const item of items) {
+  await Product.findOneAndUpdate(
+    { 
+      _id: item.productId, 
+      'variants._id': item.variantId 
+    },
+    { 
+      $inc: { 'variants.$.stock': -item.quantity }  // ✅ deduct quantity from variant stock
+    }
+  );
+}
         // ── 7. Save orderId to session ────────────────────────────────────────
         req.session.lastOrderId = order._id  // ✅ was `newOrder._id` (undefined)
 
@@ -1161,7 +1237,7 @@ const cancelOrder = async (req, res) => {
   try {
     const { id }     = req.params;
     const { reason } = req.body;
-    const userId     = req.session.userId;  // ✅ correct
+    const userId     = req.session.userId;
 
     const order = await Order.findById(id);
 
@@ -1169,7 +1245,6 @@ const cancelOrder = async (req, res) => {
       return res.status(404).json({ success: false, message: "Order not found." });
     }
 
-    // ✅ use order.userId, not order.user
     if (order.userId.toString() !== userId.toString()) {
       return res.status(403).json({ success: false, message: "Unauthorised." });
     }
@@ -1179,6 +1254,19 @@ const cancelOrder = async (req, res) => {
         success: false,
         message: `Order cannot be cancelled because it is already ${order.status}.`,
       });
+    }
+
+    // ✅ Restore stock for each item
+    for (const item of order.items) {
+      await Product.findOneAndUpdate(
+        { 
+          _id: item.productId, 
+          'variants._id': item.variantId 
+        },
+        { 
+          $inc: { 'variants.$.stock': item.quantity }  // ✅ add back the quantity
+        }
+      );
     }
 
     order.status       = "cancelled";

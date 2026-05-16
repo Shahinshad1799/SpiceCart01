@@ -42,9 +42,14 @@ placeholder="Search for saffron, curry..." />
 </a>
 
 <a href="/wishlist">
-<button class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors">
-<span class="material-symbols-outlined">favorite</span>
-</button>
+  <button class="relative flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors">
+    <span class="material-symbols-outlined">favorite</span>
+    <% if (locals.wishCount && wishCount > 0) { %>
+      <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+        <%= wishCount > 99 ? '99+' : wishCount %>
+      </span>
+    <% } %>
+  </button>
 </a>
 
 

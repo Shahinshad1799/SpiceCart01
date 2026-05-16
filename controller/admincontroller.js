@@ -618,8 +618,7 @@ const loadorderdetails = async (req, res) => {
     const order = await ordermodel
       .findById(orderId)
       .populate("userId");
-
-    // ✅ important return
+    //  important return
     if (!order) {
       return res.render("admin/order", {
         orders: [],

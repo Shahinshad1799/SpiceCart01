@@ -164,38 +164,35 @@
          class="group flex flex-col gap-4 p-4 rounded-xl transition-all duration-300 hover:shadow-lg hover:bg-white border border-transparent hover:border-[#f4f1f0] cursor-pointer">
 
         <!-- IMAGE -->
-        <div class="w-full aspect-square bg-cover rounded-lg overflow-hidden relative">
+      
+<div class="w-full aspect-square bg-cover rounded-lg overflow-hidden relative">
 
-          <% const img = product.images && product.images.length > 0 
-              ? product.images[0] 
-              : "default.png"; %>
+  <% const img = product.images && product.images.length > 0 
+      ? product.images[0] 
+      : "default.png"; %>
 
-          <div 
-            class="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-500 group-hover:scale-105"
-            style="background-image: url('/uploads/product/<%= img %>');">
-          </div>
+  <div 
+    class="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-500 group-hover:scale-105"
+    style="background-image: url('/uploads/product/<%= img %>');">
+  </div>
+
   <% const isWishlisted = wishlist.includes(product._id.toString()); %>
+  <button
+    class="wishlist-btn absolute top-2 right-2 size-9 flex items-center justify-center rounded-full border transition-colors z-10
+           <%= isWishlisted ? 'border-red-200 bg-red-50' : 'border-[#E6E0DC] hover:bg-red-50' %>"
+    data-id="<%= product._id %>"
+    data-wishlisted="<%= isWishlisted %>"
+    data-variant-id="<%= product.variants[0]?._id %>"
+    title="<%= isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist' %>"
+    onclick="event.preventDefault(); event.stopPropagation();">
+    <span class="material-symbols-outlined text-[18px] pointer-events-none"
+          style="font-variation-settings: 'FILL' <%= isWishlisted ? 1 : 0 %>; color: <%= isWishlisted ? '#E24B4A' : '#886e63' %>;">
+      favorite
+    </span>
+  </button>
 
-<button
-  class="wishlist-btn absolute top-2 right-2 size-9 flex items-center justify-center rounded-full border transition-colors z-10
-         <%= isWishlisted ? 'border-red-200 bg-red-50' : 'border-[#E6E0DC] hover:bg-red-50' %>"
-  data-id="<%= product._id %>"
-  data-wishlisted="<%= isWishlisted %>"
-  title="<%= isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist' %>">
-  <span class="material-symbols-outlined text-[18px] pointer-events-none"
-        style="font-variation-settings: 'FILL' <%= isWishlisted ? 1 : 0 %>; color: <%= isWishlisted ? '#E24B4A' : '#886e63' %>;">
-    favorite
-  </span>
-</button>
-          <!-- Hover Overlay -->
-          <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <div class="bg-white/90 px-4 py-2 rounded-full text-sm font-bold text-[#181311] shadow-sm transform translate-y-2 group-hover:translate-y-0 transition-transform">
-              View Details
-            </div>
-          </div>
 
-        </div>
-
+</div>
         <!-- DETAILS -->
         <div class="flex justify-between items-start">
 
@@ -305,7 +302,10 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ productId })
+        body: JSON.stringify({ 
+  productId,
+  variantId: btn.dataset.variantId  //  sends first variant by default
+})
         });
 
         if (res.status === 401) {

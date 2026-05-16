@@ -89,17 +89,31 @@
         <div class="text-3xl font-bold">₹<span id="price"><%= product.variants[0]?.price || 0 %></span></div>
       </div>
 
+<!-- ADD stock badge here: -->
+<div id="stockBadge">
+  <% if (product.variants[0]?.stock > 0) { %>
+    <span class="text-green-600 text-sm font-medium">
+      In Stock (<%= product.variants[0].stock %> available)
+    </span>
+  <% } else { %>
+    <span class="text-red-500 text-sm font-medium">Out of Stock</span>
+  <% } %>
+</div>
       <div>
         <p class="font-bold">Weight</p>
         <div class="flex gap-3 flex-wrap mt-2">
-          <% product.variants.forEach((v, i) => { %>
-            <button
-              type="button"
-              onclick="selectVariant('<%= v._id %>', '<%= v.price %>', this)"
-              class="variant-btn h-10 px-4 rounded-lg border <%= i === 0 ? 'bg-black text-white border-black' : 'bg-white' %>">
-              <%= v.name %>
-            </button>
-          <% }) %>
+        <% product.variants.forEach((v, i) => { %>
+  <button
+    type="button"
+    onclick="selectVariant('<%= v._id %>', '<%= v.price %>', <%= v.stock %>, this)"
+    data-stock="<%= v.stock %>"
+    class="variant-btn h-10 px-4 rounded-lg border
+           <%= i === 0 ? 'bg-black text-white border-black' : 'bg-white' %>
+           <%= v.stock === 0 ? 'opacity-40 cursor-not-allowed' : '' %>">
+    <%= v.name %>
+    <% if (v.stock === 0) { %><span class="text-xs ml-1">(Out of stock)</span><% } %>
+  </button>
+<% }) %>
         </div>
       </div>
 
@@ -114,12 +128,20 @@
 
     <div class="flex flex-col gap-3 mt-2">
   <div class="flex gap-3 mt-4">
-    <form action="/cart/add" method="POST" class="flex-1">
-      <input type="hidden" name="productId" value="<%= product._id %>">
-      <input type="hidden" name="variantId" id="variantId" value="<%= product.variants[0]._id %>">
-      <input type="hidden" name="quantity" id="finalQty" value="1">
-      <button type="submit" class="w-full h-12 rounded-lg bg-gray-200 font-bold">Add to Cart</button>
-    </form>
+ <!-- REPLACE the form/button: -->
+<form action="/cart/add" method="POST" class="flex-1">
+  <input type="hidden" name="productId" value="<%= product._id %>">
+  <input type="hidden" name="variantId" id="variantId" value="<%= product.variants[0]._id %>">
+  <input type="hidden" name="quantity" id="finalQty" value="1">
+  <button
+    type="submit"
+    id="addToCartBtn"
+    class="w-full h-12 rounded-lg font-bold transition-colors
+           <%= product.variants[0]?.stock === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300' %>"
+    <%= product.variants[0]?.stock === 0 ? 'disabled' : '' %>>
+    <%= product.variants[0]?.stock === 0 ? 'Out of Stock' : 'Add to Cart' %>
+  </button>
+</form>
 
     <!-- WISHLIST BUTTON -->
    <% const isWishlisted = (typeof wishlist !== 'undefined' && wishlist); %>
@@ -284,24 +306,58 @@ function changeImage(imgName, el) {
   el.classList.add('border-2', 'border-black');
 }
 
-  function selectVariant(variantId, price, el) {
-    document.getElementById('price').innerText    = price;
-    document.getElementById('variantId').value    = variantId;
-    document.querySelectorAll('.variant-btn').forEach(btn => {
-      btn.classList.remove('bg-black', 'text-white');
-      btn.classList.add('bg-white');
-    });
-    el.classList.add('bg-black', 'text-white');
+// REPLACE selectVariant with this:
+function selectVariant(variantId, price, stock, el) {
+  document.getElementById('price').innerText = price;
+  document.getElementById('variantId').value = variantId;
+
+  // Update wishlist button
+  const wishBtn = document.querySelector('.wishlist-btn');
+  if (wishBtn) wishBtn.dataset.variantId = variantId;
+
+  // Update variant button styles
+  document.querySelectorAll('.variant-btn').forEach(btn => {
+    btn.classList.remove('bg-black', 'text-white');
+    btn.classList.add('bg-white');
+  });
+  el.classList.add('bg-black', 'text-white');
+
+  // ✅ Update stock badge
+  const stockBadge = document.getElementById('stockBadge');
+  if (stock > 0) {
+    stockBadge.innerHTML = `<span class="text-green-600 text-sm font-medium">In Stock (${stock} available)</span>`;
+  } else {
+    stockBadge.innerHTML = `<span class="text-red-500 text-sm font-medium">Out of Stock</span>`;
   }
 
-  function changeQty(val) {
-    const qty = document.getElementById('qty');
-    const current = parseInt(qty.value) || 1;
-    if (current + val >= 1) {
-      qty.value = current + val;
-      document.getElementById('finalQty').value = current + val;
-    }
+  // ✅ Update Add to Cart button
+  const addToCartBtn = document.getElementById('addToCartBtn');
+  if (stock === 0) {
+    addToCartBtn.disabled = true;
+    addToCartBtn.textContent = 'Out of Stock';
+    addToCartBtn.className = 'w-full h-12 rounded-lg font-bold bg-gray-100 text-gray-400 cursor-not-allowed';
+  } else {
+    addToCartBtn.disabled = false;
+    addToCartBtn.textContent = 'Add to Cart';
+    addToCartBtn.className = 'w-full h-12 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 transition-colors';
   }
+
+  // Update max quantity allowed
+  const qtyInput = document.getElementById('qty');
+  qtyInput.max = stock;
+}
+
+// UPDATE changeQty to respect stock:
+function changeQty(val) {
+  const qty = document.getElementById('qty');
+  const current = parseInt(qty.value) || 1;
+  const max = parseInt(qty.max) || Infinity;
+  const newVal = current + val;
+  if (newVal >= 1 && newVal <= max) {
+    qty.value = newVal;
+    document.getElementById('finalQty').value = newVal;
+  }
+}
 
   document.getElementById('qty').addEventListener('input', function () {
     const val = Math.max(1, parseInt(this.value) || 1);
@@ -316,79 +372,15 @@ function changeImage(imgName, el) {
       e.stopPropagation();
 
       const productId = btn.dataset.id;
-      const variantId = btn.dataset.variantId;
-      const variantName = btn.dataset.variantName;
-      const variantPrice = btn.dataset.variantPrice;
-      const variantStock = btn.dataset.variantStock;
       const isWishlisted = btn.dataset.wishlisted === 'true';
-      const svg = btn.querySelector('svg');
+      const icon = btn.querySelector('.material-symbols-outlined');
 
       try {
         const res = await fetch('/wishlist/toggle', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({
-            productId,
-            variant: {
-              variantId,
-              name: variantName,
-              price: Number(variantPrice),
-              stock: Number(variantStock)
-            }
-          })
-        });
-
-        if (res.ok) {
-          const nowWishlisted = !isWishlisted;
-          btn.dataset.wishlisted = String(nowWishlisted);
-          svg.setAttribute('fill', nowWishlisted ? '#E24B4A' : 'none');
-          svg.setAttribute('stroke', nowWishlisted ? '#E24B4A' : '#886e63');
-          btn.style.transform = 'scale(1.3)';
-          setTimeout(() => btn.style.transform = '', 200);
-        }
-      } catch (err) {
-        console.error('Wishlist error:', err);
-      }
-    });
-  });
-
-  
-</script>
-<script>
-  document.querySelectorAll('.wishlist-btn').forEach(btn => {
-
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const productId = btn.dataset.id;
-      const variantId = btn.dataset.variantId;
-      const variantName = btn.dataset.variantName;
-      const variantPrice = btn.dataset.variantPrice;
-      const variantStock = btn.dataset.variantStock;
-
-      const isWishlisted = btn.dataset.wishlisted === 'true';
-
-      const icon = btn.querySelector('.material-symbols-outlined');
-
-      try {
-
-        const res = await fetch('/wishlist/toggle', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            productId,
-            variant: {
-              variantId,
-              name: variantName,
-              price: Number(variantPrice),
-              stock: Number(variantStock)
-            }
-          })
+       body: JSON.stringify({ productId, variantId: btn.dataset.variantId }) // ✅ backend fetches variant from DB anyway
         });
 
         if (res.status === 401) {
@@ -396,43 +388,34 @@ function changeImage(imgName, el) {
           return;
         }
 
+        if (res.status === 400) {
+          const data = await res.json();
+          alert(data.message); // "already in cart"
+          return;
+        }
+
         if (res.ok) {
-
           const nowWishlisted = !isWishlisted;
-
           btn.dataset.wishlisted = String(nowWishlisted);
 
-          // icon fill
-          icon.style.fontVariationSettings =
-            `'FILL' ${nowWishlisted ? 1 : 0}`;
+          // ✅ update icon fill
+          icon.style.fontVariationSettings = `'FILL' ${nowWishlisted ? 1 : 0}`;
+          icon.style.color = nowWishlisted ? '#E24B4A' : '#886e63';
 
-          // icon color
-          icon.style.color =
-            nowWishlisted ? '#E24B4A' : '#886e63';
-
-          // button bg/border
+          // ✅ update button style
           btn.classList.toggle('border-red-200', nowWishlisted);
           btn.classList.toggle('bg-red-50', nowWishlisted);
-
           btn.classList.toggle('border-[#E6E0DC]', !nowWishlisted);
 
-          // animation
+          // ✅ animation
           btn.style.transform = 'scale(1.2)';
-
-          setTimeout(() => {
-            btn.style.transform = '';
-          }, 200);
-
+          setTimeout(() => btn.style.transform = '', 200);
         }
 
       } catch (err) {
-
         console.error('Wishlist error:', err);
-
       }
-
     });
-
   });
 </script>
 </html>

@@ -83,6 +83,7 @@ const dotenv = require("dotenv").config();
 const passport = require("./config/passport");
 const methodOverride = require('method-override');
 const Cart = require('./model/cartmodel');
+const wishlist=require("./model/wishlistmodel");
 
 // 1. BODY PARSING first
 app.use(express.urlencoded({ extended: true }));
@@ -126,7 +127,20 @@ app.use(async (req, res, next) => {
   }
   next();
 });
-
+app.use(async (req, res, next) => {
+  if (req.session && req.session.userId) {
+    try {
+      const Wishlist = await wishlist.findOne({ user: req.session.userId });
+      res.locals.wishCount = Wishlist ? Wishlist.products.length : 0; // ✅ products not items
+    } catch (err) {
+      console.log('Wishlist error:', err);
+      res.locals.wishCount = 0;
+    }
+  } else {
+    res.locals.wishCount = 0;
+  }
+  next();
+});
 // 7. USER LOCALS
 app.use((req, res, next) => {
   res.locals.user = req.session.user;
