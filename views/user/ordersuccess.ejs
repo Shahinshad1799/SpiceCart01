@@ -44,7 +44,7 @@
                 <p class="text-[#181311] font-medium text-sm"><%= item.name %></p>
                 <p class="text-[#886e63] text-xs">Qty: <%= item.quantity %></p>
               </div>
-              <p class="text-[#181311] font-bold text-sm">$<%= (item.price * item.quantity).toFixed(2) %></p>
+              <p class="text-[#181311] font-bold text-sm">₹<%= (item.price * item.quantity).toFixed(2) %></p>
             </div>
             <% }); %>
           </div>

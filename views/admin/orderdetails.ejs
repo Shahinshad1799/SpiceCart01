@@ -87,22 +87,25 @@
 
 <% } else { %>
 
-    <%# ✅ Active order — show dropdown %>
     <form action="/admin/orders/<%= order._id %>/status" method="POST">
-      <select
-        name="status"
-        onchange="this.form.submit()"
-        class="form-input rounded-lg text-[#121715] focus:ring-primary border border-[#dde4e2] bg-white h-11 px-4 text-sm font-medium"
-      >
-        <option value="pending"    <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
-        <option value="confirmed"  <%= order.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
-        <option value="processing" <%= order.status === 'processing' ? 'selected' : '' %>>Processing</option>
-        <option value="shipped"    <%= order.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
-        <option value="delivered"  <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
-        <option value="cancelled"  <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-       
-      </select>
-    </form>
+  <%
+    const statusOrder = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    const currentIndex = statusOrder.indexOf(order.status);
+  %>
+  <select
+    name="status"
+    onchange="this.form.submit()"
+    class="form-input rounded-lg text-[#121715] focus:ring-primary border border-[#dde4e2] bg-white h-11 px-4 text-sm font-medium"
+  >
+    <% statusOrder.forEach((s, i) => { %>
+      <% if (i >= currentIndex) { %>
+        <option value="<%= s %>" <%= order.status === s ? 'selected' : '' %>>
+          <%= s.charAt(0).toUpperCase() + s.slice(1) %>
+        </option>
+      <% } %>
+    <% }) %>
+  </select>
+</form>
 
   <% } %>
 

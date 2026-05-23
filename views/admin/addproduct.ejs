@@ -192,7 +192,7 @@ body {
 </div>
 <div>
 <label class="form-label" for="catagory">Category</label>
-<select class="form-input" name="catagory" required>
+<select class="form-input" name="catagory">
  <option value="">Select a category</option>
 
 <% catagory.forEach(cat => { %>
@@ -227,9 +227,9 @@ body {
 <p id="variantError" class="text-red-500 text-xs mt-2"></p>
 </div>
 <div>
-<label class="form-label text-xs uppercase tracking-wider" for="variant_price">Price ($)</label>
+<label class="form-label text-xs uppercase tracking-wider" for="variant_price">Price (₹)</label>
 <div class="relative">
-<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">₹</span>
 <input class="form-input pl-6 text-sm" id="variant_price" placeholder="0.00" step="0.01" type="number"/>
 <p id="variantError" class="text-red-500 text-xs mt-2"></p>
 </div>
@@ -258,7 +258,7 @@ body {
 
 <div id="variantList" class="space-y-4"></div>
 
-
+</div>
 </section>
 <section>
   <div class="header">
@@ -412,7 +412,7 @@ function openCrop(index) {
   modal.classList.remove("hidden");
   modal.classList.add("flex");
 
-  setTimeout(() => {  // ✅ VERY IMPORTANT
+  setTimeout(() => {  //  VERY IMPORTANT
     if (cropper) cropper.destroy();
 
     cropper = new Cropper(img, {
@@ -482,16 +482,17 @@ function updateFileInput() {
 <script>
 let variants = [];
 let editIndex = -1;
-
 function addVariant() {
   const name = document.getElementById("variant_name").value;
   const price = document.getElementById("variant_price").value;
   const stock = document.getElementById("variant_stock").value;
 
   if (!name || !price || !stock) {
-    errorBox.innerHTML = "Please fill all fields";
-    return;
+    document.getElementById("variantError").innerText = "Please fill all fields";
+    return; // ← stop here
   }
+
+  document.getElementById("variantError").innerText = ""; // clear error on success
 
   const variant = {
     name,
@@ -513,6 +514,7 @@ function addVariant() {
   clearInputs();
 }
 
+
 function renderVariants() {
   const container = document.getElementById("variantList");
   container.innerHTML = "";
@@ -530,7 +532,7 @@ function renderVariants() {
 
         <div>
           <span class="text-xs text-gray-400">Price</span>
-          <p>$${v.price}</p>
+          <p>₹${v.price}</p>
         </div>
 
         <div>
@@ -545,7 +547,7 @@ function renderVariants() {
       </div>
     `;
 
-    // ✅ hidden inputs (append separately)
+    // hidden inputs (append separately)
     const nameInput = document.createElement("input");
     nameInput.type = "hidden";
     nameInput.name = `variants[${index}][name]`;

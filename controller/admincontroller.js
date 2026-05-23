@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt"); // only if you hash password
 require("dotenv").config();
 const catagorymodel=require("../model/catagorymodel")
 const productmodel=require("../model/productmodel")
-const { productSchema } = require("../validators/productvalidator");
+const { productSchema, variantSchema } = require("../validators/productvalidator");
 const ordermodel=require("../model/ordermodel")
 
 const loadadminlogin=function(req,res){
@@ -29,6 +29,7 @@ const loadaddproduct = async (req, res) => {
 // ADD PRODUCT
 const addProduct = async (req, res) => {
   try {
+    const { name,description } = req.body;
     const categories = await catagorymodel.find({ status: "Active" });
 
     //  handle images
@@ -47,13 +48,18 @@ const addProduct = async (req, res) => {
       }
 
       variants = variants.map(v => ({
-        name: v.name,
-        price: v.price,
-        stock: v.stock
-      }));
+  name: v.name,
+  price: Number(v.price),
+  stock: Number(v.stock)
+}));
     }
+  //  if(!name || !description || !req.body.catagory){
+  //   return res.render("admin/addproduct", {
+  //     error: "Please fill all required fields",
+  //     catagory: categories
+  //   });
+  //  }
 
-    // ZOD VALIDATION 
     const parsed = productSchema.safeParse({
       name: req.body.name,
       description: req.body.description,
@@ -62,7 +68,8 @@ const addProduct = async (req, res) => {
     });
 
     if (!parsed.success) {
-      const errorMessage = parsed.error.errors[0].message;
+    const errorMessage = parsed.error.issues[0].message;
+ 
 
       return res.render("admin/addproduct", {
         error: errorMessage,
@@ -70,7 +77,7 @@ const addProduct = async (req, res) => {
       });
     }
 
-    // IMAGE VALIDATION 
+    
     if (images.length < 3) {
       return res.render("admin/addproduct", {
         error: "Please upload at least 3 image",

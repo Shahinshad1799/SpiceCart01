@@ -8,9 +8,9 @@ const variantSchema = z.object({
 
 const productSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  description: z.string().min(5, "Description too short"),
+  description: z.string().min(5, "Description is required"),
   catagory: z.string().min(1, "Category required"),
   variants: z.array(variantSchema).min(1, "At least one variant required")
 });
 
-module.exports = { productSchema };
+module.exports = { productSchema ,variantSchema};

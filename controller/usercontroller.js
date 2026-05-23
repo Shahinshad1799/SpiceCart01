@@ -1186,25 +1186,37 @@ const loadorder = async (req, res) => {
   try {
     const userId = req.session.userId
     const page   = parseInt(req.query.page) || 1
-    const limit  = 10
+    const limit  = 5
     const skip   = (page - 1) * limit
+    const search = req.query.q || ""
 
-    const [user, orders, totalOrders] = await Promise.all([
-      usermodel.findById(userId).select("name email profileImage createdAt"),
-      Order.find({ userId })
-        .sort({ createdAt: -1 })   // newest first
+    const user = await usermodel.findById(userId).select("name email profileImage createdAt")
+    if (!user) return res.redirect("/login")
+
+    const searchQuery = {
+      userId,
+      ...(search && {
+        orderId: { $regex: search, $options: "i" }
+      })
+    }
+
+    const [orders, totalOrders] = await Promise.all([
+      Order.find(searchQuery)
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
-      Order.countDocuments({ userId })
+      Order.countDocuments(searchQuery)
     ])
 
-    if (!user) return res.redirect("/login")
+    const totalPages = Math.ceil(totalOrders / limit)
 
     res.render("user/order", {
       user,
       orders,
       totalOrders,
       currentPage: page,
+      totalPages,
+      search
     })
 
   } catch (err) {
@@ -1385,3 +1397,4 @@ module.exports = {
   returnorder,
   logout
 };
+

@@ -121,86 +121,74 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-[#e6e3db] dark:divide-gray-800">
-<% product.forEach(product => { %>
+<% product.forEach(product => { 
+  let prices = product.variants.map(v => v.price);
+  let min = Math.min(...prices);
+  let max = Math.max(...prices);
+  let totalStock = product.variants && product.variants.length > 0 
+    ? product.variants.reduce((sum, v) => sum + v.stock, 0) 
+    : 0;
+  const isActive = product.status === 'Active';
+%>
 <tr class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors group">
 
-<td class="px-6 py-4">
-<div class="flex items-center gap-4">
-<div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700"
-   style="background-image: url('/uploads/product/<%= product.images[0] %>');">
-</div>
-<div>
-<p class="font-bold text-[#181611] dark:text-white"><%= product.name %></p>
-</div>
-</div>
-</td>
+  <td class="px-6 py-4">
+    <div class="flex items-center gap-4">
+      <div class="size-14 rounded-lg bg-cover bg-center border border-[#e6e3db] dark:border-gray-700"
+         style="background-image: url('/uploads/product/<%= product.images[0] %>');">
+      </div>
+      <div>
+        <p class="font-bold text-[#181611] dark:text-white"><%= product.name %></p>
+      </div>
+    </div>
+  </td>
 
-<td class="px-6 py-4">
-<span class="text-sm font-medium text-[#181611] dark:text-gray-300">
-<%= product.catagory ? product.catagory.name : "No Category" %>
-</span>
-</td>
+  <td class="px-6 py-4">
+    <span class="text-sm font-medium text-[#181611] dark:text-gray-300">
+      <%= product.catagory ? product.catagory.name : "No Category" %>
+    </span>
+  </td>
 
-<td class="px-6 py-4">
-    <% 
-let prices = product.variants.map(v => v.price);
-let min = Math.min(...prices);
-let max = Math.max(...prices);
-%>
+  <td class="px-6 py-4">
+    <span>₹<%= min %> - ₹<%= max %></span>
+  </td>
 
-<span>
-  ₹<%= min %> - ₹<%= max %>
-</span>
-<span class="text-sm font-bold text-emerald-dark dark:text-primary">
-  <%= product.price %>
-</span>
-</td>
+  <td class="px-6 py-4">
+    <% if(totalStock > 10) { %>
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-800 text-xs font-bold uppercase">
+        <span class="size-2 rounded-full bg-green-500"></span> In Stock
+      </div>
+    <% } else if(totalStock > 0) { %>
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 text-xs font-bold uppercase">
+        <span class="size-2 rounded-full bg-amber-500"></span> Low Stock
+      </div>
+    <% } else { %>
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-800 text-xs font-bold uppercase">
+        <span class="size-2 rounded-full bg-red-500"></span> Out of Stock
+      </div>
+    <% } %>
+    <p class="text-xs text-gray-400 mt-1 font-medium"><%= totalStock %> units</p>
+  </td>
 
-<td class="px-6 py-4">
-<%
-let totalStock = product.variants && product.variants.length > 0 
-  ? product.variants.reduce((sum, v) => sum + v.stock, 0) 
-  : 0;
-%>
-
-<% if(totalStock > 10) { %>
-  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stock-in/10 text-stock-in text-xs font-bold uppercase">
-    <span class="size-2 rounded-full bg-stock-in"></span> In Stock
-  </div>
-<% } else if(totalStock > 0) { %>
-  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stock-low/10 text-stock-low text-xs font-bold uppercase">
-    <span class="size-2 rounded-full bg-stock-low"></span> Low Stock
-  </div>
-<% } else { %>
-  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stock-out/10 text-stock-out text-xs font-bold uppercase">
-    <span class="size-2 rounded-full bg-stock-out"></span> Out of Stock
-  </div>
-<% } %>
-</td>
-<td class="px-6 py-4 text-right">
-<div class="flex justify-end gap-2">
-<a href="/admin/editproduct/<%= product._id %>" 
-   class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all">
-   <span class="material-symbols-outlined text-lg">edit</span>
-</a>
-
-<div class="flex justify-end gap-2">
-    <% const isActive = product.status === 'Active'; %>
-    <button 
-      type="button" 
-      onclick='confirmAction("<%= product._id %>", "<%= product.status %>", "<%= product.name %>")'
-      class="px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 
-             <%= isActive ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200' 
-                          : 'bg-green-50 hover:bg-green-100 text-green-600 border border-green-200' %>">
-      <span class="material-symbols-outlined text-[18px]">
-        <%= isActive ? 'block' : 'verified_user' %>
-      </span>
-      <%= isActive ? 'Block' : 'Unblock' %>
-    </button>
-
-  </div>
-</div>
-</td>
+  <td class="px-6 py-4 text-right">
+    <div class="flex justify-end gap-2">
+      <a href="/admin/editproduct/<%= product._id %>" 
+         class="p-2 rounded-lg hover:bg-primary/20 text-[#181611] dark:text-white transition-all">
+         <span class="material-symbols-outlined text-lg">edit</span>
+      </a>
+      <button 
+        type="button" 
+        onclick='confirmAction("<%= product._id %>", "<%= product.status %>", "<%= product.name %>")'
+        class="px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 
+               <%= isActive ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200' 
+                            : 'bg-green-50 hover:bg-green-100 text-green-600 border border-green-200' %>">
+        <span class="material-symbols-outlined text-[18px]">
+          <%= isActive ? 'block' : 'verified_user' %>
+        </span>
+        <%= isActive ? 'Block' : 'Unblock' %>
+      </button>
+    </div>
+  </td>
 
 </tr>
 <% }) %>
