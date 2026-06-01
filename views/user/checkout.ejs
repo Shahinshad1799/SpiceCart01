@@ -280,20 +280,77 @@
         </section>
 
         <!-- ══════════ PAYMENT ══════════ -->
-        <section>
+        <!-- <section>
           <div class="flex items-center gap-3 mb-6">
             <div class="flex items-center justify-center w-8 h-8 rounded-full bg-[#181311] text-white font-bold text-sm">2</div>
             <h2 class="text-[#181311] text-xl font-bold">Payment Method</h2>
           </div>
           <div class="flex flex-col gap-4">
             <div class="flex gap-4 mb-2">
+              <label class="flex items-center gap-3 cursor-pointer border border-[#ea580c] bg-[#fff7ed] rounded-xl p-4 w-1/2 transition-all">
+<input checked="" class="w-5 h-5 text-[#ea580c] focus:ring-[#ea580c] border-gray-300" name="payment" type="radio"/>
+<span class="text-[#181311] font-bold">Razorpay</span>
+</label>
               <label class="flex items-center gap-2 cursor-pointer border border-[#f4f1f0] rounded-lg p-3 w-1/2 has-[:checked]:border-[#ea580c] has-[:checked]:bg-[#fff7ed] transition-all">
                 <input checked class="w-4 h-4 text-[#ea580c] focus:ring-[#ea580c] border-gray-300" name="payment" type="radio"/>
                 <span class="text-[#181311] font-medium">Cash on delivery</span>
               </label>
+
             </div>
           </div>
-        </section>
+        </section> -->
+      <section>
+  <div class="flex items-center gap-3 mb-6">
+    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-[#181311] text-white font-bold text-sm">2</div>
+    <h2 class="text-[#181311] text-xl font-bold">Payment Method</h2>
+  </div>
+
+  <div class="flex gap-3 flex-wrap mb-4">
+
+    <!-- Razorpay (includes UPI, Cards, Net Banking) -->
+    <label class="flex items-center gap-3 cursor-pointer border rounded-xl p-4 flex-1 transition-all has-[:checked]:border-[#ea580c] has-[:checked]:bg-[#fff7ed] border-[#f4f1f0]">
+      <input class="w-5 h-5 text-[#ea580c] focus:ring-[#ea580c]"
+             name="payment" type="radio" value="razorpay" checked
+             onchange="handlePaymentChange(this.value)" />
+      <div>
+        <p class="text-[#181311] font-bold text-sm">Online Payment</p>
+        <p class="text-[#886e63] text-xs">UPI · Cards · Net Banking · Wallets</p>
+      </div>
+    </label>
+
+    <!-- Cash on Delivery -->
+    <label class="flex items-center gap-3 cursor-pointer border rounded-xl p-4 flex-1 transition-all has-[:checked]:border-[#ea580c] has-[:checked]:bg-[#fff7ed] border-[#f4f1f0]">
+      <input class="w-5 h-5 text-[#ea580c] focus:ring-[#ea580c]"
+             name="payment" type="radio" value="cod"
+             onchange="handlePaymentChange(this.value)" />
+      <div>
+        <p class="text-[#181311] font-bold text-sm">Cash on Delivery</p>
+        <p class="text-[#886e63] text-xs">Pay when your order arrives</p>
+      </div>
+    </label>
+
+  </div>
+
+  <!-- Pay Now Button -->
+  <div id="razorpay-section">
+    <button onclick="payWithRazorpay()"
+      class="w-full bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2">
+      <span class="material-symbols-outlined text-base">payments</span>
+      Pay ₹<%= total.toFixed(2) %>
+    </button>
+  </div>
+
+  <!-- COD Button -->
+  <div id="cod-section" class="hidden">
+    <button onclick="placeOrderCOD()"
+      class="w-full bg-[#181311] hover:bg-[#2d2520] text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2">
+      <span class="material-symbols-outlined text-base">local_shipping</span>
+      Place Order (Cash on Delivery)
+    </button>
+  </div>
+</section>
+
+
 
       </div>
 
@@ -585,5 +642,87 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector(`[data-id="${selectedId}"]`)?.classList.add('selected');
   }
 });
+</script>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  function handlePaymentChange(value) {
+    document.getElementById('razorpay-section').classList.toggle('hidden', value !== 'razorpay');
+    document.getElementById('cod-section').classList.toggle('hidden', value !== 'cod');
+  }
+
+  async function payWithRazorpay() {
+    if (!selectedId) { alert("Please select a delivery address."); return; }
+
+    try {
+      const res = await fetch('/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: <%= Math.round(total * 100) %> })
+      });
+
+      const data = await res.json();
+      if (!data.order) { alert('Failed to create order. Try again.'); return; }
+const rzp = new Razorpay({
+  key: '<%= process.env.RAZORPAY_KEY_ID %>',
+  amount: data.order.amount,
+  currency: 'INR',
+  name: 'SpiceCart',
+  description: 'Order Payment',
+  order_id: data.order.id,
+
+  prefill: {
+    name: '<%= addresses && addresses.find(a=>a.isdefault)?.fullname || "" %>',
+    contact: '<%= addresses && addresses.find(a=>a.isdefault)?.phonenumber || "" %>'
+  },
+
+  // This forces UPI tab to open by default (works in test mode too)
+  method: {
+    upi: true,
+    card: true,
+    netbanking: true,
+    wallet: true,
+    emi: false,
+    paylater: false
+  },
+
+  theme: { color: '#ea580c' },
+
+  handler: async function (response) {
+    const verifyRes = await fetch('/verify-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...response, addressId: selectedId })
+    });
+    const result = await verifyRes.json();
+    result.success
+      ? window.location.href = '/ordersuccess'
+      : alert('Payment verification failed. Contact support.');
+  }
+});
+
+      rzp.open();
+    } catch (err) {
+      console.error('Razorpay error:', err);
+      alert('Something went wrong. Please try again.');
+    }
+  }
+  async function placeOrderCOD() {
+    if (!selectedId) { alert("Please select a delivery address."); return; }
+
+    try {
+      const res = await fetch('/place-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ addressId: selectedId, paymentMethod: 'cod' })
+      });
+      const data = await res.json();
+      data.success
+        ? window.location.href = '/ordersuccess'
+        : alert(data.message || 'Failed to place order.');
+    } catch (err) {
+      alert('Something went wrong: ' + err.message);
+    }
+  }
 </script>
 </body></html>

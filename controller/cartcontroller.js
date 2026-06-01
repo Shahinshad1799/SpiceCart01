@@ -112,12 +112,12 @@ const getCartPage = async (req, res) => {
         hasOutOfStock = true;
       }
 
-      subtotal += price * qty;
+      subtotal += price*0.95 * qty;
       totalItems += qty;
     });
 
     const shipping = subtotal > 0 ? 50 : 0;
-    const tax = subtotal * 0.08;
+    const tax = subtotal * 0.05;
     const total = subtotal + shipping + tax;
 
     //  save cleaned cart

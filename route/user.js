@@ -7,6 +7,8 @@
  const upload=require("../config/multer")
 const usermodel=require("../model/usermodel")
 const checkstatus=require("../middleware/userstatus")
+const Cart = require("../model/cartmodel");
+const Order = require("../model/ordermodel");
 route.get("/", user.loadladingpage);
 
 route.get("/signup", userauth.isLogout, user.loadsignup);
@@ -49,6 +51,7 @@ route.post("/delete-profile-image", userauth.isLogin, user.deleteProfile);
 
 
 
+
 route.get("/changeemail",user.loadchangeemail)
 route.post("/changeemail",user.changeemail)
 
@@ -83,9 +86,13 @@ route.get("/order",user.loadorder)
 route.get("/orders/:id",user.loadorderdetails)
 route.patch("/orders/:id/cancel",user.cancelOrder)
 route.patch("/orders/:id/return",user.returnorder);
+// razorpay.js (or inside your routes file)
 
-
-
+// POST /create-order
+route.post('/create-order',user.onlineorder)
+// POST /verify-payment
+route.post('/verify-payment', user.verifyOnlineOrder)
+   
 route.get("/auth/google",user.googleAuth);
 route.get("/auth/google/callback",user.googleCallback);
 

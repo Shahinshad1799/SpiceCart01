@@ -16,6 +16,13 @@ const Wishlist = require('../model/wishlistmodel');
 const Cart=require("../model/cartmodel")
 const Order=require("../model/ordermodel")
    const mongoose = require("mongoose")
+const crypto   = require('crypto');
+const Razorpay = require('razorpay');
+
+const razorpay = new Razorpay({
+  key_id:     process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 // =======================
 // Load Views
 // =======================
@@ -1138,6 +1145,139 @@ for (const item of items) {
         return res.status(500).json({ success: false, message: err.message || "Something went wrong" })
     }
 }
+const onlineorder= async (req, res) => {
+  const { amount } = req.body;
+    
+  try {
+    const order = await razorpay.orders.create({
+      amount: amount,
+      currency: 'INR',
+      receipt: `receipt_${Date.now()}`,
+    });
+    res.json({ success: true, order });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+const verifyOnlineOrder=async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, addressId } = req.body;
+    const userId = new mongoose.Types.ObjectId(req.session.userId);
+
+    // ── 1. Verify signature ───────────────────────────────────────────────
+    const body = razorpay_order_id + '|' + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest('hex');
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+    }
+
+    // ── 2. Validate ───────────────────────────────────────────────────────
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Please login to continue' });
+    }
+    if (!addressId) {
+      return res.status(400).json({ success: false, message: 'Please select a delivery address' });
+    }
+
+    // ── 3. Fetch address ──────────────────────────────────────────────────
+    const address = await addressmodel.findOne({ _id: addressId, userId });
+    if (!address) {
+      return res.status(404).json({ success: false, message: 'Address not found' });
+    }
+
+    // ── 4. Fetch cart ─────────────────────────────────────────────────────
+    const cart = await Cart.findOne({ user: userId }).populate('items.productId');
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Your cart is empty' });
+    }
+
+    // ── 5. Build order items ──────────────────────────────────────────────
+    const items = [];
+
+    for (const cartItem of cart.items) {
+      const product = cartItem.productId;
+
+      if (!product) {
+        return res.status(400).json({ success: false, message: 'A product in your cart was not found' });
+      }
+
+      const variant = product.variants.find(
+        v => v._id.toString() === cartItem.variantId?.toString()
+      );
+
+      if (!variant) {
+        return res.status(400).json({ success: false, message: `Variant not found for "${product.name}"` });
+      }
+
+      items.push({
+        productId:    product._id,
+        variantId:    variant._id,
+        productName:  product.name,
+        productImage: product.images?.[0] || '',
+        unitPrice:    variant.price,
+        quantity:     cartItem.quantity,
+        lineTotal:    variant.price * cartItem.quantity
+      });
+    }
+
+    // ── 6. Calculate totals ───────────────────────────────────────────────
+    const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+    const shipping = subtotal > 500 ? 0 : 50;
+    const tax      = parseFloat((subtotal * 0.05).toFixed(2));
+    const total    = parseFloat((subtotal + shipping + tax).toFixed(2));
+
+    // ── 7. Create order ───────────────────────────────────────────────────
+    const order = await Order.create({
+      userId,
+      shippingAddress: {
+        addressId:   address._id,
+        fullname:    address.fullname,
+        phonenumber: address.phonenumber,
+        address:     address.address,
+        appartment:  address.appartment,
+        city:        address.city,
+        state:       address.state,
+        zipcode:     address.zipcode
+      },
+      items,
+      paymentMethod: 'online',    // ✅ matches your enum
+      paymentStatus: 'paid',
+      status:        'confirmed',
+      subtotal,
+      shipping,
+      tax,
+      total
+    });
+
+    // ── 8. Deduct stock ───────────────────────────────────────────────────
+    for (const item of items) {
+      await Product.findOneAndUpdate(
+        { _id: item.productId, 'variants._id': item.variantId },
+        { $inc: { 'variants.$.stock': -item.quantity } }
+      );
+    }
+
+    // ── 9. Save orderId to session ────────────────────────────────────────
+    req.session.lastOrderId = order._id;
+
+    // ── 10. Clear cart ────────────────────────────────────────────────────
+    await Cart.findOneAndUpdate(
+      { user: userId },
+      { $set: { items: [] } }
+    );
+
+    return res.status(201).json({ success: true, orderId: order._id });
+
+  } catch (err) {
+    console.error('Verify payment error:', err.message);
+    console.error(err.stack);
+    return res.status(500).json({ success: false, message: err.message || 'Something went wrong' });
+  }
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1186,7 +1326,7 @@ const loadorder = async (req, res) => {
   try {
     const userId = req.session.userId
     const page   = parseInt(req.query.page) || 1
-    const limit  = 5
+    const limit  = 10
     const skip   = (page - 1) * limit
     const search = req.query.q || ""
 
@@ -1395,6 +1535,8 @@ module.exports = {
   loadorderdetails,
   cancelOrder,
   returnorder,
+  onlineorder,
+  verifyOnlineOrder,
   logout
 };
 
