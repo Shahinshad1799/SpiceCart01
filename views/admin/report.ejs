@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>SpiceCart Admin – Sales Report</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316",
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111816] dark:text-white antialiased">
+<div class="flex min-h-screen">
+
+  <%- include("../partials/sidebar") %>
+
+  <main class="flex-1 ml-64 p-8">
+
+    <!-- ── Header ─────────────────────────────────────────────────────── -->
+    <header class="flex flex-wrap items-end justify-between gap-4 mb-8">
+      <div>
+        <h2 class="text-3xl font-black tracking-tight dark:text-white">Sales Report</h2>
+        <p class="text-[#63887d] dark:text-white/60 mt-1">Detailed breakdown of transaction history and order metrics.</p>
+      </div>
+
+      <div class="flex items-center gap-3 flex-wrap">
+        <!-- Date preset selector -->
+        <form method="GET" action="/admin/report" id="filterForm" class="flex items-center gap-2 flex-wrap">
+          <div class="flex items-center bg-white dark:bg-white/5 border border-[#dce5e2] dark:border-white/10 rounded-lg px-3 py-2 shadow-sm">
+            <span class="material-symbols-outlined text-[#63887d] text-lg mr-2">calendar_today</span>
+            <span class="text-sm font-medium text-[#63887d] mr-2 whitespace-nowrap"><%= dateLabel %></span>
+          </div>
+
+          <select name="preset" onchange="toggleCustomDates(this.value); this.form.submit()"
+                  class="bg-white dark:bg-white/5 border border-[#dce5e2] dark:border-white/10 rounded-lg px-3 py-2 text-sm font-medium shadow-sm focus:ring-primary focus:border-primary">
+            <option value="today"  <%= filters.preset === 'today'  ? 'selected' : '' %>>Today</option>
+            <option value="week"   <%= filters.preset === 'week'   ? 'selected' : '' %>>Last 7 Days</option>
+            <option value="month"  <%= filters.preset === 'month'  ? 'selected' : '' %>>This Month</option>
+            <option value="year"   <%= filters.preset === 'year'   ? 'selected' : '' %>>This Year</option>
+            <option value="custom" <%= filters.preset === 'custom' ? 'selected' : '' %>>Custom Range</option>
+          </select>
+
+          <!-- Custom date inputs (shown only when preset === custom) -->
+          <div id="customDates" class="<%= filters.preset === 'custom' ? 'flex' : 'hidden' %> items-center gap-2">
+            <input type="date" name="startDate" value="<%= filters.startDate %>"
+                   class="bg-white dark:bg-white/5 border border-[#dce5e2] dark:border-white/10 rounded-lg px-3 py-2 text-sm shadow-sm focus:ring-primary focus:border-primary"/>
+            <span class="text-sm text-[#63887d]">to</span>
+            <input type="date" name="endDate" value="<%= filters.endDate %>"
+                   class="bg-white dark:bg-white/5 border border-[#dce5e2] dark:border-white/10 rounded-lg px-3 py-2 text-sm shadow-sm focus:ring-primary focus:border-primary"/>
+            <button type="submit"
+                    class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-dark transition-all">Apply</button>
+          </div>
+
+          <!-- Hidden passthrough inputs so other filters survive preset change -->
+          <input type="hidden" name="search" value="<%= filters.search %>"/>
+          <input type="hidden" name="status" value="<%= filters.status %>"/>
+        </form>
+
+        <!-- Export buttons -->
+        <a href="/admin/report/export/csv?preset=<%= filters.preset %>&startDate=<%= filters.startDate %>&endDate=<%= filters.endDate %>&status=<%= filters.status %>"
+           class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-white/5 border border-[#dce5e2] dark:border-white/10 text-[#11211c] dark:text-white rounded-lg font-bold text-sm shadow-sm hover:bg-gray-50 dark:hover:bg-white/10 transition-all">
+          <span class="material-symbols-outlined text-sm">description</span> CSV
+        </a>
+      </div>
+    </header>
+
+    <!-- ── KPI Cards ───────────────────────────────────────────────────── -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <% const cards = [
+        { label: 'Total Orders',     value: summary.totalOrders.toLocaleString(),                         icon: 'shopping_cart', color: 'primary' },
+        { label: 'Total Revenue',    value: '₹' + Number(summary.totalRevenue).toLocaleString('en-IN'), icon: 'payments',      color: 'primary' },
+        { label: 'Total Items Sold', value: summary.totalItemsSold.toLocaleString(),                      icon: 'inventory',     color: 'primary' },
+        { label: 'Cancelled Orders', value: summary.cancelledOrders.toLocaleString(),                     icon: 'cancel',        color: 'red-500'  },
+      ]; %>
+      <% cards.forEach(card => { %>
+      <div class="bg-white dark:bg-white/5 border border-[#dce5e2] dark:border-white/10 rounded-xl p-6 shadow-sm">
+        <p class="text-[#63887d] dark:text-white/60 text-sm font-medium mb-1"><%= card.label %></p>
+        <div class="flex items-center justify-between">
+          <p class="text-3xl font-bold dark:text-white tracking-tight"><%= card.value %></p>
+          <span class="size-10 bg-<%= card.color %>/10 text-<%= card.color %> flex items-center justify-center rounded-lg">
+            <span class="material-symbols-outlined"><%= card.icon %></span>
+          </span>
+        </div>
+      </div>
+      <% }) %>
+    </section>
+
+    <!-- ── Orders Table ────────────────────────────────────────────────── -->
+    <section class="bg-white dark:bg-white/5 border border-[#dce5e2] dark:border-white/10 rounded-xl shadow-sm overflow-hidden">
+
+      <!-- Search + Filter bar -->
+      <div class="p-6 border-b border-[#dce5e2] dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
+        <form method="GET" action="/admin/report" class="flex items-center gap-3 flex-wrap w-full">
+          <!-- Passthrough hidden fields -->
+          <input type="hidden" name="preset"    value="<%= filters.preset %>"/>
+          <input type="hidden" name="startDate" value="<%= filters.startDate %>"/>
+          <input type="hidden" name="endDate"   value="<%= filters.endDate %>"/>
+
+          <div class="relative flex-1 min-w-[240px] max-w-md">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#63887d]">search</span>
+            <input name="search" value="<%= filters.search %>"
+                   class="w-full pl-10 pr-4 py-2.5 bg-background-light dark:bg-background-dark border border-[#dce5e2] dark:border-white/10 rounded-lg text-sm focus:ring-primary focus:border-primary"
+                   placeholder="Search by Order ID or Customer…" type="text"/>
+          </div>
+
+          <select name="status" onchange="this.form.submit()"
+                  class="bg-white dark:bg-white/5 border border-[#dce5e2] dark:border-white/10 rounded-lg px-3 py-2.5 text-sm font-medium focus:ring-primary focus:border-primary">
+            <option value="">All Statuses</option>
+            <% ['pending','confirmed','processing','shipped','delivered','cancelled','returned'].forEach(s => { %>
+              <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+            <% }) %>
+          </select>
+
+          <button type="submit"
+                  class="px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-dark transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">filter_list</span> Filter
+          </button>
+        </form>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-background-light dark:bg-white/5 border-b border-[#dce5e2] dark:border-white/10">
+  <tr>
+    <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider">Order ID</th>
+    <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider">Date</th>
+    <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider">Customer</th>
+    <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider">Items</th>
+    <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider">Payment</th>
+    <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider text-center">Payment Status</th>
+    <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider text-center">Order Status</th>
+    <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider text-right">Amount</th>
+  </tr>
+</thead>
+          <tbody class="divide-y divide-[#dce5e2] dark:divide-white/10">
+            <% if (orders.length === 0) { %>
+              <tr>
+                <td colspan="7" class="px-6 py-16 text-center text-[#63887d] dark:text-white/40">
+                  <span class="material-symbols-outlined text-5xl block mb-3 opacity-40">inbox</span>
+                  No orders found for the selected filters.
+                </td>
+              </tr>
+            <% } %>
+            <% orders.forEach(order => { %>
+<% const statusColors = {
+     delivered:  'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+     shipped:    'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
+     confirmed:  'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+     processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+     pending:    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+     cancelled:  'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+     returned:   'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+   };
+   const badge = statusColors[order.status] || statusColors.pending;
+
+   const paymentStatusColors = {
+     paid:   'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+     pending:'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+     failed: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+   };
+   const paymentBadge = paymentStatusColors[order.paymentStatus] || paymentStatusColors.pending;
+%>
+<tr class="hover:bg-primary/5 transition-colors">
+  <td class="px-6 py-4 text-sm font-bold text-primary"><%= order.shortId %></td>
+  <td class="px-6 py-4 text-sm text-[#63887d] dark:text-white/60"><%= order.date %></td>
+ <td class="px-6 py-4">
+    <div>
+      <p class="text-sm font-medium dark:text-white/80"><%= order.customerName %></p>
+      <p class="text-xs text-[#63887d] dark:text-white/40"><%= order.customerEmail %></p>
+    </div>
+  </div>
+</td>
+  <td class="px-6 py-4">
+    <div class="flex items-center gap-2">
+      <!-- <% if (order.productImage) { %>
+        <img src="<%= order.productImage %>" alt="<%= order.productName %>" class="size-10 rounded-lg object-cover border border-[#dce5e2] dark:border-white/10"/>
+      <% } else { %>
+        <div class="size-10 rounded-lg bg-[#dce5e2] dark:bg-white/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[#63887d] text-lg">image</span>
+        </div>
+      <% } %> -->
+      <div>
+        <p class="text-sm dark:text-white/80 line-clamp-1 max-w-[140px]"><%= order.productName %></p>
+        <p class="text-xs text-[#63887d] dark:text-white/40"><%= order.itemCount %> item<%= order.itemCount !== 1 ? 's' : '' %></p>
+      </div>
+    </div>
+  </td>
+  <td class="px-6 py-4 text-sm dark:text-white/80"><%= order.paymentMethod %></td>
+  <td class="px-6 py-4 text-center">
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <%= paymentBadge %>">
+      <%= order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) %>
+    </span>
+  </td>
+  <td class="px-6 py-4 text-center">
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <%= badge %>">
+      <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+    </span>
+  </td>
+  <td class="px-6 py-4 text-sm font-bold text-right dark:text-white">₹<%= order.amount %></td>
+</tr>
+<% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="px-6 py-4 border-t border-[#dce5e2] dark:border-white/10 flex items-center justify-between flex-wrap gap-3">
+        <span class="text-sm text-[#63887d] dark:text-white/40 font-medium">
+          Showing <%= (pagination.currentPage - 1) * pagination.pageSize + 1 %>
+          to <%= Math.min(pagination.currentPage * pagination.pageSize, pagination.totalResults) %>
+          of <%= pagination.totalResults %> results
+        </span>
+
+        <% if (pagination.totalPages > 1) { %>
+        <div class="flex gap-1.5 flex-wrap">
+          <!-- Build base query string without page -->
+          <% const qs = `preset=${filters.preset}&startDate=${filters.startDate}&endDate=${filters.endDate}&search=${encodeURIComponent(filters.search)}&status=${filters.status}&limit=${pagination.pageSize}`; %>
+
+          <a href="/admin/report?<%= qs %>&page=<%= pagination.currentPage - 1 %>"
+             class="px-3 py-1.5 border border-[#dce5e2] dark:border-white/10 rounded-lg text-sm font-bold
+                    <%= pagination.hasPrev ? 'hover:bg-gray-50 dark:hover:bg-white/5' : 'opacity-40 pointer-events-none' %>">
+            Previous
+          </a>
+
+          <% pagination.pages.forEach(p => { %>
+            <% if (p === '...') { %>
+              <span class="px-2 py-1.5 text-sm text-[#63887d]">…</span>
+            <% } else { %>
+              <a href="/admin/report?<%= qs %>&page=<%= p %>"
+                 class="px-3 py-1.5 rounded-lg text-sm font-bold
+                        <%= p === pagination.currentPage
+                              ? 'bg-primary text-white'
+                              : 'border border-[#dce5e2] dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5' %>">
+                <%= p %>
+              </a>
+            <% } %>
+          <% }) %>
+
+          <a href="/admin/report?<%= qs %>&page=<%= pagination.currentPage + 1 %>"
+             class="px-3 py-1.5 border border-[#dce5e2] dark:border-white/10 rounded-lg text-sm font-bold
+                    <%= pagination.hasNext ? 'hover:bg-gray-50 dark:hover:bg-white/5' : 'opacity-40 pointer-events-none' %>">
+            Next
+          </a>
+        </div>
+        <% } %>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  function toggleCustomDates(val) {
+    document.getElementById('customDates').classList.toggle('hidden', val !== 'custom');
+    document.getElementById('customDates').classList.toggle('flex',   val === 'custom');
+  }
+</script>
+</body>
+</html>

@@ -86,12 +86,11 @@ route.get("/order",user.loadorder)
 route.get("/orders/:id",user.loadorderdetails)
 route.patch("/orders/:id/cancel",user.cancelOrder)
 route.patch("/orders/:id/return",user.returnorder);
-// razorpay.js (or inside your routes file)
-
-// POST /create-order
 route.post('/create-order',user.onlineorder)
-// POST /verify-payment
 route.post('/verify-payment', user.verifyOnlineOrder)
+
+route.get("/wallet",user.Loadwallet)
+route.get("/referrals",user.loadreferrals)
    
 route.get("/auth/google",user.googleAuth);
 route.get("/auth/google/callback",user.googleCallback);

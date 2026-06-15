@@ -4,8 +4,10 @@ const bcrypt = require("bcrypt"); // only if you hash password
 require("dotenv").config();
 const catagorymodel=require("../model/catagorymodel")
 const productmodel=require("../model/productmodel")
+const Offer = require("../model/offermodel");
 const { productSchema, variantSchema } = require("../validators/productvalidator");
 const ordermodel=require("../model/ordermodel")
+const couponmodel=require("../model/couponmodel")
 
 const loadadminlogin=function(req,res){
     res.render("admin/login")
@@ -223,9 +225,7 @@ const adminLogin = async (req, res) => {
   }
 };
 
-const loaddashboard=function(req,res){
-    res.render("admin/dashboard")
-}
+
 const loadcatagory = async (req, res) => {
   try {
     const search = req.query.q || "";
@@ -721,10 +721,562 @@ const rejectReturn = async (req, res) => {
 
 };
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * Build a date range from a preset string or explicit start/end strings.
+ * Returns { startDate, endDate } as Date objects.
+ */
+function resolveDateRange(preset, customStart, customEnd) {
+  const now = new Date();
+  let startDate, endDate;
+
+  switch (preset) {
+    case "today":
+      startDate = new Date(now.setHours(0, 0, 0, 0));
+      endDate   = new Date();
+      break;
+    case "week":
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date();
+      break;
+    case "month":
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate   = new Date();
+      break;
+    case "year":
+      startDate = new Date(now.getFullYear(), 0, 1);
+      endDate   = new Date();
+      break;
+    case "custom":
+      startDate = customStart ? new Date(customStart) : new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate   = customEnd   ? new Date(customEnd)   : new Date();
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    default: // "month" as default
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate   = new Date();
+  }
+
+  return { startDate, endDate };
+}
+
+/** Format a Date as "MMM DD, YYYY" */
+function formatDate(date) {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day:   "2-digit",
+    year:  "numeric",
+  });
+}
+
+// ─── Main Controller ─────────────────────────────────────────────────────────
+
+const loadSalesReport = async function (req, res) {
+  try {
+    const {
+      preset      = "month",
+      startDate:  rawStart,
+      endDate:    rawEnd,
+      search      = "",
+      status      = "",
+      page        = "1",
+      limit       = "10",
+    } = req.query;
+
+    const currentPage  = Math.max(1, parseInt(page));
+    const pageSize     = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip         = (currentPage - 1) * pageSize;
+
+    const { startDate, endDate } = resolveDateRange(preset, rawStart, rawEnd);
+
+    // ── Base filter (date range) ──────────────────────────────────────────
+    const baseFilter = {
+      createdAt: { $gte: startDate, $lte: endDate },
+    };
+
+    // ── Optional status filter ────────────────────────────────────────────
+    const allowedStatuses = ["pending", "processing", "completed", "cancelled", "returned"];
+    if (status && allowedStatuses.includes(status.toLowerCase())) {
+      baseFilter.status = status.toLowerCase();
+    }
+
+    // ── Optional search (Order ID or customer name) ───────────────────────
+    // We search after populate, so we use $expr / $lookup approach via aggregation.
+    // Simple approach: if search looks like an order ID prefix, add to filter.
+    const searchTrimmed = search.trim();
+
+    // ── Aggregation: summary metrics (always over the full date range, ignoring search/status for the KPI cards) ──
+   const [summaryRaw] = await ordermodel.aggregate([
+  { $match: baseFilter },
+  {
+    $group: {
+      _id:              null,
+      totalOrders:      { $sum: 1 },
+      totalRevenue:     { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 0, "$total"] } },
+      totalItemsSold:   { 
+        $sum: { 
+          $cond: [
+            { $eq: ["$status", "cancelled"] }, 
+            0, 
+            { $sum: "$items.quantity" }
+          ] 
+        } 
+      },
+      cancelledOrders:  { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
+    },
+  },
+]);
+    const summary = summaryRaw || {
+      totalOrders:     0,
+      totalRevenue:    0,
+      totalItemsSold:  0,
+      cancelledOrders: 0,
+    };
+
+    // ── Build table-level filter (includes status + search) ───────────────
+    const tableFilter = { ...baseFilter };
+    if (status && allowedStatuses.includes(status.toLowerCase())) {
+      tableFilter.status = status.toLowerCase();
+    }
+
+    // ── Fetch orders with populate ────────────────────────────────────────
+    let ordersQuery = ordermodel.find(tableFilter)
+     .populate({ path: "userId", model: "user", select: "fullname email" })
+      .sort({ createdAt: -1 });
+
+    // Apply search after populate — we fetch all in range then filter in JS.
+    // For large datasets consider a denormalised customerName field on Order.
+    let allOrders = await ordersQuery.lean();
+
+    if (searchTrimmed) {
+      const lower = searchTrimmed.toLowerCase();
+      allOrders = allOrders.filter((o) => {
+        const orderId   = (o._id?.toString() || "").toLowerCase();
+        const customer  = (o.userId?.name || "").toLowerCase();
+        const email     = (o.userId?.email || "").toLowerCase();
+        return orderId.includes(lower) || customer.includes(lower) || email.includes(lower);
+      });
+    }
+
+    const totalResults = allOrders.length;
+    const totalPages   = Math.ceil(totalResults / pageSize);
+    const paginatedOrders = allOrders.slice(skip, skip + pageSize);
+
+    // ── Shape orders for the view ─────────────────────────────────────────
+const orders = paginatedOrders.map((o) => ({
+  _id:           o._id.toString(),
+  shortId:       "#SC-" + o._id.toString().slice(-4).toUpperCase(),
+  date:          formatDate(o.createdAt),
+ customerName:  o.userId?.fullname  || "Unknown",
+customerEmail: o.userId?.email     || "",
+initials:      (o.userId?.fullname || "?")
+                 .split(" ")
+                 .map((w) => w[0])
+                 .join("")
+                 .slice(0, 2)
+                 .toUpperCase(),
+  itemCount:     (o.items || []).reduce((s, i) => s + (i.quantity || 1), 0),
+  paymentMethod: o.paymentMethod === "online" ? "Online" : "Cash on Delivery",
+  paymentStatus: o.paymentStatus || "pending",
+  status:        o.status || "pending",
+  amount:        (o.total || 0).toFixed(2),
+  // first item's image for a thumbnail preview
+  productImage:  o.items?.[0]?.productImage || null,
+  productName:   o.items?.[0]?.productName || "",
+}));
+
+    // ── Pagination helpers for EJS ────────────────────────────────────────
+    const pagination = {
+      currentPage,
+      totalPages,
+      totalResults,
+      pageSize,
+      hasPrev: currentPage > 1,
+      hasNext: currentPage < totalPages,
+      pages: buildPageNumbers(currentPage, totalPages),
+    };
+
+    // ── Date label for header ─────────────────────────────────────────────
+    const dateLabel = `${formatDate(startDate)} – ${formatDate(endDate)}`;
+
+    res.render("admin/report", {
+      orders,
+      summary,
+      pagination,
+      dateLabel,
+      filters: { preset, startDate: rawStart || "", endDate: rawEnd || "", search, status },
+    });
+  } catch (err) {
+    console.error("loadSalesReport error:", err);
+    res.status(500).render("admin/error", { message: "Failed to load sales report." });
+  }
+};
+
+// ─── CSV Export ──────────────────────────────────────────────────────────────
+
+const exportSalesCSV = async function (req, res) {
+  try {
+    const { preset = "month", startDate: rawStart, endDate: rawEnd, status = "" } = req.query;
+    const { startDate, endDate } = resolveDateRange(preset, rawStart, rawEnd);
+
+    const filter = { createdAt: { $gte: startDate, $lte: endDate } };
+    if (status) filter.status = status.toLowerCase();
+
+    const orders = await ordermodel.find(filter)
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const rows = [
+      ["Order ID", "Date", "Customer", "Email", "Items", "Payment Method", "Status", "Amount (₹)"],
+      ...orders.map((o) => [
+        o._id.toString(),
+        formatDate(o.createdAt),
+        o.userId?.name  || "Unknown",
+        o.userId?.email || "",
+        (o.orderedItems || []).reduce((s, i) => s + (i.quantity || 1), 0),
+        o.paymentMethod === "online" ? "Online" : "Cash on Delivery",
+        o.status || "pending",
+        (o.totalAmount || 0).toFixed(2),
+      ]),
+    ];
+
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="sales-report-${Date.now()}.csv"`);
+    res.send(csv);
+  } catch (err) {
+    console.error("exportSalesCSV error:", err);
+    res.status(500).send("Export failed.");
+  }
+};
+
+// ─── Utility: page number array with ellipsis ────────────────────────────────
+
+function buildPageNumbers(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+  const pages = new Set([1, total, current]);
+  for (let d = -2; d <= 2; d++) {
+    const p = current + d;
+    if (p >= 1 && p <= total) pages.add(p);
+  }
+
+  const sorted = [...pages].sort((a, b) => a - b);
+  const result = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    result.push(sorted[i]);
+    if (sorted[i + 1] && sorted[i + 1] - sorted[i] > 1) result.push("...");
+  }
+
+  return result;
+}
+
+const loadOffers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5;
+    const skip = (page - 1) * limit;
+
+    const search = req.query.search?.trim() || "";
+    const status = req.query.status || "";
+
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { couponCode: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (status && status !== "all") {
+      query.status = status;
+    }
+
+    const totalOffers = await Offer.countDocuments(query);
+    const totalPages = Math.ceil(totalOffers / limit);
+
+    const offers = await Offer.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    res.render("admin/offer", {
+      offers,
+      currentPage: page,
+      totalPages,
+      totalOffers,
+      search,
+      status,
+      limit,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+const loadAddOffer = async function(req, res) {
+  try {
+    // Fetch active products and categories from database
+    const products = await productmodel.find({ status: 'Active' }).select('_id name').lean();
+    const categories = await catagorymodel.find({ status: 'Active' }).select('_id name').lean();
+    // Render view with data
+    res.render("admin/addoffer", {
+      products,
+      categories,
+      title: "Create New Offer"
+    });
+  } catch (error) {
+    console.error("Error loading add offer page:", error);
+    res.status(500).render("admin/error", {
+      message: "Failed to load offer creation form"
+    });
+  }
+};
+
+
+const loadCoupons = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = 4;
+        const skip = (page - 1) * limit;
+        const search = req.query.search || "";
+
+        const filter = search
+            ? {
+                $or: [
+                    { code: { $regex: search, $options: "i" } },
+                    { discountType: { $regex: search, $options: "i" } }
+                ]
+            }
+            : {};
+
+        const totalCoupons = await couponmodel.countDocuments(filter);
+        const totalPages = Math.ceil(totalCoupons / limit);
+
+        const coupons = await couponmodel.find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const now = new Date();
+
+        const activeCount = await couponmodel.countDocuments({ isActive: true, expiryDate: { $gte: now } });
+
+        const totalRedeemedAgg = await couponmodel.aggregate([
+            { $group: { _id: null, total: { $sum: "$usedCount" } } }
+        ]);
+        const totalRedeemed = totalRedeemedAgg[0]?.total || 0;
+
+        res.render("admin/coupon", {
+            coupons,
+            currentPage: page,
+            totalPages,
+            totalCoupons,
+            search,
+            activeCount,
+            totalRedeemed,
+            limit,
+            now
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.redirect("/admin/pageerror");
+    }
+}
+
+const toggleCouponStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const coupon = await couponmodel.findById(id);
+        if (!coupon) {
+            return res.status(404).json({ success: false, message: "Coupon not found" });
+        }
+        coupon.isActive = !coupon.isActive;
+        await coupon.save();
+        res.status(200).json({ success: true, isActive: coupon.isActive });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
+const loadAddCoupon = async (req, res) => {
+    try {
+        res.render("admin/addcoupon");
+    } catch (error) {
+        console.error(error);
+        res.redirect("/admin/pageerror");
+    }
+}
+
+const createCoupon = async (req, res) => {
+    try {
+        const { code, isActive, discountType, discountValue, maxDiscount, minPurchase, usageLimit, expiryDate } = req.body;
+
+        const existing = await couponmodel.findOne({ code: code.toUpperCase() });
+        if (existing) {
+            return res.status(400).json({ success: false, message: "Coupon code already exists" });
+        }
+
+        const newCoupon = new couponmodel({
+            code: code.toUpperCase(),
+            isActive: isActive === "true" || isActive === true,
+            discountType,
+            discountValue,
+            maxDiscount: maxDiscount || null,
+            minPurchase: minPurchase || 0,
+            usageLimit: usageLimit || 1,
+            expiryDate
+        });
+
+        await newCoupon.save();
+        res.status(200).json({ success: true, message: "Coupon created successfully" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
+const loadEditCoupon = async (req, res) => {
+  try {
+    const coupon = await couponmodel.findById(req.params.id).lean();
+    if (!coupon) return res.redirect("/admin/coupons");
+    res.render("admin/editcoupon", { coupon });
+  } catch (error) {
+    console.error(error);
+    res.redirect("/admin/coupons");
+  }
+};
+
+const updateCoupon = async (req, res) => {
+  try {
+    const { code, isActive, discountType, discountValue, maxDiscount, minPurchase, usageLimit, expiryDate } = req.body;
+
+    await couponmodel.findByIdAndUpdate(req.params.id, {
+      code: code.toUpperCase().trim(),
+      isActive: isActive === "true" || isActive === "on",
+      discountType,
+      discountValue: Number(discountValue),
+      maxDiscount: maxDiscount ? Number(maxDiscount) : null,
+      minPurchase: Number(minPurchase) || 0,
+      usageLimit: Number(usageLimit) || 1,
+      expiryDate: new Date(expiryDate),
+    });
+
+    res.redirect("/admin/coupons");
+  } catch (error) {
+    console.error(error);
+    res.redirect("/admin/coupons");
+  }
+};
+
+
+const loadDashboard = async function (req, res) {
+  try {
+    const now       = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // ── KPI Cards ──────────────────────────────────────────────────────
+    const [revenueRes] = await ordermodel.aggregate([
+      { $match: { status: { $nin: ["cancelled", "returned"] } } },
+      { $group: { _id: null, total: { $sum: "$total" } } }
+    ]);
+
+    const totalRevenue   = revenueRes?.total || 0;
+    const totalOrders    = await ordermodel.countDocuments();
+    const totalCustomers = await usermodel.countDocuments();
+    const totalProducts  = await productmodel.countDocuments();
+
+    // ── Low Stock Alerts (stock <= 10) ────────────────────────────────
+    // Adjust field path to match your product schema
+    const lowStockProducts = await productmodel.find({
+  "variants.stock": { $lte: 10 },
+  status: "Active"
+})
+.select("name images variants")
+.limit(5)
+.lean();
+
+   const lowStock = lowStockProducts.map(p => {
+  const minStock = p.variants.length
+    ? Math.min(...p.variants.map(v => v.stock ?? 0))
+    : 0;
+
+  return {
+    name:   p.name,
+    image:  p.images?.[0] || null,   // ← already correct
+    stock:  minStock,
+    urgent: minStock <= 3,
+  };
+});
+
+    // ── Recent Orders (last 5) ────────────────────────────────────────
+    const recentOrdersDocs = await ordermodel.find()
+      .populate({ path: "userId", model: "user", select: "fullname" })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    const recentOrders = recentOrdersDocs.map(o => ({
+      shortId:      "#SC-" + o._id.toString().slice(-4).toUpperCase(),
+      customerName: o.userId?.fullname || "Unknown",
+      initials:     (o.userId?.fullname || "?")
+                      .split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+      productName:  o.items?.[0]?.productName || "—",
+      amount:       (o.total || 0).toFixed(2),
+      status:       o.status || "pending",
+    }));
+
+    // ── Monthly revenue for sparkline (last 6 months) ─────────────────
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const monthlyStats = await ordermodel.aggregate([
+      { $match: { createdAt: { $gte: sixMonthsAgo }, status: { $nin: ["cancelled", "returned"] } } },
+      { $group: {
+          _id:     { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+          revenue: { $sum: "$total" },
+          orders:  { $sum: 1 },
+      }},
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const chartData = monthlyStats.map(m => ({
+      label:   monthNames[m._id.month - 1],
+      revenue: m.revenue,
+      orders:  m.orders,
+    }));
+
+    res.render("admin/dashbourd", {
+      kpi: {
+        totalRevenue:    totalRevenue.toLocaleString("en-IN", { maximumFractionDigits: 2 }),
+        totalOrders:     totalOrders.toLocaleString(),
+        totalCustomers:  totalCustomers.toLocaleString(),
+        totalProducts:   totalProducts.toLocaleString(),
+      },
+      lowStock,
+      recentOrders,
+      chartData: JSON.stringify(chartData),
+    });
+
+  } catch (err) {
+    console.error("loadDashboard error:", err);
+    res.status(500).render("admin/error", { message: "Failed to load dashboard." });
+  }
+};
 
 module.exports={
     loadadminlogin,
-    loaddashboard,
+    loadSalesReport,
     loadcustomer,
     adminLogin,
     blockcustomer,
@@ -748,5 +1300,16 @@ module.exports={
     updateOrderStatus,
     rejectReturn,
     approveReturn,
+    loadSalesReport,
+    exportSalesCSV,
+    loadOffers,
+    loadAddOffer,
+    loadCoupons,
+toggleCouponStatus,
+    loadAddCoupon,
+    createCoupon,
+    loadEditCoupon,
+    updateCoupon,
+   loadDashboard,
     logout
 }

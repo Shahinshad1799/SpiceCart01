@@ -1,7 +1,9 @@
 const express=require("express")
 const admin=require("../controller/admincontroller")
+const offerController = require("../controller/admin_offerroute");
 const adminroute=express.Router()
 const usermodel=require("../model/usermodel")
+const Offer=require("../model/offermodel")
 const adminauth=require("../middleware/adminauth")
  const uploadcatagory=require("../config/catagorymulter")
  const uploadproduct=require("../config/productmulter")
@@ -34,8 +36,30 @@ adminroute.get("/order",admin.loadorder)
 adminroute.get("/orders/:id",admin.loadorderdetails)
 adminroute.post("/orders/:id/status",admin.updateOrderStatus);
 adminroute.post("/orders/:id/approve-return",admin.approveReturn);
-
 adminroute.post("/orders/:id/reject-return",admin.rejectReturn);
+
+adminroute.get("/dashboard",admin.loadDashboard)
+adminroute.get("/report",admin.loadSalesReport);
+adminroute.get("/report/export/csv", admin.exportSalesCSV);
+adminroute.get("/offers",admin.loadOffers)
+adminroute.get("/addoffer",admin.loadAddOffer)
+adminroute.get("/coupons",admin.loadCoupons)
+adminroute.post("/coupons/:id/toggle",admin.toggleCouponStatus)
+adminroute.get("/addcoupon",admin.loadAddCoupon)
+adminroute.post("/addcoupon",admin.createCoupon)
+adminroute.get("/editcoupon/:id", admin.loadEditCoupon);
+adminroute.post("/editcoupon/:id", admin.updateCoupon);
+
+
+
+// ─── Admin ────────────────────────────────────────────────────────────────────
+adminroute.post("/addoffer" ,offerController.createOffer);
+adminroute.get("/offers", offerController.getAllOffers);
+adminroute.get("/offers/:id", offerController.getOfferById);
+adminroute.put("/offers/:id", offerController.updateOffer);
+adminroute.patch("/offers/:id/status", offerController.updateStatus);
+adminroute.delete("/offers/:id",  offerController.deleteOffer);
+
 
 adminroute.post("/logout", admin.logout);
 

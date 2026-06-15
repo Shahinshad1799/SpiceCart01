@@ -497,7 +497,7 @@ const loadprofile = async (req, res) => {
     if (!userId) return res.redirect("/login");
 
     const user = await usermodel.findById(userId);
-    res.render("user/profile", { user });
+    res.render("user/profile", { user,currentPage: 'profile'  });
   } catch (error) {
     console.log(error);
     res.status(500).send("Server Error");
@@ -708,7 +708,7 @@ const loadaddress = async (req, res) => {
     const user = await usermodel.findById(userId).select("fullname profileImage email");
     const addresses = await addressmodel.find({ userId });
 
-    res.render("user/address", { user, addresses });
+    res.render("user/address", { user, addresses,currentPage: 'address' });
   } catch (error) {
     console.log("Load Address Error:", error);
     res.status(500).send("Server Error");
@@ -1356,7 +1356,8 @@ const loadorder = async (req, res) => {
       totalOrders,
       currentPage: page,
       totalPages,
-      search
+      search,
+      currentPage: 'order' 
     })
 
   } catch (err) {
@@ -1482,6 +1483,30 @@ const returnorder = async (req, res) => {
   }
 };
 
+const Loadwallet = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const user = await usermodel.findById(userId).select("fullname profileImage email");
+    // Your wallet loading logic here
+    res.render("user/wallet", { currentPage: 'wallet' ,user});
+  } catch (error) {
+    console.error("Load wallet error:", error);
+    res.redirect("/login");
+  }
+};
+
+const loadreferrals = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const user = await usermodel.findById(userId).select("fullname profileImage email");
+    // Your referral loading logic here
+    res.render("user/referrals", { currentPage: 'referrals' ,user});
+  } catch (error) {
+    console.error("Load referrals error:", error);
+    res.redirect("/login");
+  }
+};
+
 const logout= function(req, res){
   req.session.destroy(() => {
     res.redirect("/login");
@@ -1537,6 +1562,8 @@ module.exports = {
   returnorder,
   onlineorder,
   verifyOnlineOrder,
+  Loadwallet,
+  loadreferrals,
   logout
 };
 

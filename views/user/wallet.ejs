@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spice Market - Wallet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#cd4e18",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211611",
+                        "secondary": "#B89F73", // Muted Gold for stars
+                        "forest": "#4C5E4E", // Forest Green for accents
+                        "muted-green": "#F0F3F1", // Soft muted background
+                    },
+                    fontFamily: {
+                        "display": ["Epilogue", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+<%- include("../partials/header") %>
+<main class="flex-1 bg-muted-green dark:bg-[#1A120E]">
+<section class="px-6 py-10 lg:px-20 xl:px-40 min-h-[calc(100vh-80px)]">
+<div class="mx-auto max-w-[1280px]">
+<div class="mb-8 flex items-center gap-2 text-sm text-[#886e63] dark:text-[#9CA3AF]">
+<a class="hover:text-primary" href="#">Home</a>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-[#181311] dark:text-white font-medium">My Wallet</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<%- include("../partials/profilecard") %>
+<div class="lg:col-span-8 xl:col-span-9">
+<div class="bg-white dark:bg-[#2C201A] rounded-2xl shadow-sm border border-[#E6E0DC] dark:border-[#3E302A] overflow-hidden">
+<div class="px-6 py-6 lg:px-8 border-b border-[#f4f1f0] dark:border-[#3E302A]">
+<h1 class="text-2xl font-bold text-[#181311] dark:text-white mb-6">My Wallet</h1>
+<%- include("../partials/topbar") %>
+</div>
+<div class="p-6 lg:p-8 space-y-8">
+<div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#211611] to-[#423129] p-8 text-white shadow-lg">
+<div class="absolute right-0 top-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-white/5 blur-3xl"></div>
+<div class="absolute bottom-0 left-0 -mb-16 -ml-16 h-64 w-64 rounded-full bg-primary/20 blur-3xl"></div>
+<div class="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+<div>
+<p class="mb-2 text-sm font-medium text-[#B89F73]">Current Balance</p>
+<h2 class="font-display text-4xl font-bold tracking-tight md:text-5xl">$45.00</h2>
+<p class="mt-2 text-xs text-white/60">Available for your next spice purchase</p>
+</div>
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+<a class="text-sm font-medium text-[#B89F73] hover:text-white transition-colors underline decoration-dotted underline-offset-4 text-center sm:text-left" href="#">Apply for Refund</a>
+<button class="flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-white shadow-lg shadow-primary/30 transition-transform hover:bg-primary/90 active:scale-95">
+<span class="material-symbols-outlined text-sm">add_card</span>
+                                                Add Funds
+                                            </button>
+</div>
+</div>
+</div>
+<div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold text-[#181311] dark:text-white">Recent Transactions</h3>
+<button class="text-sm font-medium text-primary hover:text-primary/80 transition-colors">View All</button>
+</div>
+<div class="flex flex-col divide-y divide-[#f4f1f0] dark:divide-[#3E302A] rounded-xl border border-[#E6E0DC] dark:border-[#3E302A] bg-white dark:bg-[#2C201A] overflow-hidden">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-[#f8f6f6] dark:hover:bg-[#3E302A]/50 transition-colors gap-4">
+<div class="flex items-start gap-4">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400">
+<span class="material-symbols-outlined text-xl">undo</span>
+</div>
+<div>
+<p class="font-bold text-[#181311] dark:text-white">Refund Processed</p>
+<p class="text-xs text-[#886e63] dark:text-[#9CA3AF]">Return for Order #2891</p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+<span class="text-xs text-[#886e63] dark:text-[#9CA3AF]">Oct 28, 2023</span>
+<span class="font-bold text-green-600 dark:text-green-400">+$45.00</span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-[#f8f6f6] dark:hover:bg-[#3E302A]/50 transition-colors gap-4">
+<div class="flex items-start gap-4">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f4f1f0] dark:bg-[#3E302A] text-[#5C4D46] dark:text-[#A8A29E]">
+<span class="material-symbols-outlined text-xl">shopping_bag</span>
+</div>
+<div>
+<p class="font-bold text-[#181311] dark:text-white">Order Purchase</p>
+<p class="text-xs text-[#886e63] dark:text-[#9CA3AF]">Order #2890 - Holiday Gift Set</p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+<span class="text-xs text-[#886e63] dark:text-[#9CA3AF]">Oct 24, 2023</span>
+<span class="font-bold text-[#181311] dark:text-white">-$85.00</span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-[#f8f6f6] dark:hover:bg-[#3E302A]/50 transition-colors gap-4">
+<div class="flex items-start gap-4">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400">
+<span class="material-symbols-outlined text-xl">account_balance_wallet</span>
+</div>
+<div>
+<p class="font-bold text-[#181311] dark:text-white">Added Credit</p>
+<p class="text-xs text-[#886e63] dark:text-[#9CA3AF]">Top-up via Credit Card ****4242</p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+<span class="text-xs text-[#886e63] dark:text-[#9CA3AF]">Sep 15, 2023</span>
+<span class="font-bold text-green-600 dark:text-green-400">+$100.00</span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-[#f8f6f6] dark:hover:bg-[#3E302A]/50 transition-colors gap-4">
+<div class="flex items-start gap-4">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f4f1f0] dark:bg-[#3E302A] text-[#5C4D46] dark:text-[#A8A29E]">
+<span class="material-symbols-outlined text-xl">shopping_bag</span>
+</div>
+<div>
+<p class="font-bold text-[#181311] dark:text-white">Order Purchase</p>
+<p class="text-xs text-[#886e63] dark:text-[#9CA3AF]">Order #2541 - Single Origin Turmeric</p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+<span class="text-xs text-[#886e63] dark:text-[#9CA3AF]">Aug 02, 2023</span>
+<span class="font-bold text-[#181311] dark:text-white">-$15.00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<%- include("../partials/footer") %>
+</div>
+
+</body></html>

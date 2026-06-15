@@ -1,0 +1,45 @@
+<div class="flex flex-wrap gap-2 overflow-x-auto no-scrollbar pb-1">
+
+  <a href="/profile">
+    <button class="px-5 py-2 rounded-full bg-transparent hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] text-[#5C4D46] dark:text-[#A8A29E] text-sm font-medium transition-colors
+      <%= currentPage === 'profile' ? '!bg-[#ea580c] !text-white shadow-md shadow-[#6366f1]/20 font-bold' : '' %>">
+      Details
+    </button>
+  </a>
+
+  <a href="/address">
+    <button class="px-5 py-2 rounded-full bg-transparent hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] text-[#5C4D46] dark:text-[#A8A29E] text-sm font-medium transition-colors
+      <%= currentPage === 'address' ? '!bg-[#ea580c] !text-white shadow-md shadow-[#ea580c]/20 font-bold' : '' %>">
+      Addresses
+    </button>
+  </a>
+
+  <a href="/order">
+    <button class="px-5 py-2 rounded-full bg-transparent hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] text-[#5C4D46] dark:text-[#A8A29E] text-sm font-medium transition-colors
+      <%= currentPage === 'order' ? '!bg-[#ea580c] !text-white shadow-md shadow-[#ea580c]/20 font-bold' : '' %>">
+      Orders
+    </button>
+  </a>
+
+  <a href="/wallet">
+    <button class="px-5 py-2 rounded-full bg-transparent hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] text-[#5C4D46] dark:text-[#A8A29E] text-sm font-medium transition-colors
+      <%= currentPage === 'wallet' ? '!bg-[#ea580c] !text-white shadow-md shadow-[#ea580c]/20 font-bold' : '' %>">
+      Wallet
+    </button>
+  </a>
+
+  <a href="/referrals">
+    <button class="px-5 py-2 rounded-full bg-transparent hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] text-[#5C4D46] dark:text-[#A8A29E] text-sm font-medium transition-colors
+      <%= currentPage === 'referrals' ? '!bg-[#d97706] !text-white shadow-md shadow-[#d97706]/20 font-bold' : '' %>">
+      Referrals
+    </button>
+  </a>
+
+  <!-- <a href="/faq">
+    <button class="px-5 py-2 rounded-full bg-transparent hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] text-[#5C4D46] dark:text-[#A8A29E] text-sm font-medium transition-colors
+      <%= currentPage === 'faq' ? '!bg-[#7c3aed] !text-white shadow-md shadow-[#7c3aed]/20 font-bold' : '' %>">
+      FAQ
+    </button>
+  </a> -->
+
+</div>

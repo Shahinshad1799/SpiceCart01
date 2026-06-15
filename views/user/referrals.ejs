@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spice Market - Referral Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#cd4e18",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211611",
+                        "secondary": "#B89F73", // Muted Gold for stars
+                        "forest": "#4C5E4E", // Forest Green for accents
+                        "muted-green": "#F0F3F1", // Soft muted background
+                    },
+                    fontFamily: {
+                        "display": ["Epilogue", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+<%- include("../partials/header") %>
+<main class="flex-1 bg-muted-green dark:bg-[#1A120E]">
+<section class="px-6 py-10 lg:px-20 xl:px-40 min-h-[calc(100vh-80px)]">
+<div class="mx-auto max-w-[1280px]">
+<div class="mb-8 flex items-center gap-2 text-sm text-[#886e63] dark:text-[#9CA3AF]">
+<a class="hover:text-primary" href="#">Home</a>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-[#181311] dark:text-white font-medium">Referrals</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<%- include("../partials/profilecard") %>
+<div class="lg:col-span-8 xl:col-span-9">
+<div class="bg-white dark:bg-[#2C201A] rounded-2xl shadow-sm border border-[#E6E0DC] dark:border-[#3E302A] overflow-hidden">
+<div class="px-6 py-6 lg:px-8 border-b border-[#f4f1f0] dark:border-[#3E302A]">
+<h1 class="text-2xl font-bold text-[#181311] dark:text-white mb-6">Referrals</h1>
+<%- include("../partials/topbar") %>
+</div>
+<div class="p-6 lg:p-8">
+<div class="text-center mb-10 bg-gradient-to-br from-[#FFF5F0] to-white dark:from-[#2A1D16] dark:to-[#211611] rounded-2xl p-8 border border-[#F5E6E0] dark:border-[#3E302A]">
+<div class="size-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-slow">
+<span class="material-symbols-outlined text-3xl">redeem</span>
+</div>
+<h2 class="text-2xl font-bold text-[#181311] dark:text-white mb-3">Invite Friends &amp; Earn Rewards</h2>
+<p class="text-[#886e63] dark:text-[#9CA3AF] mb-8 max-w-lg mx-auto leading-relaxed">Share your passion for spices! Give your friends <strong class="text-primary">$5.00</strong> off their first order, and you'll earn <strong class="text-primary">$5.00</strong> store credit for every successful referral.</p>
+<div class="max-w-md mx-auto relative flex items-center mb-8">
+<input class="w-full h-12 pl-4 pr-24 rounded-xl bg-white dark:bg-[#1A120E] border border-[#E6E0DC] dark:border-[#3E302A] text-[#181311] dark:text-white text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" readonly="" type="text" value="spicemarket.com/r/sarahj"/>
+<button class="absolute right-1 top-1 bottom-1 px-5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-all active:scale-95">
+                                            Copy
+                                        </button>
+</div>
+<div class="flex items-center justify-center gap-4">
+<button class="size-10 rounded-full bg-[#1877F2] text-white flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm">
+<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
+</button>
+<button class="size-10 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm">
+<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"></path></svg>
+</button>
+<button class="size-10 rounded-full bg-[#25D366] text-white flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-lg">chat</span>
+</button>
+<button class="size-10 rounded-full bg-[#EA4335] text-white flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-lg">mail</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<div class="p-6 rounded-xl bg-[#f8f6f6] dark:bg-[#211611] border border-[#E6E0DC] dark:border-[#3E302A] text-center hover:shadow-md transition-shadow">
+<div class="size-12 rounded-full bg-white dark:bg-[#2C201A] shadow-sm flex items-center justify-center mx-auto mb-4 text-primary">
+<span class="material-symbols-outlined">send</span>
+</div>
+<h3 class="font-bold text-[#181311] dark:text-white mb-2">1. Invite</h3>
+<p class="text-sm text-[#886e63] dark:text-[#9CA3AF] leading-relaxed">Send your unique link via email or social media.</p>
+</div>
+<div class="p-6 rounded-xl bg-[#f8f6f6] dark:bg-[#211611] border border-[#E6E0DC] dark:border-[#3E302A] text-center hover:shadow-md transition-shadow">
+<div class="size-12 rounded-full bg-white dark:bg-[#2C201A] shadow-sm flex items-center justify-center mx-auto mb-4 text-primary">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<h3 class="font-bold text-[#181311] dark:text-white mb-2">2. They Buy</h3>
+<p class="text-sm text-[#886e63] dark:text-[#9CA3AF] leading-relaxed">Your friend signs up and makes their first purchase.</p>
+</div>
+<div class="p-6 rounded-xl bg-[#f8f6f6] dark:bg-[#211611] border border-[#E6E0DC] dark:border-[#3E302A] text-center hover:shadow-md transition-shadow">
+<div class="size-12 rounded-full bg-white dark:bg-[#2C201A] shadow-sm flex items-center justify-center mx-auto mb-4 text-primary">
+<span class="material-symbols-outlined">savings</span>
+</div>
+<h3 class="font-bold text-[#181311] dark:text-white mb-2">3. You Earn</h3>
+<p class="text-sm text-[#886e63] dark:text-[#9CA3AF] leading-relaxed">You get $5.00 credit added to your wallet instantly.</p>
+</div>
+</div>
+<div>
+<h3 class="font-bold text-lg text-[#181311] dark:text-white mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">history</span>
+                                        Referral History
+                                    </h3>
+<div class="overflow-x-auto rounded-xl border border-[#E6E0DC] dark:border-[#3E302A]">
+<table class="w-full text-left text-sm min-w-[600px]">
+<thead class="bg-[#f8f6f6] dark:bg-[#211611] text-[#886e63] dark:text-[#9CA3AF] uppercase tracking-wider text-xs font-semibold">
+<tr>
+<th class="px-6 py-4">Friend's Name</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4 text-right">Reward Earned</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#f4f1f0] dark:divide-[#3E302A] bg-white dark:bg-[#2C201A]">
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 flex items-center justify-center text-xs font-bold">JD</div>
+<span class="font-medium text-[#181311] dark:text-white">John Doe</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                                        First Purchase
+                                                    </span>
+</td>
+<td class="px-6 py-4 text-right font-bold text-primary">+$5.00 Credit</td>
+</tr>
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 flex items-center justify-center text-xs font-bold">AS</div>
+<span class="font-medium text-[#181311] dark:text-white">Alice Smith</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+<span class="size-1.5 rounded-full bg-blue-500"></span>
+                                                        Joined
+                                                    </span>
+</td>
+<td class="px-6 py-4 text-right font-medium text-[#886e63] dark:text-[#9CA3AF]">Pending</td>
+</tr>
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300 flex items-center justify-center text-xs font-bold">RB</div>
+<span class="font-medium text-[#181311] dark:text-white">Robert Brown</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+<span class="size-1.5 rounded-full bg-blue-500"></span>
+                                                        Joined
+                                                    </span>
+</td>
+<td class="px-6 py-4 text-right font-medium text-[#886e63] dark:text-[#9CA3AF]">Pending</td>
+</tr>
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-pink-100 dark:bg-pink-900 text-pink-600 dark:text-pink-300 flex items-center justify-center text-xs font-bold">EW</div>
+<span class="font-medium text-[#181311] dark:text-white">Emma Wilson</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                                        First Purchase
+                                                    </span>
+</td>
+<td class="px-6 py-4 text-right font-bold text-primary">+$5.00 Credit</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<%- include("../partials/footer") %>
+</div>
+</body></html>

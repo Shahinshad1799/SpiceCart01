@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SpiceCart Admin - Create Offer</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Manrope', sans-serif; }
+
+        #sidebarBackdrop {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 30;
+        }
+        #sidebarBackdrop.open { display: block; }
+
+        #sidebar {
+            transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+        }
+        @media (max-width: 1023px) {
+            #sidebar {
+                transform: translateX(-100%);
+                position: fixed; top: 0; left: 0;
+                height: 100dvh; z-index: 40;
+            }
+            #sidebar.open { transform: translateX(0); }
+        }
+
+        #mobileHeader {
+            display: none;
+        }
+        @media (max-width: 1023px) {
+            #mobileHeader { display: flex; }
+            #mainContent { margin-left: 0 !important; }
+        }
+
+        .discount-group input { border-right: none; }
+        .discount-group select { border-left: none; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181611] dark:text-white">
+
+<header id="mobileHeader" class="lg:hidden fixed top-0 left-0 right-0 z-20 h-14 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center px-4 gap-3 shadow-sm">
+    <button id="menuBtn" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Open menu">
+        <span class="material-symbols-outlined text-gray-600 dark:text-gray-300">menu</span>
+    </button>
+    <div class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
+            <span class="material-symbols-outlined text-white text-base">grocery</span>
+        </div>
+        <span class="font-extrabold text-base tracking-tight">SpiceCart</span>
+    </div>
+</header>
+
+<div id="sidebarBackdrop"></div>
+
+<div class="flex min-h-screen">
+    <%- include("../partials/sidebar") %>
+
+    <main id="mainContent" class="flex-1 lg:ml-0 min-w-0">
+        <div class="h-14 lg:hidden"></div>
+        <div class="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+            <div class="mb-6 lg:mb-8">
+                <div class="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                    <a href="/admin/offers" class="hover:text-primary transition-colors">Marketing</a>
+                    <span class="material-symbols-outlined text-base">chevron_right</span>
+                    <span class="text-gray-600 dark:text-gray-300 font-medium">Create Offer</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight dark:text-white">Create New Offer</h2>
+                <p class="text-gray-500 dark:text-gray-400 mt-1 text-sm sm:text-base">Set up a new promotional offer for your storefront.</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div class="px-5 sm:px-8 py-5 border-b border-gray-100 dark:border-gray-800">
+                    <h3 class="text-lg sm:text-xl font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">campaign</span>
+                        Offer Details
+                    </h3>
+                </div>
+
+                <form id="offerForm" class="p-5 sm:p-8 space-y-6 sm:space-y-8" action="/admin/addoffer" method="POST">
+
+                    <!-- Title + Subtitle -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-bold text-gray-700 dark:text-gray-300">Offer Title <span class="text-red-500">*</span></label>
+                            <input name="title" 
+                                class="form-input rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm"
+                                placeholder="e.g., Seasonal Pepper Sale" type="text"/>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-bold text-gray-700 dark:text-gray-300">Description</label>
+                            <input name="description"
+                                class="form-input rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm"
+                                placeholder="e.g., 20% Off All Black Pepper" type="text"/>
+                        </div>
+                    </div>
+
+                    <!-- Offer Type -->
+                    <div class="flex flex-col gap-3">
+                        <label class="text-sm font-bold text-gray-700 dark:text-gray-300">Offer Type <span class="text-red-500">*</span></label>
+                        <div class="flex flex-wrap gap-4 sm:gap-6">
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <div class="relative flex items-center justify-center w-5 h-5">
+                                    <input checked class="peer sr-only offer-type-radio" name="offerType" type="radio" value="product"/>
+                                    <div class="w-5 h-5 border-2 border-gray-300 dark:border-gray-600 rounded-full peer-checked:border-primary transition-all"></div>
+                                    <div class="absolute w-2.5 h-2.5 bg-primary rounded-full scale-0 peer-checked:scale-100 transition-transform"></div>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">Product Offer</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <div class="relative flex items-center justify-center w-5 h-5">
+                                    <input class="peer sr-only offer-type-radio" name="offerType" type="radio" value="category"/>
+                                    <div class="w-5 h-5 border-2 border-gray-300 dark:border-gray-600 rounded-full peer-checked:border-primary transition-all"></div>
+                                    <div class="absolute w-2.5 h-2.5 bg-primary rounded-full scale-0 peer-checked:scale-100 transition-transform"></div>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">Category Offer</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Product Selection -->
+                    <div id="productSection" class="flex flex-col gap-2">
+                        <label class="text-sm font-bold text-gray-700 dark:text-gray-300">Select Products <span class="text-red-500">*</span></label>
+                        <input type="text" id="productSearch" placeholder="Search products..." 
+                            class="form-input rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm mb-2"
+                        />
+                        <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
+                            <div class="col-span-full text-center py-8 text-gray-400">
+                                <span class="material-symbols-outlined text-4xl mb-2 block">hourglass_empty</span>
+                                <p class="text-sm">Loading products...</p>
+                            </div>
+                        </div>
+                        <div id="selectedProductsDisplay" class="flex flex-wrap gap-2 mt-2 hidden">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 w-full">Selected: <span id="productCount" class="font-bold text-primary">0</span> product(s)</p>
+                            <div id="selectedProductsTags" class="flex flex-wrap gap-2 w-full"></div>
+                        </div>
+                        <input type="hidden" id="selectedProducts" name="selectedProducts" value=""/>
+                    </div>
+
+                    <!-- Category Selection -->
+                    <div id="categorySection" class="flex flex-col gap-2 hidden">
+                        <label class="text-sm font-bold text-gray-700 dark:text-gray-300">Select Categories <span class="text-red-500">*</span></label>
+                        <input type="text" id="categorySearch" placeholder="Search categories..." 
+                            class="form-input rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm mb-2"
+                        />
+                        <div id="categoryList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
+                            <div class="col-span-full text-center py-8 text-gray-400">
+                                <span class="material-symbols-outlined text-4xl mb-2 block">hourglass_empty</span>
+                                <p class="text-sm">Loading categories...</p>
+                            </div>
+                        </div>
+                        <div id="selectedCategoriesDisplay" class="flex flex-wrap gap-2 mt-2 hidden">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 w-full">Selected: <span id="categoryCount" class="font-bold text-primary">0</span> category(ies)</p>
+                            <div id="selectedCategoriesTags" class="flex flex-wrap gap-2 w-full"></div>
+                        </div>
+                        <input type="hidden" id="selectedCategories" name="selectedCategories" value=""/>
+                    </div>
+
+                    <!-- Discount -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-bold text-gray-700 dark:text-gray-300">Discount Value <span class="text-red-500">*</span></label>
+                            <div class="flex discount-group">
+                                <input name="discountValue" 
+                                    class="form-input rounded-l-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:border-primary focus:ring-primary h-11 sm:h-12 flex-1 min-w-0 text-sm"
+                                    placeholder="20" type="number" min="0" step="0.01"/>
+                                <select name="discountType"
+                                    class="form-select rounded-r-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm flex-shrink-0">
+                                    <option value="percentage">%</option>
+                                    <option value="flat">₹</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-bold text-gray-700 dark:text-gray-300">Min. Order Value</label>
+                            <input name="minOrderValue"
+                                class="form-input rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:border-primary focus:ring-primary h-11 sm:h-12 text-sm"
+                                placeholder="0" type="number" min="0" step="1" value="0"/>
+                        </div>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-bold text-gray-700 dark:text-gray-300">Start Date <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3 top-2.5 sm:top-3 text-gray-400 text-xl pointer-events-none">calendar_today</span>
+                                <input name="startDate" 
+                                    class="form-input pl-10 rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:border-primary focus:ring-primary h-11 sm:h-12 w-full text-sm"
+                                    type="date"/>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-bold text-gray-700 dark:text-gray-300">End Date <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3 top-2.5 sm:top-3 text-gray-400 text-xl pointer-events-none">event_busy</span>
+                                <input name="endDate" 
+                                    class="form-input pl-10 rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:border-primary focus:ring-primary h-11 sm:h-12 w-full text-sm"
+                                    type="date"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-6 pt-4 sm:pt-6 border-t border-gray-100 dark:border-gray-800">
+                        <a class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white font-bold transition-colors text-sm sm:text-base w-full sm:w-auto text-center py-2" href="/admin/offers">Cancel</a>
+                        <button
+                            class="bg-primary hover:bg-primary-dark text-white px-8 sm:px-10 py-3 sm:py-4 rounded-lg font-extrabold text-base sm:text-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                            type="submit" id="submitBtn">
+                            <span class="material-symbols-outlined text-xl">rocket_launch</span>
+                            <span>Create Offer</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+window.pageData = {
+    products: <%- JSON.stringify(products) %>,
+    categories: <%- JSON.stringify(categories) %>
+};
+
+console.log(window.pageData);
+</script>
+
+<script>
+    // ── Initialize Data ──
+    let allProducts = [];
+    let allCategories = [];
+    let selectedProducts = [];
+    let selectedCategories = [];
+
+    // Check if data is passed from server
+    if (typeof window.pageData !== 'undefined' && window.pageData) {
+        allProducts = Array.isArray(window.pageData.products) ? window.pageData.products : [];
+        allCategories = Array.isArray(window.pageData.categories) ? window.pageData.categories : [];
+        
+        console.log('✓ Products loaded:', allProducts.length);
+        console.log('✓ Categories loaded:', allCategories.length);
+        
+        // Initialize displays
+        renderProducts(allProducts);
+        renderCategories(allCategories);
+    } else {
+        console.warn('⚠ window.pageData not found. Products/categories not loaded from server.');
+        document.getElementById('productList').innerHTML = '<div class="col-span-full text-center py-8 text-red-500"><p class="text-sm">Failed to load products from server</p></div>';
+        document.getElementById('categoryList').innerHTML = '<div class="col-span-full text-center py-8 text-red-500"><p class="text-sm">Failed to load categories from server</p></div>';
+    }
+
+    // ── Render Products ──
+    function renderProducts(products) {
+        const list = document.getElementById('productList');
+        if (!products || products.length === 0) {
+            list.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><p class="text-sm">No products available</p></div>';
+            return;
+        }
+        list.innerHTML = products.map(product => `
+            <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                <input type="checkbox" class="product-checkbox w-4 h-4 text-primary rounded cursor-pointer" value="${product._id}" data-name="${product.name}"/>
+                <span class="text-sm text-gray-700 dark:text-gray-300 truncate">${product.name}</span>
+            </label>
+        `).join('');
+        
+        document.querySelectorAll('.product-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedProducts);
+            if (selectedProducts.includes(checkbox.value)) {
+                checkbox.checked = true;
+            }
+        });
+    }
+
+    function updateSelectedProducts() {
+        selectedProducts = Array.from(document.querySelectorAll('.product-checkbox:checked')).map(cb => cb.value);
+        document.getElementById('selectedProducts').value = selectedProducts.join(',');
+        document.getElementById('productCount').textContent = selectedProducts.length;
+        updateProductTags();
+    }
+
+    function updateProductTags() {
+        const tagsContainer = document.getElementById('selectedProductsTags');
+        const display = document.getElementById('selectedProductsDisplay');
+        
+        if (selectedProducts.length === 0) {
+            display.classList.add('hidden');
+            return;
+        }
+        
+        display.classList.remove('hidden');
+        tagsContainer.innerHTML = selectedProducts.map(id => {
+            const product = allProducts.find(p => p._id === id);
+            return `
+                <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-semibold">
+                    ${product?.name || 'Unknown'}
+                    <button type="button" class="remove-product-tag ml-1 hover:bg-primary/20 rounded-full p-0.5" data-id="${id}">
+                        <span class="material-symbols-outlined text-base">close</span>
+                    </button>
+                </div>
+            `;
+        }).join('');
+        
+        document.querySelectorAll('.remove-product-tag').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector(`.product-checkbox[value="${btn.dataset.id}"]`).checked = false;
+                updateSelectedProducts();
+            });
+        });
+    }
+
+    // ── Render Categories ──
+    function renderCategories(categories) {
+        const list = document.getElementById('categoryList');
+        if (!categories || categories.length === 0) {
+            list.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><p class="text-sm">No categories available</p></div>';
+            return;
+        }
+        list.innerHTML = categories.map(category => `
+            <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                <input type="checkbox" class="category-checkbox w-4 h-4 text-primary rounded cursor-pointer" value="${category._id}" data-name="${category.name}"/>
+                <span class="text-sm text-gray-700 dark:text-gray-300 truncate">${category.name}</span>
+            </label>
+        `).join('');
+        
+        document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedCategories);
+            if (selectedCategories.includes(checkbox.value)) {
+                checkbox.checked = true;
+            }
+        });
+    }
+
+    function updateSelectedCategories() {
+        selectedCategories = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
+        document.getElementById('selectedCategories').value = selectedCategories.join(',');
+        document.getElementById('categoryCount').textContent = selectedCategories.length;
+        updateCategoryTags();
+    }
+
+    function updateCategoryTags() {
+        const tagsContainer = document.getElementById('selectedCategoriesTags');
+        const display = document.getElementById('selectedCategoriesDisplay');
+        
+        if (selectedCategories.length === 0) {
+            display.classList.add('hidden');
+            return;
+        }
+        
+        display.classList.remove('hidden');
+        tagsContainer.innerHTML = selectedCategories.map(id => {
+            const category = allCategories.find(c => c._id === id);
+            return `
+                <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-semibold">
+                    ${category?.name || 'Unknown'}
+                    <button type="button" class="remove-category-tag ml-1 hover:bg-primary/20 rounded-full p-0.5" data-id="${id}">
+                        <span class="material-symbols-outlined text-base">close</span>
+                    </button>
+                </div>
+            `;
+        }).join('');
+        
+        document.querySelectorAll('.remove-category-tag').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector(`.category-checkbox[value="${btn.dataset.id}"]`).checked = false;
+                updateSelectedCategories();
+            });
+        });
+    }
+
+    // ── Search ──
+    document.getElementById('productSearch').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const filtered = allProducts.filter(p => p.name.toLowerCase().includes(query));
+        renderProducts(filtered);
+    });
+
+    document.getElementById('categorySearch').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const filtered = allCategories.filter(c => c.name.toLowerCase().includes(query));
+        renderCategories(filtered);
+    });
+
+    // ── Offer Type Toggle ──
+    document.querySelectorAll('.offer-type-radio').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const isProduct = e.target.value === 'product';
+            document.getElementById('productSection').classList.toggle('hidden', !isProduct);
+            document.getElementById('categorySection').classList.toggle('hidden', isProduct);
+            
+            // Clear selections when switching
+            selectedProducts = [];
+            selectedCategories = [];
+            document.getElementById('selectedProducts').value = '';
+            document.getElementById('selectedCategories').value = '';
+            updateProductTags();
+            updateCategoryTags();
+        });
+    });
+
+    // ── Mobile Sidebar ──
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebarClose = document.getElementById('sidebarClose');
+
+    menuBtn.addEventListener('click', () => {
+        sidebar.classList.add('open');
+        backdrop.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    });
+
+    sidebarClose.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('open');
+        document.body.style.overflow = '';
+    });
+
+    backdrop.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('open');
+        document.body.style.overflow = '';
+    });
+
+    // ── Form Submission ──
+    document.getElementById('offerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const offerType = document.querySelector('input[name="offerType"]:checked').value;
+        const selectedIds = offerType === 'product' ? selectedProducts : selectedCategories;
+        
+        // Validation
+        if (selectedIds.length === 0) {
+            alert(`Please select at least one ${offerType}`);
+            return;
+        }
+
+        // Build offer data
+        const offerData = {
+            title: document.querySelector('input[name="title"]').value,
+            description: document.querySelector('input[name="description"]').value || '',
+            discountType: document.querySelector('select[name="discountType"]').value,
+            discountValue: Number(document.querySelector('input[name="discountValue"]').value),
+            minOrderValue: Number(document.querySelector('input[name="minOrderValue"]').value) || 0,
+            startDate: document.querySelector('input[name="startDate"]').value,
+            endDate: document.querySelector('input[name="endDate"]').value,
+            applicableFor: offerType,
+            targetId: selectedIds[0], // First selected ID
+            status: 'draft',
+        };
+
+        // Disable button
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-xl animate-spin">hourglass_empty</span><span>Creating...</span>';
+
+        try {
+            const response = await fetch('/admin/offers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(offerData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('✓ Offer created successfully!');
+                window.location.href = '/admin/offers';
+            } else {
+                alert('❌ Error: ' + (result.message || 'Failed to create offer'));
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span class="material-symbols-outlined text-xl">rocket_launch</span><span>Create Offer</span>';
+            }
+        } catch (error) {
+            console.error('Submission error:', error);
+            alert('❌ Failed to submit form. Please check your connection and try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="material-symbols-outlined text-xl">rocket_launch</span><span>Create Offer</span>';
+        }
+    });
+</script>
+</body>
+</html>

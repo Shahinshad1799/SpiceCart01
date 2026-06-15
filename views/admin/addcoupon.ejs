@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SpiceCart Admin - Create New Coupon</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.font-fill-1 {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181610] dark:text-white min-h-screen flex">
+<%- include("../partials/sidebar") %>
+<main class="flex-1 flex flex-col">
+
+    
+
+
+
+<div class="max-w-7xl mx-auto p-8 lg:p-12">
+
+<div class="max-w-4xl mx-auto bg-white dark:bg-[#1f2125] rounded-xl form-card overflow-hidden">
+            <div>
+<h2 class="text-3xl font-bold tracking-tight text-[#181610] dark:text-white">Create New Coupon</h2>
+<p class="text-[#8d7c5e] mt-1">Configure promotional rules and discount codes for your store.</p>
+</div>
+
+<form class="p-8" action="/admin/addcoupon" method="POST">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+<div class="col-span-1">
+<label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Coupon Code</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#8d7c5e]">tag</span>
+<input name="code" required class="w-full pl-12 pr-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="e.g. SPICE2024" type="text"/>
+</div>
+</div>
+<div class="col-span-1">
+<label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Coupon Status</label>
+<div class="flex items-center h-14 px-4 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg">
+<span class="text-sm font-medium text-[#8d7c5e] mr-auto">Active Status</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input name="isActive" checked class="sr-only peer" type="checkbox" value="true"/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+
+<div class="mb-10 pt-8 border-t border-[#e7e2da] dark:border-gray-700">
+<h3 class="text-lg font-bold mb-6 text-[#181610] dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">sell</span>
+Discount Details
+</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div>
+<label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Discount Type</label>
+<div class="relative">
+<select name="discountType" required class="w-full appearance-none h-14 pl-4 pr-10 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium">
+<option value="percentage">Percentage (%)</option>
+<option value="fixed">Fixed Amount ($)</option>
+<option value="shipping">Free Shipping</option>
+</select>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined pointer-events-none text-[#8d7c5e]">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Discount Value</label>
+<div class="relative">
+<input name="discountValue" required class="w-full pl-4 pr-12 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="20" type="number"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-[#8d7c5e] font-bold">%</span>
+</div>
+</div>
+<div>
+<label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Max Discount Amount ($)</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#8d7c5e] font-bold">$</span>
+<input name="maxDiscount" class="w-full pl-10 pr-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="No cap" type="number"/>
+</div>
+</div>
+</div>
+</div>
+
+<div class="mb-10 pt-8 border-t border-[#e7e2da] dark:border-gray-700">
+<h3 class="text-lg font-bold mb-6 text-[#181610] dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">rule</span>
+Usage &amp; Restrictions
+</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div>
+<label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Min. Purchase ($)</label>
+<input name="minPurchase" class="w-full px-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="0.00" type="number"/>
+</div>
+<div>
+<label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Usage Limit / User</label>
+<input name="usageLimit" class="w-full px-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="1" type="number"/>
+</div>
+<div>
+<label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Expiry Date</label>
+<div class="relative">
+<input name="expiryDate" required class="w-full pl-4 pr-10 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" type="date"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#8d7c5e] pointer-events-none">calendar_month</span>
+</div>
+</div>
+</div>
+</div>
+
+<div class="flex items-center justify-end gap-6 pt-8 border-t border-[#e7e2da] dark:border-gray-700 mt-4">
+<a class="text-sm font-bold text-[#8d7c5e] hover:text-[#181610] dark:hover:text-white transition-colors" href="/admin/coupons">Cancel &amp; Discard</a>
+<button class="px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center gap-2 active:scale-95" type="submit">
+Create Coupon
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+</main>
+
+</body></html>

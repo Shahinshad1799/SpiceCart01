@@ -179,6 +179,7 @@ body {
 <div class="md:col-span-2">
 <label class="form-label" for="product_name">Product Name</label>
 <input class="form-input" id="product_name" placeholder="e.g. Organic Kashmiri Saffron Threads" type="text" name="name" value="<%= product.name %>" />
+<p id="nameError" class="text-red-500 text-xs mt-1"></p>
 </div>
 <div>
 <label class="form-label" for="catagory">Category</label>
@@ -193,10 +194,12 @@ body {
   <% }) %>
 
 </select>
+<p id="categoryError" class="text-red-500 text-xs mt-1"></p>
 </div>
 <div class="md:col-span-2">
 <label class="form-label" for="description">Description</label>
 <textarea class="form-input min-h-[120px]" id="description" name="description" placeholder="Provide a detailed description of the product, including its origin, flavor profile, and culinary uses..."><%= product.description %></textarea>
+<p id="descError" class="text-red-500 text-xs mt-1"></p>
 </div>
 </div>
 </section>
@@ -233,7 +236,7 @@ body {
   class="flex-1 bg-saffron text-white text-sm font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors">
   Add
 </button>
-</div>
+<p id="variantError" class="text-red-500 text-xs mt-1"></p></div>
 </div>
 </div>
 <div class="space-y-4">
@@ -273,6 +276,7 @@ body {
 
   </div>
 </section>
+<p id="imageError" class="text-red-500 text-xs mt-1"></p> 
 </div>
 <div class="mt-12 pt-8 border-t border-slate-100 flex items-center justify-end gap-4">
 <button class="px-6 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-colors border border-slate-200" type="button">
@@ -287,58 +291,51 @@ body {
 </div>
 </main>
 <% if (typeof error !== "undefined" || typeof success !== "undefined") { %>
-
 <div id="toast"
      class="fixed bottom-6 right-6 
      <%= error ? 'bg-red-600' : 'bg-green-600' %> 
      text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
      transform translate-y-20 opacity-0 transition-all duration-500">
-
   <%= error || success %>
-
 </div>
-
 <script>
   const toast = document.getElementById("toast");
-
-  // Show animation
-  setTimeout(() => {
-    toast.classList.remove("translate-y-20", "opacity-0");
-  }, 100);
-
-  // Hide after 3 seconds
-  setTimeout(() => {
-    toast.classList.add("translate-y-20", "opacity-0");
-  }, 3000);
+  setTimeout(() => { toast.classList.remove("translate-y-20", "opacity-0"); }, 100);
+  setTimeout(() => { toast.classList.add("translate-y-20", "opacity-0"); }, 3000);
 </script>
+<% } %>
 
-<% } %>  
+<!-- ── VARIANTS ─────────────────────────────────────────── -->
 <script>
- let variants = <%- JSON.stringify(product.variants || []) %>;
+  let variants = <%- JSON.stringify(product.variants || []) %>;
 </script>
+
 <script>
 let editIndex = -1;
 
-// ✅ render on page load (IMPORTANT)
 document.addEventListener("DOMContentLoaded", () => {
   renderVariants();
 });
 
 function addVariant() {
-  const name = document.getElementById("variant_name").value;
+  const name  = document.getElementById("variant_name").value.trim();
   const price = document.getElementById("variant_price").value;
   const stock = document.getElementById("variant_stock").value;
+  const err   = document.getElementById("variantError");
 
-  if (!name || !price || !stock) {
-    alert("Fill all fields");
-    return;
+  if (!name) {
+    err.innerText = "Variant name is required"; return;
+  }
+  if (!price || Number(price) <= 0) {
+    err.innerText = "Price must be greater than 0"; return;
+  }
+  if (stock === "" || Number(stock) < 0) {
+    err.innerText = "Stock cannot be negative"; return;
   }
 
-  const variant = {
-    name,
-    price: Number(price),
-    stock: Number(stock)
-  };
+  err.innerText = "";
+
+  const variant = { name, price: Number(price), stock: Number(stock) };
 
   if (editIndex === -1) {
     variants.push(variant);
@@ -359,56 +356,42 @@ function renderVariants() {
   variants.forEach((v, index) => {
     container.innerHTML += `
     <div class="flex items-center justify-between bg-white border p-4 rounded-xl">
-
       <div class="grid grid-cols-3 flex-1 gap-8">
         <div>
           <span class="text-xs text-gray-400">Variant</span>
           <p>${v.name}</p>
         </div>
-
         <div>
           <span class="text-xs text-gray-400">Price</span>
-          <p>$${v.price}</p>
+          <p>₹${v.price}</p>
         </div>
-
         <div>
           <span class="text-xs text-gray-400">Stock</span>
           <p>${v.stock}</p>
         </div>
       </div>
-
       <div class="flex gap-2">
-        <button 
-          type="button"
-          onclick="editVariant(${index})"
+        <button type="button" onclick="editVariant(${index})"
           class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-saffron hover:bg-orange-50">
           <span class="material-symbols-outlined text-[20px]">edit</span>
         </button>
-
-        <button 
-          type="button"
-          onclick="deleteVariant(${index})"
+        <button type="button" onclick="deleteVariant(${index})"
           class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50">
           <span class="material-symbols-outlined text-[20px]">delete</span>
         </button>
       </div>
-
-      <!-- ✅ hidden inputs -->
-      <input type="hidden" name="variants[${index}][name]" value="${v.name}">
+      <input type="hidden" name="variants[${index}][name]"  value="${v.name}">
       <input type="hidden" name="variants[${index}][price]" value="${v.price}">
       <input type="hidden" name="variants[${index}][stock]" value="${v.stock}">
-    </div>
-    `;
+    </div>`;
   });
 }
 
 function editVariant(index) {
   const v = variants[index];
-
-  document.getElementById("variant_name").value = v.name;
+  document.getElementById("variant_name").value  = v.name;
   document.getElementById("variant_price").value = v.price;
   document.getElementById("variant_stock").value = v.stock;
-
   editIndex = index;
   document.getElementById("addBtn").innerText = "Update";
 }
@@ -419,31 +402,28 @@ function deleteVariant(index) {
 }
 
 function clearInputs() {
-  document.getElementById("variant_name").value = "";
+  document.getElementById("variant_name").value  = "";
   document.getElementById("variant_price").value = "";
   document.getElementById("variant_stock").value = "";
 }
 </script>
+
+<!-- ── IMAGES ──────────────────────────────────────────── -->
 <script>
-  let existingImages = <%- JSON.stringify(product.images || []) %>;
-  let selectedFiles = [];
+  let existingImages  = <%- JSON.stringify(product.images || []) %>;
+  let selectedFiles   = [];
   let cropper;
   let currentFileIndex = null;
 
-  const input = document.getElementById("imageInput");
+  const input   = document.getElementById("imageInput");
   const preview = document.getElementById("imagePreview");
 
-  document.addEventListener("DOMContentLoaded", () => {
-    renderImages();
-  });
+  document.addEventListener("DOMContentLoaded", () => { renderImages(); });
 
-  function openFilePicker() {
-    input.click();
-  }
+  function openFilePicker() { input.click(); }
 
   input.addEventListener("change", function () {
-    const files = Array.from(input.files);
-    selectedFiles.push(...files);
+    selectedFiles.push(...Array.from(input.files));
     renderImages();
     input.value = "";
   });
@@ -451,7 +431,7 @@ function clearInputs() {
   function renderImages() {
     preview.innerHTML = "";
 
-    // existing images from DB
+    // existing DB images
     existingImages.forEach((img, index) => {
       const div = document.createElement("div");
       div.className = "slot relative";
@@ -466,7 +446,7 @@ function clearInputs() {
       preview.appendChild(div);
     });
 
-    // new images
+    // new uploaded images
     selectedFiles.forEach((file, index) => {
       const reader = new FileReader();
       reader.onload = function (e) {
@@ -499,9 +479,7 @@ function clearInputs() {
 
   function openCrop(index) {
     currentFileIndex = index;
-    const file = selectedFiles[index];
-    const url = URL.createObjectURL(file);
-
+    const url = URL.createObjectURL(selectedFiles[index]);
     const img = document.getElementById("cropImage");
     img.src = url;
 
@@ -512,21 +490,16 @@ function clearInputs() {
     setTimeout(() => {
       if (cropper) cropper.destroy();
       cropper = new Cropper(img, {
-        aspectRatio: 1,
-        viewMode: 1,
-        autoCropArea: 1,
-        responsive: true,
-        background: false,
-        zoomable: true
+        aspectRatio: 1, viewMode: 1,
+        autoCropArea: 1, responsive: true,
+        background: false, zoomable: true
       });
     }, 100);
   }
 
   function applyCrop() {
-    const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
-    canvas.toBlob((blob) => {
-      const file = new File([blob], Date.now() + ".jpg", { type: "image/jpeg" });
-      selectedFiles[currentFileIndex] = file;
+    cropper.getCroppedCanvas({ width: 500, height: 500 }).toBlob((blob) => {
+      selectedFiles[currentFileIndex] = new File([blob], Date.now() + ".jpg", { type: "image/jpeg" });
       renderImages();
       syncFiles();
       closeCrop();
@@ -539,25 +512,88 @@ function clearInputs() {
     if (cropper) { cropper.destroy(); cropper = null; }
   }
 
-  function removeExisting(index) {
-    existingImages.splice(index, 1);
-    renderImages();
-  }
-
-  function removeNew(index) {
-    selectedFiles.splice(index, 1);
-    renderImages();
-  }
+  function removeExisting(index) { existingImages.splice(index, 1); renderImages(); }
+  function removeNew(index)      { selectedFiles.splice(index, 1);  renderImages(); }
 
   function syncFiles() {
-    const dataTransfer = new DataTransfer();
-    selectedFiles.forEach(file => dataTransfer.items.add(file));
-    input.files = dataTransfer.files;
+    const dt = new DataTransfer();
+    selectedFiles.forEach(f => dt.items.add(f));
+    input.files = dt.files;
+  }
+</script>
+
+<!-- ── VALIDATION ─────────────────────────────────────── -->
+<script>
+const nameInput     = document.getElementById("product_name");
+const categoryInput = document.querySelector("select[name='catagory']");
+const descInput     = document.getElementById("description");
+
+nameInput.addEventListener("input", () => {
+  document.getElementById("nameError").innerText =
+    nameInput.value.trim().length < 2 ? "Minimum 2 characters required" : "";
+});
+
+categoryInput.addEventListener("change", () => {
+  document.getElementById("categoryError").innerText =
+    !categoryInput.value ? "Please select a category" : "";
+});
+
+descInput.addEventListener("input", () => {
+  document.getElementById("descError").innerText =
+    descInput.value.trim().length < 5 ? "Minimum 5 characters required" : "";
+});
+
+document.querySelector("form").addEventListener("submit", function (e) {
+  syncFiles(); // always sync files on submit
+
+  let isValid = true;
+
+  // Name
+  const nameErr = document.getElementById("nameError");
+  if (nameInput.value.trim().length < 2) {
+    nameErr.innerText = "Minimum 2 characters required";
+    isValid = false;
   }
 
-  document.querySelector("form").addEventListener("submit", () => {
-    syncFiles();
-  });
+  // Category
+  const catErr = document.getElementById("categoryError");
+  if (!categoryInput.value) {
+    catErr.innerText = "Please select a category";
+    isValid = false;
+  }
+
+  // Description
+  const descErr = document.getElementById("descError");
+  if (descInput.value.trim().length < 5) {
+    descErr.innerText = "Minimum 5 characters required";
+    isValid = false;
+  }
+
+  // Variants
+  const variantErr = document.getElementById("variantError");
+  if (variants.length === 0) {
+    variantErr.innerText = "Please add at least one variant";
+    isValid = false;
+  } else {
+    variantErr.innerText = "";
+  }
+
+  // Images
+  const imgErr = document.getElementById("imageError");
+  const totalImages = existingImages.length + selectedFiles.length;
+  if (totalImages === 0) {
+    imgErr.innerText = "Please add at least one image";
+    isValid = false;
+  } else {
+    imgErr.innerText = "";
+  }
+
+  if (!isValid) {
+    e.preventDefault();
+    const firstError = document.querySelector("p.text-red-500:not(:empty)");
+    if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+});
 </script>
 <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
   <div class="bg-white p-5 rounded-xl w-[90vw] max-w-[600px]">
