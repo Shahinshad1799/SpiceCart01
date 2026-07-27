@@ -3,7 +3,7 @@ const addressmodel = require("../model/addressmodel");
 const Cart = require("../model/cartmodel");
 const couponmodel = require("../model/couponmodel");
 const { getOrCreateWallet } = require('../utils/walletHelper');
-const { calculateOrderTotals } = require('../utils/orderPricing');
+const { calculateOrderTotals } = require('../utils/Orderpricing');
 
 const loadcheckout = async (req, res) => {
   try {
