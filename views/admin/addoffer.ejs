@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -438,29 +439,35 @@ console.log(window.pageData);
     });
 
     // ── Mobile Sidebar ──
-    const sidebar = document.getElementById('sidebar');
-    const backdrop = document.getElementById('sidebarBackdrop');
-    const menuBtn = document.getElementById('menuBtn');
-    const sidebarClose = document.getElementById('sidebarClose');
+ // ── Mobile Sidebar ──
+const sidebar = document.getElementById('sidebar');
+const backdrop = document.getElementById('sidebarBackdrop');
+const menuBtn = document.getElementById('menuBtn');
+const sidebarClose = document.getElementById('sidebarClose');
 
+if (menuBtn && sidebar && backdrop) {
     menuBtn.addEventListener('click', () => {
         sidebar.classList.add('open');
         backdrop.classList.add('open');
         document.body.style.overflow = 'hidden';
     });
+}
 
+if (sidebarClose && sidebar && backdrop) {
     sidebarClose.addEventListener('click', () => {
         sidebar.classList.remove('open');
         backdrop.classList.remove('open');
         document.body.style.overflow = '';
     });
+}
 
+if (backdrop && sidebar) {
     backdrop.addEventListener('click', () => {
         sidebar.classList.remove('open');
         backdrop.classList.remove('open');
         document.body.style.overflow = '';
     });
-
+}
     // ── Form Submission ──
     document.getElementById('offerForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -489,33 +496,51 @@ console.log(window.pageData);
             status: 'draft',
         };
 
-        // Disable button
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="material-symbols-outlined text-xl animate-spin">hourglass_empty</span><span>Creating...</span>';
+// Disable button
+submitBtn.disabled = true;
+submitBtn.innerHTML = '<span class="material-symbols-outlined text-xl animate-spin">hourglass_empty</span><span>Creating...</span>';
 
-        try {
-            const response = await fetch('/admin/offers', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(offerData)
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                alert('✓ Offer created successfully!');
-                window.location.href = '/admin/offers';
-            } else {
-                alert('❌ Error: ' + (result.message || 'Failed to create offer'));
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span class="material-symbols-outlined text-xl">rocket_launch</span><span>Create Offer</span>';
-            }
-        } catch (error) {
-            console.error('Submission error:', error);
-            alert('❌ Failed to submit form. Please check your connection and try again.');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span class="material-symbols-outlined text-xl">rocket_launch</span><span>Create Offer</span>';
-        }
+try {
+    const response = await fetch('/admin/addoffer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(offerData)
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        await Swal.fire({
+            icon: 'success',
+            title: 'Offer Created!',
+            text: 'Your offer has been created successfully.',
+            confirmButtonColor: '#F97316',
+            timer: 2000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+        });
+        window.location.href = '/admin/offers';
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Failed',
+            text: result.message || 'Failed to create offer',
+            confirmButtonColor: '#F97316',
+        });
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-xl">rocket_launch</span><span>Create Offer</span>';
+    }
+} catch (error) {
+    console.error('Submission error:', error);
+    Swal.fire({
+        icon: 'error',
+        title: 'Connection Error',
+        text: 'Failed to submit form. Please check your connection and try again.',
+        confirmButtonColor: '#F97316',
+    });
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined text-xl">rocket_launch</span><span>Create Offer</span>';
+}
     });
 </script>
 </body>

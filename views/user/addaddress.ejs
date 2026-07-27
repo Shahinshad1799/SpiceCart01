@@ -156,70 +156,93 @@ const zipcode = document.querySelector("input[name='zipcode']");
 // ===== Helper Functions =====
 function showError(input, id, message) {
   const error = document.getElementById(id);
+
   error.textContent = message;
   error.classList.remove("hidden");
+
+  input.classList.remove("border-[#d1d5db]");
   input.classList.add("border-red-500");
 }
 
 function clearError(input, id) {
   const error = document.getElementById(id);
+
   error.textContent = "";
   error.classList.add("hidden");
+
   input.classList.remove("border-red-500");
 }
-
 // ===== Individual Field Validation =====
-
 function validateFullname() {
-  if (!/^[A-Za-z ]{3,}$/.test(fullname.value.trim())) {
-    showError(fullname, "fullnameError", "Enter valid full name (min 3 letters)");
+  const value = fullname.value.trim();
+
+  if (!/^[A-Za-z\s]{3,50}$/.test(value)) {
+    showError(
+      fullname,
+      "fullnameError",
+      "Name should contain only letters and spaces (3–50 characters)"
+    );
     return false;
   }
+
   clearError(fullname, "fullnameError");
   return true;
 }
 
 function validatePhone() {
-  if (!/^[0-9]{10}$/.test(phone.value.trim())) {
-    showError(phone, "phoneError", "Phone must be 10 digits");
+  const value = phone.value.trim();
+
+  // Indian mobile numbers
+  if (!/^[6-9]\d{9}$/.test(value)) {
+    showError(
+      phone,
+      "phoneError",
+      "Enter a valid 10-digit mobile number"
+    );
     return false;
   }
+
   clearError(phone, "phoneError");
   return true;
 }
 
 function validateAddress() {
-  if (address.value.trim().length < 5) {
-    showError(address, "addressError", "Enter valid street address");
+  const value = address.value.trim();
+
+  if (value.length < 10 || value.length > 150) {
+    showError(
+      address,
+      "addressError",
+      "Address must be between 10 and 150 characters"
+    );
     return false;
   }
+
   clearError(address, "addressError");
   return true;
 }
 
 function validateCity() {
-  if (!/^[A-Za-z ]{2,}$/.test(city.value.trim())) {
-    showError(city, "cityError", "Enter valid city");
+  const value = city.value.trim();
+
+  if (!/^[A-Za-z\s]{2,50}$/.test(value)) {
+    showError(city, "cityError", "Enter a valid city name");
     return false;
   }
+
   clearError(city, "cityError");
   return true;
 }
 
-function validateState() {
-  if (!state.value) {
-    showError(state, "stateError", "Select a state");
-    return false;
-  }
-  clearError(state, "stateError");
-  return true;
-}
-
 function validateZip() {
-  if (!/^[0-9]{5,6}$/.test(zipcode.value.trim())) {
-    showError(zipcode, "zipError", "Enter valid zip code");
+  const value = zipcode.value.trim();
+
+  // Indian PIN code
+  if (!/^[1-9][0-9]{5}$/.test(value)) {
+    showError(zipcode, "zipError", "Enter a valid 6-digit PIN code");
     return false;
   }
+
   clearError(zipcode, "zipError");
   return true;
 }
@@ -234,13 +257,20 @@ zipcode.addEventListener("input", validateZip);
 
 // ===== Final Submit Check =====
 form.addEventListener("submit", (e) => {
+  const fullnameValid = validateFullname();
+  const phoneValid = validatePhone();
+  const addressValid = validateAddress();
+  const cityValid = validateCity();
+  const stateValid = validateState();
+  const zipValid = validateZip();
+
   const isValid =
-    validateFullname() &&
-    validatePhone() &&
-    validateAddress() &&
-    validateCity() &&
-    validateState() &&
-    validateZip();
+    fullnameValid &&
+    phoneValid &&
+    addressValid &&
+    cityValid &&
+    stateValid &&
+    zipValid;
 
   if (!isValid) {
     e.preventDefault();

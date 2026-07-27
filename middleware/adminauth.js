@@ -1,25 +1,17 @@
-// Protect routes for admins only
 const requireAdminLogin = (req, res, next) => {
-//   if (req.session && req.session.admin) {
-//     // Admin is logged in → allow access
-//     next();
-//   } else {
-//     // Admin not logged in → redirect to login page
-//     res.redirect("/admin/login");
-//   }
-next()
+  if (req.session && req.session.admin) {
+    next();
+  } else {
+    res.redirect("/admin/login");
+  }
 };
 
-// Redirect logged-in admin away from login page
 const redirectIfAdminLoggedIn = (req, res, next) => {
-//   if (req.session && req.session.admin) {
-//     // Already logged in → go to customer page
-//     res.redirect("/admin/customer");
-//   } else {
-//     // Not logged in → show login page
-//     next();
-//   }
-next()
+  if (req.session && req.session.admin) {
+    res.redirect("/admin/dashboard");
+  } else {
+    next();
+  }
 };
 
 module.exports = { requireAdminLogin, redirectIfAdminLoggedIn };

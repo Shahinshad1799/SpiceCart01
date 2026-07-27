@@ -67,6 +67,9 @@ body {
     border-radius: 8px;
     transition: all 0.2s;
 }
+.form-input.input-error {
+    border-color: #dc2626;
+}
 #cropImage {
   max-width: 100%;
   display: block;
@@ -177,7 +180,7 @@ body {
 <p class="text-slate-500 text-sm">Fill in the details below to add a new spice or product to your inventory.</p>
 </header>
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-<form class="p-8" method="post" action="/admin/addproduct" enctype="multipart/form-data">
+<form id="addProductForm" class="p-8" method="post" action="/admin/addproduct" enctype="multipart/form-data">
 <div class="space-y-10">
 <section>
 <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
@@ -224,23 +227,23 @@ body {
 <div class="lg:col-span-1">
 <label class="form-label text-xs uppercase tracking-wider" for="variant_name">Variant Name</label>
 <input class="form-input text-sm" id="variant_name" placeholder="e.g. 500g Pack" type="text"/>
-<p id="variantError" class="text-red-500 text-xs mt-2"></p>
+<p id="variantNameError" class="text-red-500 text-xs mt-2"></p>
 </div>
 <div>
 <label class="form-label text-xs uppercase tracking-wider" for="variant_price">Price (₹)</label>
 <div class="relative">
 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">₹</span>
 <input class="form-input pl-6 text-sm" id="variant_price" placeholder="0.00" step="0.01" type="number"/>
-<p id="variantError" class="text-red-500 text-xs mt-2"></p>
 </div>
+<p id="variantPriceError" class="text-red-500 text-xs mt-2"></p>
 </div>
 <div>
 <label class="form-label text-xs uppercase tracking-wider" for="variant_stock">Stock Quantity</label>
 <input class="form-input text-sm" id="variant_stock" placeholder="0" type="number"/>
-<p id="variantError" class="text-red-500 text-xs mt-2"></p>
+<p id="variantStockError" class="text-red-500 text-xs mt-2"></p>
 </div>
 <div class="flex gap-2">
-<button class="flex-1 bg-white border border-slate-200 text-slate-600 text-sm font-bold py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors" type="button">Cancel</button>
+<button class="flex-1 bg-white border border-slate-200 text-slate-600 text-sm font-bold py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors" type="button" onclick="clearInputs()">Cancel</button>
 <button 
   id="addBtn"
   type="button"
@@ -251,7 +254,7 @@ body {
 </div>
 </div>
 </div>
-<p id="variantError" class="text-red-500 text-xs mt-2"></p>
+<p id="variantListError" class="text-red-500 text-xs mt-2"></p>
 <div class="space-y-4">
 <div class="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:border-saffron/30 transition-all">
 
@@ -378,6 +381,7 @@ input.addEventListener("change", function () {
   });
 
   updateFileInput();
+  validateImages();
 });
 function removeImage(index) {
   selectedFiles.splice(index, 1);
@@ -397,6 +401,7 @@ function removeImage(index) {
   });
 
   updateFileInput();
+  validateImages();
 }
 // OPEN CROP
 function openCrop(index) {
@@ -478,21 +483,70 @@ function updateFileInput() {
 
   input.files = dt.files;
 }
+
+// IMAGE VALIDATION (real-time, fires whenever images are added/removed)
+function validateImages(showError = true) {
+  const err = document.getElementById("imageError");
+  const valid = selectedFiles.length >= 3;
+
+  if (!valid && showError) {
+    const remaining = 3 - selectedFiles.length;
+    err.innerText = `Please upload at least 3 product images (${remaining} more needed)`;
+  } else {
+    err.innerText = "";
+  }
+  return valid;
+}
 </script>
 <script>
 let variants = [];
 let editIndex = -1;
-function addVariant() {
-  const name = document.getElementById("variant_name").value;
-  const price = document.getElementById("variant_price").value;
-  const stock = document.getElementById("variant_stock").value;
 
-  if (!name || !price || !stock) {
-    document.getElementById("variantError").innerText = "Please fill all fields";
-    return; // ← stop here
+function addVariant() {
+  const nameInput = document.getElementById("variant_name");
+  const priceInput = document.getElementById("variant_price");
+  const stockInput = document.getElementById("variant_stock");
+
+  const name = nameInput.value.trim();
+  const price = priceInput.value;
+  const stock = stockInput.value;
+
+  const nameErr = document.getElementById("variantNameError");
+  const priceErr = document.getElementById("variantPriceError");
+  const stockErr = document.getElementById("variantStockError");
+
+  // clear previous errors first
+  nameErr.innerText = "";
+  priceErr.innerText = "";
+  stockErr.innerText = "";
+
+  let valid = true;
+
+  if (!name) {
+    nameErr.innerText = "Variant name is required";
+    valid = false;
+  } else {
+    // DUPLICATE CHECK — case-insensitive, ignores the variant currently being edited
+    const isDuplicate = variants.some((v, i) =>
+      v.name.trim().toLowerCase() === name.toLowerCase() && i !== editIndex
+    );
+    if (isDuplicate) {
+      nameErr.innerText = "A variant with this name already exists";
+      valid = false;
+    }
   }
 
-  document.getElementById("variantError").innerText = ""; // clear error on success
+  if (price === "" || Number(price) <= 0) {
+    priceErr.innerText = "Enter a valid price";
+    valid = false;
+  }
+
+  if (stock === "" || Number(stock) < 0) {
+    stockErr.innerText = "Enter a valid stock quantity";
+    valid = false;
+  }
+
+  if (!valid) return;
 
   const variant = {
     name,
@@ -510,10 +564,35 @@ function addVariant() {
     document.getElementById("addBtn").innerText = "Add";
   }
 
+  document.getElementById("variantListError").innerText = "";
   renderVariants();
   clearInputs();
 }
 
+// REAL-TIME VARIANT FIELD VALIDATION (clears errors as the user fixes them)
+document.getElementById("variant_name").addEventListener("input", function () {
+  const err = document.getElementById("variantNameError");
+  const name = this.value.trim();
+
+  if (!name) {
+    err.innerText = "";
+    return;
+  }
+  const isDuplicate = variants.some((v, i) =>
+    v.name.trim().toLowerCase() === name.toLowerCase() && i !== editIndex
+  );
+  err.innerText = isDuplicate ? "A variant with this name already exists" : "";
+});
+
+document.getElementById("variant_price").addEventListener("input", function () {
+  const err = document.getElementById("variantPriceError");
+  err.innerText = (this.value !== "" && Number(this.value) <= 0) ? "Enter a valid price" : "";
+});
+
+document.getElementById("variant_stock").addEventListener("input", function () {
+  const err = document.getElementById("variantStockError");
+  err.innerText = (this.value !== "" && Number(this.value) < 0) ? "Enter a valid stock quantity" : "";
+});
 
 function renderVariants() {
   const container = document.getElementById("variantList");
@@ -590,33 +669,91 @@ function clearInputs() {
   document.getElementById("variant_name").value = "";
   document.getElementById("variant_price").value = "";
   document.getElementById("variant_stock").value = "";
+  document.getElementById("variantNameError").innerText = "";
+  document.getElementById("variantPriceError").innerText = "";
+  document.getElementById("variantStockError").innerText = "";
+  editIndex = -1;
+  document.getElementById("addBtn").innerText = "Add";
+}
+
+// VARIANT LIST VALIDATION (called on submit)
+function validateVariantList(showError = true) {
+  const err = document.getElementById("variantListError");
+  const valid = variants.length >= 1;
+
+  if (!valid && showError) {
+    err.innerText = "Add at least one variant before saving";
+  } else {
+    err.innerText = "";
+  }
+  return valid;
 }
 </script>
 <script>
-// ================= BASIC FIELD VALIDATION =================
+// ================= BASIC FIELD VALIDATION (real-time) =================
 const nameInput = document.getElementById("product_name");
 const categoryInput = document.querySelector("select[name='catagory']");
 const descInput = document.getElementById("description");
 
-nameInput.addEventListener("input", () => {
+function validateProductName(showError = true) {
+  const valid = nameInput.value.trim().length >= 2;
   const err = document.getElementById("nameError");
-  err.innerText = nameInput.value.trim().length < 2 
-    ? "Minimum 2 characters required" 
-    : "";
-});
+  if (!valid && showError) {
+    err.innerText = "Minimum 2 characters required";
+  } else {
+    err.innerText = "";
+  }
+  return valid;
+}
 
-categoryInput.addEventListener("change", () => {
+function validateCategory(showError = true) {
+  const valid = !!categoryInput.value;
   const err = document.getElementById("categoryError");
-  err.innerText = !categoryInput.value 
-    ? "Please select a category" 
-    : "";
-});
+  if (!valid && showError) {
+    err.innerText = "Please select a category";
+  } else {
+    err.innerText = "";
+  }
+  return valid;
+}
 
-descInput.addEventListener("input", () => {
+function validateDescription(showError = true) {
+  const valid = descInput.value.trim().length >= 5;
   const err = document.getElementById("descError");
-  err.innerText = descInput.value.trim().length < 5 
-    ? "Minimum 5 characters required" 
-    : "";
+  if (!valid && showError) {
+    err.innerText = "Minimum 5 characters required";
+  } else {
+    err.innerText = "";
+  }
+  return valid;
+}
+
+nameInput.addEventListener("input", () => validateProductName());
+categoryInput.addEventListener("change", () => validateCategory());
+descInput.addEventListener("input", () => validateDescription());
+
+// ================= SUBMIT GATE =================
+// If anything is invalid, we preventDefault so the browser never navigates away —
+// that means the form is never reset and everything the user already typed stays put,
+// they just see the relevant inline errors.
+document.getElementById("addProductForm").addEventListener("submit", function (e) {
+  const nameValid = validateProductName();
+  const categoryValid = validateCategory();
+  const descValid = validateDescription();
+  const imagesValid = validateImages();
+  const variantsValid = validateVariantList();
+
+  const allValid = nameValid && categoryValid && descValid && imagesValid && variantsValid;
+
+  if (!allValid) {
+    e.preventDefault();
+
+    // scroll to the first visible error so the user sees what needs fixing
+    const firstError = document.querySelector("p.text-red-500:not(:empty)");
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
 });
 </script>
 <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">

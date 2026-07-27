@@ -67,6 +67,9 @@ body {
     border-radius: 8px;
     transition: all 0.2s;
 }
+.form-input.input-error {
+    border-color: #dc2626;
+}
 </style>
 <style>
 .header {
@@ -168,7 +171,7 @@ body {
 <p class="text-slate-500 text-sm">Fill in the details below to edit a the existing spice or product in your inventory.</p>
 </header>
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-<form action="/admin/editproduct/<%= product._id %>" method="POST" enctype="multipart/form-data">
+<form id="editProductForm" action="/admin/editproduct/<%= product._id %>" method="POST" enctype="multipart/form-data">
 <div class="space-y-10">
 <section>
 <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
@@ -215,20 +218,23 @@ body {
 <div class="lg:col-span-1">
 <label class="form-label text-xs uppercase tracking-wider" for="variant_name">Variant Name</label>
 <input class="form-input text-sm" id="variant_name" placeholder="e.g. 500g Pack" type="text"/>
+<p id="variantNameError" class="text-red-500 text-xs mt-2"></p>
 </div>
 <div>
-<label class="form-label text-xs uppercase tracking-wider" for="variant_price">Price ($)</label>
+<label class="form-label text-xs uppercase tracking-wider" for="variant_price">Price (₹)</label>
 <div class="relative">
-<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">₹</span>
 <input class="form-input pl-6 text-sm" id="variant_price" placeholder="0.00" step="0.01" type="number"/>
 </div>
+<p id="variantPriceError" class="text-red-500 text-xs mt-2"></p>
 </div>
 <div>
 <label class="form-label text-xs uppercase tracking-wider" for="variant_stock">Stock Quantity</label>
 <input class="form-input text-sm" id="variant_stock" placeholder="0" type="number"/>
+<p id="variantStockError" class="text-red-500 text-xs mt-2"></p>
 </div>
 <div class="flex gap-2">
-<button class="flex-1 bg-white border border-slate-200 text-slate-600 text-sm font-bold py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors" type="button">Cancel</button>
+<button class="flex-1 bg-white border border-slate-200 text-slate-600 text-sm font-bold py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors" type="button" onclick="clearInputs()">Cancel</button>
 <button 
   id="addBtn"
   type="button"
@@ -236,9 +242,10 @@ body {
   class="flex-1 bg-saffron text-white text-sm font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors">
   Add
 </button>
-<p id="variantError" class="text-red-500 text-xs mt-1"></p></div>
 </div>
 </div>
+</div>
+<p id="variantListError" class="text-red-500 text-xs mt-2"></p>
 <div class="space-y-4">
 <div class="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:border-saffron/30 transition-all">
 
@@ -246,6 +253,7 @@ body {
 <div id="variantList" class="space-y-4"></div>
 
 
+</div>
 </section>
 <section>
   <div class="header">
@@ -275,8 +283,8 @@ body {
     </div>
 
   </div>
+<p id="imageError" class="text-red-500 text-xs mt-2"></p>
 </section>
-<p id="imageError" class="text-red-500 text-xs mt-1"></p> 
 </div>
 <div class="mt-12 pt-8 border-t border-slate-100 flex items-center justify-end gap-4">
 <button class="px-6 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-colors border border-slate-200" type="button">
@@ -318,22 +326,50 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function addVariant() {
-  const name  = document.getElementById("variant_name").value.trim();
-  const price = document.getElementById("variant_price").value;
-  const stock = document.getElementById("variant_stock").value;
-  const err   = document.getElementById("variantError");
+  const nameField  = document.getElementById("variant_name");
+  const priceField = document.getElementById("variant_price");
+  const stockField = document.getElementById("variant_stock");
+
+  const name  = nameField.value.trim();
+  const price = priceField.value;
+  const stock = stockField.value;
+
+  const nameErr  = document.getElementById("variantNameError");
+  const priceErr = document.getElementById("variantPriceError");
+  const stockErr = document.getElementById("variantStockError");
+
+  // clear previous errors first
+  nameErr.innerText = "";
+  priceErr.innerText = "";
+  stockErr.innerText = "";
+
+  let valid = true;
 
   if (!name) {
-    err.innerText = "Variant name is required"; return;
-  }
-  if (!price || Number(price) <= 0) {
-    err.innerText = "Price must be greater than 0"; return;
-  }
-  if (stock === "" || Number(stock) < 0) {
-    err.innerText = "Stock cannot be negative"; return;
+    nameErr.innerText = "Variant name is required";
+    valid = false;
+  } else {
+    // DUPLICATE CHECK — case-insensitive, ignores the variant currently being edited
+    const isDuplicate = variants.some((v, i) =>
+      v.name.trim().toLowerCase() === name.toLowerCase() && i !== editIndex
+    );
+    if (isDuplicate) {
+      nameErr.innerText = "A variant with this name already exists";
+      valid = false;
+    }
   }
 
-  err.innerText = "";
+  if (price === "" || Number(price) <= 0) {
+    priceErr.innerText = "Enter a valid price";
+    valid = false;
+  }
+
+  if (stock === "" || Number(stock) < 0) {
+    stockErr.innerText = "Enter a valid stock quantity";
+    valid = false;
+  }
+
+  if (!valid) return;
 
   const variant = { name, price: Number(price), stock: Number(stock) };
 
@@ -345,9 +381,35 @@ function addVariant() {
     document.getElementById("addBtn").innerText = "Add";
   }
 
+  document.getElementById("variantListError").innerText = "";
   renderVariants();
   clearInputs();
 }
+
+// REAL-TIME VARIANT FIELD VALIDATION (clears/shows errors as the user types)
+document.getElementById("variant_name").addEventListener("input", function () {
+  const err = document.getElementById("variantNameError");
+  const name = this.value.trim();
+
+  if (!name) {
+    err.innerText = "";
+    return;
+  }
+  const isDuplicate = variants.some((v, i) =>
+    v.name.trim().toLowerCase() === name.toLowerCase() && i !== editIndex
+  );
+  err.innerText = isDuplicate ? "A variant with this name already exists" : "";
+});
+
+document.getElementById("variant_price").addEventListener("input", function () {
+  const err = document.getElementById("variantPriceError");
+  err.innerText = (this.value !== "" && Number(this.value) <= 0) ? "Enter a valid price" : "";
+});
+
+document.getElementById("variant_stock").addEventListener("input", function () {
+  const err = document.getElementById("variantStockError");
+  err.innerText = (this.value !== "" && Number(this.value) < 0) ? "Enter a valid stock quantity" : "";
+});
 
 function renderVariants() {
   const container = document.getElementById("variantList");
@@ -405,6 +467,24 @@ function clearInputs() {
   document.getElementById("variant_name").value  = "";
   document.getElementById("variant_price").value = "";
   document.getElementById("variant_stock").value = "";
+  document.getElementById("variantNameError").innerText = "";
+  document.getElementById("variantPriceError").innerText = "";
+  document.getElementById("variantStockError").innerText = "";
+  editIndex = -1;
+  document.getElementById("addBtn").innerText = "Add";
+}
+
+// VARIANT LIST VALIDATION (called on submit)
+function validateVariantList(showError = true) {
+  const err = document.getElementById("variantListError");
+  const valid = variants.length >= 1;
+
+  if (!valid && showError) {
+    err.innerText = "Add at least one variant before saving";
+  } else {
+    err.innerText = "";
+  }
+  return valid;
 }
 </script>
 
@@ -475,6 +555,7 @@ function clearInputs() {
     preview.appendChild(addMore);
 
     syncFiles();
+    validateImages();
   }
 
   function openCrop(index) {
@@ -520,6 +601,21 @@ function clearInputs() {
     selectedFiles.forEach(f => dt.items.add(f));
     input.files = dt.files;
   }
+
+  // IMAGE VALIDATION (real-time, fires whenever images are added/removed)
+  function validateImages(showError = true) {
+    const err = document.getElementById("imageError");
+    const total = existingImages.length + selectedFiles.length;
+    const valid = total >= 3;
+
+    if (!valid && showError) {
+      const remaining = 3 - total;
+      err.innerText = `Please have at least 3 product images (${remaining} more needed)`;
+    } else {
+      err.innerText = "";
+    }
+    return valid;
+  }
 </script>
 
 <!-- ── VALIDATION ─────────────────────────────────────── -->
@@ -528,67 +624,46 @@ const nameInput     = document.getElementById("product_name");
 const categoryInput = document.querySelector("select[name='catagory']");
 const descInput     = document.getElementById("description");
 
-nameInput.addEventListener("input", () => {
-  document.getElementById("nameError").innerText =
-    nameInput.value.trim().length < 2 ? "Minimum 2 characters required" : "";
-});
+function validateProductName(showError = true) {
+  const valid = nameInput.value.trim().length >= 2;
+  const err = document.getElementById("nameError");
+  err.innerText = (!valid && showError) ? "Minimum 2 characters required" : "";
+  return valid;
+}
 
-categoryInput.addEventListener("change", () => {
-  document.getElementById("categoryError").innerText =
-    !categoryInput.value ? "Please select a category" : "";
-});
+function validateCategory(showError = true) {
+  const valid = !!categoryInput.value;
+  const err = document.getElementById("categoryError");
+  err.innerText = (!valid && showError) ? "Please select a category" : "";
+  return valid;
+}
 
-descInput.addEventListener("input", () => {
-  document.getElementById("descError").innerText =
-    descInput.value.trim().length < 5 ? "Minimum 5 characters required" : "";
-});
+function validateDescription(showError = true) {
+  const valid = descInput.value.trim().length >= 5;
+  const err = document.getElementById("descError");
+  err.innerText = (!valid && showError) ? "Minimum 5 characters required" : "";
+  return valid;
+}
 
-document.querySelector("form").addEventListener("submit", function (e) {
+nameInput.addEventListener("input", () => validateProductName());
+categoryInput.addEventListener("change", () => validateCategory());
+descInput.addEventListener("input", () => validateDescription());
+
+// ================= SUBMIT GATE =================
+// If anything is invalid, preventDefault so the browser never navigates away —
+// nothing gets reset, the user just sees the relevant inline errors and fixes them in place.
+document.getElementById("editProductForm").addEventListener("submit", function (e) {
   syncFiles(); // always sync files on submit
 
-  let isValid = true;
+  const nameValid = validateProductName();
+  const categoryValid = validateCategory();
+  const descValid = validateDescription();
+  const imagesValid = validateImages();
+  const variantsValid = validateVariantList();
 
-  // Name
-  const nameErr = document.getElementById("nameError");
-  if (nameInput.value.trim().length < 2) {
-    nameErr.innerText = "Minimum 2 characters required";
-    isValid = false;
-  }
+  const allValid = nameValid && categoryValid && descValid && imagesValid && variantsValid;
 
-  // Category
-  const catErr = document.getElementById("categoryError");
-  if (!categoryInput.value) {
-    catErr.innerText = "Please select a category";
-    isValid = false;
-  }
-
-  // Description
-  const descErr = document.getElementById("descError");
-  if (descInput.value.trim().length < 5) {
-    descErr.innerText = "Minimum 5 characters required";
-    isValid = false;
-  }
-
-  // Variants
-  const variantErr = document.getElementById("variantError");
-  if (variants.length === 0) {
-    variantErr.innerText = "Please add at least one variant";
-    isValid = false;
-  } else {
-    variantErr.innerText = "";
-  }
-
-  // Images
-  const imgErr = document.getElementById("imageError");
-  const totalImages = existingImages.length + selectedFiles.length;
-  if (totalImages === 0) {
-    imgErr.innerText = "Please add at least one image";
-    isValid = false;
-  } else {
-    imgErr.innerText = "";
-  }
-
-  if (!isValid) {
+  if (!allValid) {
     e.preventDefault();
     const firstError = document.querySelector("p.text-red-500:not(:empty)");
     if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });

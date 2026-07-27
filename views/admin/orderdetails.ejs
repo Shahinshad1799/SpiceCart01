@@ -242,43 +242,58 @@
 </thead>
 <tbody class="divide-y divide-slate-50 dark:divide-white/5">
 
-<% order.items.forEach(item => { %>
+<% order.items.forEach(item => {
+  const itemCancelled = item.itemStatus === 'cancelled';
+%>
 
-<tr class="hover:bg-slate-50 transition-colors">
+<tr class="hover:bg-slate-50 transition-colors <%= itemCancelled ? 'opacity-50 bg-red-50/40' : '' %>">
 
 <td class="px-6 py-4">
 <div class="flex items-center gap-4">
 
-<div class="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
-<img 
-class="w-full h-full object-cover"
-src="/uploads/product/<%= item.productImage %>"
-alt=""
+<div class="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 relative">
+<img
+  class="w-full h-full object-cover <%= itemCancelled ? 'grayscale' : '' %>"
+  src="/uploads/product/<%= item.productImage %>"
+  alt=""
 >
+<% if (itemCancelled) { %>
+<div class="absolute inset-0 bg-red-500/10 flex items-center justify-center">
+  <span class="material-symbols-outlined text-red-400 text-xl">cancel</span>
+</div>
+<% } %>
 </div>
 
 <div>
-<p class="font-bold text-sm">
-<%= item.productName %>
+<p class="font-bold text-sm <%= itemCancelled ? 'text-slate-400' : '' %>">
+  <%= item.productName %>
 </p>
 
 <p class="text-xs text-[#67837a]">
 Variant ID: <%= item.variantId %>
 </p>
+
+<% if (itemCancelled) { %>
+<span class="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100">
+  <span class="material-symbols-outlined text-xs">cancel</span>
+  Cancelled
+  <% if (item.cancelReason) { %> · <%= item.cancelReason %><% } %>
+</span>
+<% } %>
 </div>
 
 </div>
 </td>
 
-<td class="px-6 py-4 text-center font-medium">
+<td class="px-6 py-4 text-center font-medium <%= itemCancelled ? 'text-slate-400' : '' %>">
 <%= item.quantity %>
 </td>
 
-<td class="px-6 py-4 text-right font-medium">
+<td class="px-6 py-4 text-right font-medium <%= itemCancelled ? 'text-slate-400' : '' %>">
 ₹<%= item.unitPrice %>
 </td>
 
-<td class="px-6 py-4 text-right font-bold text-primary">
+<td class="px-6 py-4 text-right font-bold <%= itemCancelled ? 'text-slate-400 line-through' : 'text-primary' %>">
 ₹<%= item.lineTotal %>
 </td>
 
@@ -398,4 +413,35 @@ Variant ID: <%= item.variantId %>
 </div>
 </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  (function () {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('returnApproved') === 'true') {
+      const amount = params.get('amount') || '0';
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Return Approved',
+        html: `Refund of <b>₹${amount}</b> has been credited to the customer's wallet<br>and stock has been restored.`,
+        confirmButtonColor: '#F97316'
+      });
+
+      // clean the URL so refresh doesn't re-trigger the alert
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (params.get('returnRejected') === 'true') {
+      Swal.fire({
+        icon: 'info',
+        title: 'Return Rejected',
+        text: 'The return request has been rejected.',
+        confirmButtonColor: '#F97316'
+      });
+
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  })();
+</script>
 </body></html>

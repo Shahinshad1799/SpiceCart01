@@ -30,27 +30,28 @@ placeholder="Search for saffron, curry..." />
 </nav>
 
 <div class="flex items-center gap-3">
-<a href="/cart">
-  <button class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors relative">
-    <span class="material-symbols-outlined">shopping_cart</span>
-    <% if (locals.cartCount && cartCount > 0) { %>
-      <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-        <%= cartCount > 99 ? '99+' : cartCount %>
+<div class="flex items-center gap-3">
+  <a href="/cart">
+    <button class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors relative">
+      <span class="material-symbols-outlined">shopping_cart</span>
+      <span id="cartCountBadge"
+        class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full items-center justify-center border-2 border-white <%= (locals.cartCount && cartCount > 0) ? 'flex' : 'hidden' %>">
+        <%= locals.cartCount && cartCount > 99 ? '99+' : (locals.cartCount || 0) %>
       </span>
-    <% } %>
-  </button>
-</a>
+    </button>
+  </a>
 
-<a href="/wishlist">
-  <button class="relative flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors">
-    <span class="material-symbols-outlined">favorite</span>
-    <% if (locals.wishCount && wishCount > 0) { %>
-      <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-        <%= wishCount > 99 ? '99+' : wishCount %>
+  <a href="/wishlist">
+    <button class="relative flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors">
+      <span class="material-symbols-outlined">favorite</span>
+      <span id="wishCountBadge"
+        class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full items-center justify-center border-2 border-white <%= (locals.wishCount && wishCount > 0) ? 'flex' : 'hidden' %>">
+        <%= locals.wishCount && wishCount > 99 ? '99+' : (locals.wishCount || 0) %>
       </span>
-    <% } %>
-  </button>
-</a>
+    </button>
+  </a>
+  <!-- rest unchanged -->
+</div>
 
 
 <div class="relative">
@@ -105,4 +106,50 @@ Logout
       dropdown.classList.add("hidden");
     }
   });
+</script>
+<script>
+  function toggleProfileMenu() { /* unchanged */ }
+  document.addEventListener("click", function (event) { /* unchanged */ });
+
+  function setBadge(el, count) {
+    if (!el) return;
+    if (count > 0) {
+      el.textContent = count > 99 ? "99+" : count;
+      el.classList.remove("hidden");
+      el.classList.add("flex");
+    } else {
+      el.classList.add("hidden");
+      el.classList.remove("flex");
+    }
+  }
+
+  window.updateWishCount = function (count) {
+    setBadge(document.getElementById("wishCountBadge"), count);
+  };
+
+  window.updateCartCount = function (count) {
+    setBadge(document.getElementById("cartCountBadge"), count);
+  };
+
+  // Generic AJAX helper — call this instead of submitting a form / reloading
+  // Expects your route to respond with JSON like { success: true, cartCount, wishCount }
+  window.spiceCartRequest = async function (url, method = "POST", body = null) {
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: body ? JSON.stringify(body) : null,
+      });
+      const data = await res.json();
+
+      if (typeof data.cartCount !== "undefined") window.updateCartCount(data.cartCount);
+      if (typeof data.wishCount !== "undefined") window.updateWishCount(data.wishCount);
+
+      return data;
+    } catch (err) {
+      console.error("SpiceCart request failed:", err);
+      Swal.fire("Oops", "Something went wrong. Please try again.", "error");
+      return null;
+    }
+  };
 </script>

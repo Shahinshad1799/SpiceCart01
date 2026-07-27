@@ -51,7 +51,6 @@
   }
   .slide-down { animation: slideDown 0.3s ease; }
 
-  /* Validation styles */
   .field-error {
     display: none;
     font-size: 0.72rem;
@@ -72,11 +71,17 @@
     border: 1.5px solid #16a34a !important;
     box-shadow: 0 0 0 3px rgba(22,163,74,0.08);
   }
-  /* Only show green AFTER the field has been touched and blurred */
   input:not(.touched).valid {
     border: 1px solid #e5e7eb !important;
     box-shadow: none;
   }
+
+  .coupon-card {
+    border: 1.5px dashed #e5e7eb;
+    transition: border-color 0.18s, background 0.18s;
+  }
+  .coupon-card.eligible:hover { border-color: #ea580c; background: #fff7ed; }
+  .coupon-card.ineligible { opacity: 0.55; }
 </style>
 </head>
 <body>
@@ -279,27 +284,8 @@
           </div>
         </section>
 
-        <!-- ══════════ PAYMENT ══════════ -->
-        <!-- <section>
-          <div class="flex items-center gap-3 mb-6">
-            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-[#181311] text-white font-bold text-sm">2</div>
-            <h2 class="text-[#181311] text-xl font-bold">Payment Method</h2>
-          </div>
-          <div class="flex flex-col gap-4">
-            <div class="flex gap-4 mb-2">
-              <label class="flex items-center gap-3 cursor-pointer border border-[#ea580c] bg-[#fff7ed] rounded-xl p-4 w-1/2 transition-all">
-<input checked="" class="w-5 h-5 text-[#ea580c] focus:ring-[#ea580c] border-gray-300" name="payment" type="radio"/>
-<span class="text-[#181311] font-bold">Razorpay</span>
-</label>
-              <label class="flex items-center gap-2 cursor-pointer border border-[#f4f1f0] rounded-lg p-3 w-1/2 has-[:checked]:border-[#ea580c] has-[:checked]:bg-[#fff7ed] transition-all">
-                <input checked class="w-4 h-4 text-[#ea580c] focus:ring-[#ea580c] border-gray-300" name="payment" type="radio"/>
-                <span class="text-[#181311] font-medium">Cash on delivery</span>
-              </label>
-
-            </div>
-          </div>
-        </section> -->
-      <section>
+      <!-- ══════════ PAYMENT ══════════ -->
+<section>
   <div class="flex items-center gap-3 mb-6">
     <div class="flex items-center justify-center w-8 h-8 rounded-full bg-[#181311] text-white font-bold text-sm">2</div>
     <h2 class="text-[#181311] text-xl font-bold">Payment Method</h2>
@@ -307,7 +293,7 @@
 
   <div class="flex gap-3 flex-wrap mb-4">
 
-    <!-- Razorpay (includes UPI, Cards, Net Banking) -->
+    <!-- Online Payment -->
     <label class="flex items-center gap-3 cursor-pointer border rounded-xl p-4 flex-1 transition-all has-[:checked]:border-[#ea580c] has-[:checked]:bg-[#fff7ed] border-[#f4f1f0]">
       <input class="w-5 h-5 text-[#ea580c] focus:ring-[#ea580c]"
              name="payment" type="radio" value="razorpay" checked
@@ -317,6 +303,38 @@
         <p class="text-[#886e63] text-xs">UPI · Cards · Net Banking · Wallets</p>
       </div>
     </label>
+
+    <!-- Wallet Payment — only show if balance >= total -->
+    <% if (walletBalance >= total) { %>
+    <label class="flex items-center gap-3 cursor-pointer border rounded-xl p-4 flex-1 transition-all has-[:checked]:border-[#ea580c] has-[:checked]:bg-[#fff7ed] border-[#f4f1f0]">
+      <input class="w-5 h-5 text-[#ea580c] focus:ring-[#ea580c]"
+             name="payment" type="radio" value="wallet"
+             onchange="handlePaymentChange(this.value)" />
+      <div>
+        <p class="text-[#181311] font-bold text-sm flex items-center gap-2">
+          SpiceCart Wallet
+          <span class="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+            ₹<%= walletBalance.toFixed(2) %> available
+          </span>
+        </p>
+        <p class="text-[#886e63] text-xs">Pay instantly using your wallet balance</p>
+      </div>
+    </label>
+    <% } else { %>
+    <!-- Show wallet option as disabled with balance info -->
+    <div class="flex items-center gap-3 border rounded-xl p-4 flex-1 border-[#f4f1f0] opacity-50 cursor-not-allowed">
+      <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0"></div>
+      <div>
+        <p class="text-[#181311] font-bold text-sm flex items-center gap-2">
+          SpiceCart Wallet
+          <span class="text-[10px] font-bold bg-red-100 text-red-500 px-2 py-0.5 rounded-full">
+            ₹<%= walletBalance.toFixed(2) %> — insufficient
+          </span>
+        </p>
+        <p class="text-[#886e63] text-xs">You need ₹<%= (total - walletBalance).toFixed(2) %> more</p>
+      </div>
+    </div>
+    <% } %>
 
     <!-- Cash on Delivery -->
     <label class="flex items-center gap-3 cursor-pointer border rounded-xl p-4 flex-1 transition-all has-[:checked]:border-[#ea580c] has-[:checked]:bg-[#fff7ed] border-[#f4f1f0]">
@@ -331,13 +349,25 @@
 
   </div>
 
-  <!-- Pay Now Button -->
+  <!-- Razorpay Pay Button -->
   <div id="razorpay-section">
     <button onclick="payWithRazorpay()"
       class="w-full bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2">
       <span class="material-symbols-outlined text-base">payments</span>
       Pay ₹<%= total.toFixed(2) %>
     </button>
+  </div>
+
+  <!-- Wallet Pay Button -->
+  <div id="wallet-section" class="hidden">
+    <button onclick="payWithWallet()"
+      class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2">
+      <span class="material-symbols-outlined text-base">account_balance_wallet</span>
+      Pay ₹<%= total.toFixed(2) %> from Wallet
+    </button>
+    <p class="text-xs text-center text-[#886e63] mt-2">
+      Balance after payment: ₹<%= (walletBalance - total).toFixed(2) %>
+    </p>
   </div>
 
   <!-- COD Button -->
@@ -349,8 +379,6 @@
     </button>
   </div>
 </section>
-
-
 
       </div>
 
@@ -383,6 +411,78 @@
             <% } %>
           </div>
 
+          <!-- ══════════ COUPON ══════════ -->
+          <div class="border-t border-[#e5e7eb] pt-4 mb-4">
+
+            <% if (appliedCoupon) { %>
+              <div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2.5 mb-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="material-symbols-outlined text-green-600 text-base">confirmation_number</span>
+                  <div class="min-w-0">
+                    <p class="text-green-700 font-bold text-sm truncate"><%= appliedCoupon.code %></p>
+                    <p class="text-green-600 text-xs">Applied to your order</p>
+                  </div>
+                </div>
+                <button onclick="removeCoupon()" id="remove-coupon-btn"
+                  class="text-xs font-bold text-red-500 hover:text-red-700 transition-colors flex-shrink-0 ml-2">
+                  Remove
+                </button>
+              </div>
+            <% } else { %>
+              <div class="flex gap-2 mb-2">
+                <input id="coupon-input" type="text" placeholder="Enter coupon code"
+                  class="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-2.5 text-sm text-[#181311] placeholder:text-[#886e63] focus:ring-2 focus:ring-[#ea580c] outline-none uppercase"
+                  oninput="this.value = this.value.toUpperCase()" />
+                <button id="apply-coupon-btn" onclick="applyCoupon()"
+                  class="px-4 py-2.5 rounded-lg bg-[#181311] hover:bg-[#2d2520] text-white text-xs font-bold transition-colors flex-shrink-0">
+                  Apply
+                </button>
+              </div>
+              <p id="coupon-error" class="text-red-500 text-xs mb-1 hidden"></p>
+            <% } %>
+
+            <% if (availableCoupons && availableCoupons.length > 0) { %>
+              <button type="button" onclick="toggleCouponList()"
+                class="flex items-center gap-1 text-xs font-bold text-[#ea580c] hover:text-[#c2410c] transition-colors mt-1">
+                <span id="coupon-list-caret" class="material-symbols-outlined text-base transition-transform">expand_more</span>
+                View available coupons (<%= availableCoupons.length %>)
+              </button>
+
+              <div id="coupon-list" class="hidden flex-col gap-2 mt-3">
+                <% availableCoupons.forEach(c => {
+                  let desc;
+                  if (c.discountType === 'percentage') {
+                    desc = c.discountValue + '% off' + (c.maxDiscount ? ' (up to ₹' + c.maxDiscount + ')' : '');
+                  } else if (c.discountType === 'fixed') {
+                    desc = '₹' + c.discountValue + ' off';
+                  } else {
+                    desc = 'Free shipping';
+                  }
+                %>
+                <div class="coupon-card <%= c.eligible ? 'eligible cursor-pointer' : 'ineligible' %> rounded-lg p-3"
+                     <% if (c.eligible) { %>onclick="applyCoupon('<%= c.code %>')"<% } %>>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[#181311] font-bold text-sm"><%= c.code %></span>
+                    <% if (c.eligible) { %>
+                      <span class="text-[10px] font-bold text-[#ea580c]">TAP TO APPLY</span>
+                    <% } %>
+                  </div>
+                  <p class="text-[#886e63] text-xs mt-0.5"><%= desc %></p>
+                  <% if (c.minPurchase > 0) { %>
+                    <p class="text-[10px] mt-1 <%= c.eligible ? 'text-green-600' : 'text-red-500' %>">
+                      <% if (c.eligible) { %>
+                        Min. purchase ₹<%= c.minPurchase %> met
+                      <% } else { %>
+                        Spend ₹<%= c.amountNeeded.toFixed(2) %> more to unlock (min. ₹<%= c.minPurchase %>)
+                      <% } %>
+                    </p>
+                  <% } %>
+                </div>
+                <% }) %>
+              </div>
+            <% } %>
+          </div>
+
           <div class="flex flex-col gap-2">
             <div class="flex justify-between text-sm">
               <span class="text-[#886e63]">Subtotal</span>
@@ -390,22 +490,35 @@
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-[#886e63]">Shipping</span>
-              <span class="text-[#181311] font-medium">₹ <%= shipping %></span>
+              <span class="text-[#181311] font-medium">
+                <% if (appliedCoupon?.discountType === 'shipping') { %>
+                  <span class="line-through text-gray-400">₹50</span>
+                  <span class="text-green-600 font-bold ml-1">FREE</span>
+                <% } else { %>
+                  ₹ <%= shipping %>
+                <% } %>
+              </span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-[#886e63]">Estimated Taxes</span>
               <span class="text-[#181311] font-medium">₹ <%= tax.toFixed(2) %></span>
             </div>
+
+            <% if (discount > 0) { %>
+            <div class="flex justify-between text-sm text-green-600">
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-base">confirmation_number</span>
+                <%= appliedCoupon.code %>
+              </span>
+              <span class="font-bold">-₹ <%= discount %></span>
+            </div>
+            <% } %>
+
             <div class="flex justify-between text-lg font-bold mt-2 pt-4 border-t border-[#e5e7eb]">
               <span class="text-[#181311]">Total</span>
               <span class="text-[#ea580c]">₹ <%= total.toFixed(2) %></span>
             </div>
           </div>
-          <button onclick="placeOrder()"
-            class="w-full mt-6 bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold py-4 rounded-xl shadow-sm transition-colors text-base flex items-center justify-center gap-2">
-            <span>Place Order</span>
-            <span class="material-symbols-outlined text-sm">arrow_forward</span>
-          </button>
 
           <p class="text-[#886e63] text-xs text-center mt-4 flex items-center justify-center gap-1">
             <span class="material-symbols-outlined text-sm">lock</span> Secure Checkout
@@ -421,18 +534,128 @@
 </div>
 </div>
 
+<!-- ════════ SweetAlert2 + shared helpers ════════ -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function showAlert(message, icon = 'error', title = null) {
+    return Swal.fire({
+      title: title || (icon === 'success' ? 'Success' : icon === 'warning' ? 'Heads up' : 'Oops'),
+      text: message,
+      icon,
+      confirmButtonColor: '#ea580c'
+    });
+  }
+
+  async function showConfirm(message, title = 'Are you sure?') {
+    const result = await Swal.fire({
+      title,
+      text: message,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#ea580c',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, proceed',
+      cancelButtonText: 'Cancel'
+    });
+    return result.isConfirmed;
+  }
+</script>
+
+<!-- ════════ COUPON JS ════════ -->
+<script>
+  function toggleCouponList() {
+    const list = document.getElementById('coupon-list');
+    const caret = document.getElementById('coupon-list-caret');
+    const isHidden = list.classList.contains('hidden');
+
+    if (isHidden) {
+      list.classList.remove('hidden');
+      list.classList.add('flex');
+      caret.style.transform = 'rotate(180deg)';
+    } else {
+      list.classList.add('hidden');
+      list.classList.remove('flex');
+      caret.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  // code param lets a coupon card in the "available coupons" list apply itself directly;
+  // otherwise we read from the manual input field.
+  async function applyCoupon(code) {
+    const input = document.getElementById('coupon-input');
+    const errorEl = document.getElementById('coupon-error');
+    const couponCode = code || (input ? input.value.trim() : '');
+
+    if (!couponCode) {
+      if (errorEl) {
+        errorEl.textContent = 'Enter a coupon code.';
+        errorEl.classList.remove('hidden');
+      }
+      return;
+    }
+
+    const btn = document.getElementById('apply-coupon-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Applying...'; }
+
+    try {
+      const res = await fetch('/cart/apply-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        location.reload();
+      } else {
+        if (errorEl) {
+          errorEl.textContent = data.message || 'Invalid coupon code.';
+          errorEl.classList.remove('hidden');
+        } else {
+          await showAlert(data.message || 'Invalid coupon code.');
+        }
+        if (btn) { btn.disabled = false; btn.textContent = 'Apply'; }
+      }
+    } catch (err) {
+      console.error('Apply coupon error:', err);
+      await showAlert('Something went wrong applying the coupon.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Apply'; }
+    }
+  }
+
+  async function removeCoupon() {
+    const btn = document.getElementById('remove-coupon-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Removing...'; }
+
+    try {
+      const res = await fetch('/cart/remove-coupon', { method: 'POST' });
+      const data = await res.json();
+
+      if (data.success) {
+        location.reload();
+      } else {
+        await showAlert(data.message || 'Failed to remove coupon.');
+        if (btn) { btn.disabled = false; btn.textContent = 'Remove'; }
+      }
+    } catch (err) {
+      console.error('Remove coupon error:', err);
+      await showAlert('Something went wrong removing the coupon.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Remove'; }
+    }
+  }
+</script>
+
+  <!-- ════════ ADDRESS JS ════════ -->
 <script>
 let selectedId = "<%= addresses && addresses.length ? (addresses.find(a => a.isdefault)?._id || addresses[0]._id) : '' %>";
 let editingAddressId = null;
 
-// ── SELECT ADDRESS ───────────────────────────────────────────
 function selectAddress(id) {
   selectedId = id;
   document.querySelectorAll('.addr-card').forEach(c => c.classList.remove('selected'));
   document.querySelector(`[data-id="${id}"]`)?.classList.add('selected');
 }
 
-// ── OPEN ADD FORM ────────────────────────────────────────────
 function openAddForm() {
   editingAddressId = null;
   document.getElementById('form-title').textContent = 'New Shipping Address';
@@ -441,7 +664,6 @@ function openAddForm() {
   openForm();
 }
 
-// ── OPEN EDIT FORM ───────────────────────────────────────────
 function openEditForm(id) {
   editingAddressId = id;
   const card = document.querySelector(`[data-id="${id}"]`);
@@ -460,8 +682,6 @@ function openEditForm(id) {
   openForm();
 }
 
-// ── VALIDATION RULES ─────────────────────────────────────────
-// Each rule: { test: fn(val) => bool, msg: string }
 const RULES = {
   'inp-name':       { test: v => /^[a-zA-Z\s]{3,}$/.test(v),   msg: 'Enter a valid full name (min 3 letters).' },
   'inp-address':    { test: v => v.length >= 5,                  msg: 'Address must be at least 5 characters.' },
@@ -472,7 +692,6 @@ const RULES = {
   'inp-phone':      { test: v => /^[6-9]\d{9}$/.test(v),        msg: 'Enter a valid 10-digit mobile number.' },
 };
 
-// Validate a single field; only show green border after blur (touched)
 function validateOne(inputId, { force = false } = {}) {
   const rule  = RULES[inputId];
   if (!rule) return true;
@@ -482,7 +701,6 @@ function validateOne(inputId, { force = false } = {}) {
   const val   = input.value.trim();
   const pass  = val !== '' && rule.test(val);
 
-  // Update error message dynamically
   const icon = `<span class="material-symbols-outlined" style="font-size:13px">error</span>`;
   if (!val) {
     const label = input.closest('div').querySelector('label')?.textContent?.trim() || 'This field';
@@ -511,22 +729,7 @@ function markTouched(input) {
   validateOne(input.id, { force: true });
 }
 
-// Wire up live feedback (oninput) — only shows error after field is touched
-function liveValidate(inputId) {
-  validateOne(inputId);
-}
-
-function showError(input, errorEl) {
-  input.classList.remove('valid');
-  input.classList.add('invalid', 'touched');
-  errorEl.classList.add('visible');
-}
-
-function clearError(input, errorEl) {
-  input.classList.remove('invalid');
-  input.classList.add('valid', 'touched');
-  errorEl.classList.remove('visible');
-}
+function liveValidate(inputId) { validateOne(inputId); }
 
 function clearAllErrors() {
   Object.keys(RULES).forEach(inputId => {
@@ -540,17 +743,12 @@ function clearAllErrors() {
   });
 }
 
-// ── SAVE ADDRESS (ADD or EDIT) ───────────────────────────────
 async function saveAddress() {
-  // Force-validate all fields (mark all as touched)
   const results = Object.keys(RULES).map(id => validateOne(id, { force: true }));
-
-  // Also mark all as touched so borders show
   Object.keys(RULES).forEach(id => document.getElementById(id)?.classList.add('touched'));
 
   if (results.includes(false)) {
-    const firstInvalid = document.querySelector('input.invalid');
-    if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.querySelector('input.invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
@@ -582,55 +780,25 @@ async function saveAddress() {
       closeForm();
       location.reload();
     } else {
-      alert(data.message || 'Failed to save address');
+      await showAlert(data.message || 'Failed to save address');
       resetSaveBtn();
     }
   } catch (err) {
     console.error(err);
-    alert('Something went wrong');
+    await showAlert('Something went wrong');
     resetSaveBtn();
   }
 }
 
-// ── PLACE ORDER ──────────────────────────────────────────────
-async function placeOrder() {
-  if (!selectedId) {
-    alert("Please select a delivery address");
-    return;
-  }
-
-  try {
-    const res  = await fetch("/place-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ addressId: selectedId })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      window.location.href = "/ordersuccess";
-    } else {
-      alert(data.message || "Order failed. Please try again.");
-    }
-  } catch (err) {
-    console.error("Place order error:", err);
-    alert("Something went wrong. Please try again.");
-  }
-}
-
-// ── HELPERS ──────────────────────────────────────────────────
 function openForm()  { document.getElementById('address-form-wrapper').classList.add('open'); }
 function closeForm() {
   document.getElementById('address-form-wrapper').classList.remove('open');
   clearAllErrors();
 }
-
 function clearForm() {
   ['inp-name','inp-address','inp-appartment','inp-city','inp-state','inp-zip','inp-phone']
     .forEach(id => document.getElementById(id).value = '');
 }
-
 function resetSaveBtn() {
   const btn = document.getElementById('save-btn');
   btn.disabled = false;
@@ -644,85 +812,177 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<!-- ════════ PAYMENT JS ════════ -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+  // ── Toggle payment sections ──────────────────────────────────
   function handlePaymentChange(value) {
     document.getElementById('razorpay-section').classList.toggle('hidden', value !== 'razorpay');
-    document.getElementById('cod-section').classList.toggle('hidden', value !== 'cod');
+    document.getElementById('wallet-section').classList.toggle('hidden',   value !== 'wallet');
+    document.getElementById('cod-section').classList.toggle('hidden',      value !== 'cod');
   }
 
+  // ── Razorpay online payment ──────────────────────────────────
   async function payWithRazorpay() {
-    if (!selectedId) { alert("Please select a delivery address."); return; }
+    if (!selectedId) {
+      await showAlert('Please select a delivery address.', 'warning');
+      return;
+    }
 
     try {
       const res = await fetch('/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: <%= Math.round(total * 100) %> })
+        body: JSON.stringify({ addressId: selectedId })
       });
 
+      if (!res.ok) {
+        await showAlert('Failed to create order. Try again.');
+        return;
+      }
+
       const data = await res.json();
-      if (!data.order) { alert('Failed to create order. Try again.'); return; }
-const rzp = new Razorpay({
-  key: '<%= process.env.RAZORPAY_KEY_ID %>',
-  amount: data.order.amount,
-  currency: 'INR',
-  name: 'SpiceCart',
-  description: 'Order Payment',
-  order_id: data.order.id,
 
-  prefill: {
-    name: '<%= addresses && addresses.find(a=>a.isdefault)?.fullname || "" %>',
-    contact: '<%= addresses && addresses.find(a=>a.isdefault)?.phonenumber || "" %>'
-  },
+      if (!data.order) {
+        await showAlert(data.message || 'Failed to create order. Try again.');
+        return;
+      }
 
-  // This forces UPI tab to open by default (works in test mode too)
-  method: {
-    upi: true,
-    card: true,
-    netbanking: true,
-    wallet: true,
-    emi: false,
-    paylater: false
-  },
+      const rzp = new Razorpay({
+        key: '<%= process.env.RAZORPAY_KEY_ID %>',
+        amount: data.order.amount,       // in paise — Razorpay sends this from your backend
+        currency: 'INR',
+        name: 'SpiceCart',
+        description: 'Order Payment',
+        order_id: data.order.id,         // Razorpay order id from your backend
 
-  theme: { color: '#ea580c' },
+        prefill: {
+          name:    '<%= addresses && addresses.find(a => a.isdefault)?.fullname    || "" %>',
+          contact: '<%= addresses && addresses.find(a => a.isdefault)?.phonenumber || "" %>'
+        },
 
-  handler: async function (response) {
-    const verifyRes = await fetch('/verify-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...response, addressId: selectedId })
-    });
-    const result = await verifyRes.json();
-    result.success
-      ? window.location.href = '/ordersuccess'
-      : alert('Payment verification failed. Contact support.');
-  }
-});
+        method: {
+          upi:        true,
+          card:       true,
+          netbanking: true,
+          wallet:     true,
+          emi:        false,
+          paylater:   false
+        },
+
+        theme: { color: '#ea580c' },
+
+        handler: async function (response) {
+          // response contains: razorpay_payment_id, razorpay_order_id, razorpay_signature
+          try {
+            const verifyRes = await fetch('/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ...response, addressId: selectedId })
+            });
+
+            if (!verifyRes.ok) {
+              await showAlert('Payment verification failed. Please contact support.');
+              return;
+            }
+
+            const result = await verifyRes.json();
+            if (result.success) {
+              window.location.href = '/ordersuccess';
+            } else {
+              await showAlert(result.message || 'Payment verification failed. Contact support.');
+            }
+          } catch (err) {
+            console.error('Verify payment error:', err);
+            await showAlert('Something went wrong during verification. Contact support.');
+          }
+        },
+
+        modal: {
+          ondismiss: function () {
+            // User closed Razorpay modal without paying — do nothing
+            console.log('Razorpay modal dismissed by user.');
+          }
+        }
+      });
+
+      rzp.on('payment.failed', async function (response) {
+        console.error('Razorpay payment failed:', response.error);
+        await showAlert(`Payment failed: ${response.error.description}`);
+      });
 
       rzp.open();
+
     } catch (err) {
       console.error('Razorpay error:', err);
-      alert('Something went wrong. Please try again.');
+      await showAlert('Something went wrong. Please try again.');
     }
   }
+
+  // ── Cash on Delivery ─────────────────────────────────────────
   async function placeOrderCOD() {
-    if (!selectedId) { alert("Please select a delivery address."); return; }
+    if (!selectedId) {
+      await showAlert('Please select a delivery address.', 'warning');
+      return;
+    }
 
     try {
       const res = await fetch('/place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ addressId: selectedId, paymentMethod: 'cod' })
+        body: JSON.stringify({ addressId: selectedId, paymentMethod: 'cash_on_delivery' })
       });
+
+      if (!res.ok) {
+        await showAlert('Failed to place order. Try again.');
+        return;
+      }
+
       const data = await res.json();
-      data.success
-        ? window.location.href = '/ordersuccess'
-        : alert(data.message || 'Failed to place order.');
+      if (data.success) {
+        window.location.href = '/ordersuccess';
+      } else {
+        await showAlert(data.message || 'Failed to place order.');
+      }
     } catch (err) {
-      alert('Something went wrong: ' + err.message);
+      console.error('COD order error:', err);
+      await showAlert('Something went wrong: ' + err.message);
+    }
+  }
+
+  // ── Wallet payment ────────────────────────────────────────────
+  async function payWithWallet() {
+    if (!selectedId) {
+      await showAlert('Please select a delivery address.', 'warning');
+      return;
+    }
+
+    const confirmed = await showConfirm(
+      `Pay ₹<%= total.toFixed(2) %> from your SpiceCart Wallet?`,
+      'Confirm Wallet Payment'
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch('/place-order-wallet', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ addressId: selectedId })
+      });
+
+      if (!res.ok) { await showAlert('Something went wrong. Try again.'); return; }
+
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = '/ordersuccess';
+      } else {
+        await showAlert(data.message || 'Failed to place order.');
+      }
+    } catch (err) {
+      console.error('Wallet payment error:', err);
+      await showAlert('Something went wrong. Please try again.');
     }
   }
 </script>
+
 </body></html>

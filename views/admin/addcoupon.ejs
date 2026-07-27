@@ -46,6 +46,9 @@
         body {
             font-family: 'Manrope', sans-serif;
         }
+        .input-error {
+            border-color: #dc2626 !important;
+        }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-[#181610] dark:text-white min-h-screen flex">
@@ -64,14 +67,15 @@
 <p class="text-[#8d7c5e] mt-1">Configure promotional rules and discount codes for your store.</p>
 </div>
 
-<form class="p-8" action="/admin/addcoupon" method="POST">
+<form id="couponForm" class="p-8" action="/admin/addcoupon" method="POST" novalidate>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
 <div class="col-span-1">
 <label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Coupon Code</label>
 <div class="relative">
 <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#8d7c5e]">tag</span>
-<input name="code" required class="w-full pl-12 pr-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="e.g. SPICE2024" type="text"/>
+<input name="code" id="code" class="w-full pl-12 pr-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="e.g. SPICE2024" type="text"/>
 </div>
+<p id="codeError" class="text-red-500 text-xs mt-1"></p>
 </div>
 <div class="col-span-1">
 <label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Coupon Status</label>
@@ -94,7 +98,7 @@ Discount Details
 <div>
 <label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Discount Type</label>
 <div class="relative">
-<select name="discountType" required class="w-full appearance-none h-14 pl-4 pr-10 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium">
+<select name="discountType" id="discountType" class="w-full appearance-none h-14 pl-4 pr-10 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium">
 <option value="percentage">Percentage (%)</option>
 <option value="fixed">Fixed Amount ($)</option>
 <option value="shipping">Free Shipping</option>
@@ -105,16 +109,18 @@ Discount Details
 <div>
 <label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Discount Value</label>
 <div class="relative">
-<input name="discountValue" required class="w-full pl-4 pr-12 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="20" type="number"/>
-<span class="absolute right-4 top-1/2 -translate-y-1/2 text-[#8d7c5e] font-bold">%</span>
+<input name="discountValue" id="discountValue" class="w-full pl-4 pr-12 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="20" type="number"/>
+<span id="discountValueUnit" class="absolute right-4 top-1/2 -translate-y-1/2 text-[#8d7c5e] font-bold">%</span>
 </div>
+<p id="discountValueError" class="text-red-500 text-xs mt-1"></p>
 </div>
 <div>
 <label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Max Discount Amount ($)</label>
 <div class="relative">
 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#8d7c5e] font-bold">$</span>
-<input name="maxDiscount" class="w-full pl-10 pr-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="No cap" type="number"/>
+<input name="maxDiscount" id="maxDiscount" class="w-full pl-10 pr-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="No cap" type="number"/>
 </div>
+<p id="maxDiscountError" class="text-red-500 text-xs mt-1"></p>
 </div>
 </div>
 </div>
@@ -127,18 +133,21 @@ Usage &amp; Restrictions
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 <div>
 <label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Min. Purchase ($)</label>
-<input name="minPurchase" class="w-full px-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="0.00" type="number"/>
+<input name="minPurchase" id="minPurchase" class="w-full px-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="0.00" type="number"/>
+<p id="minPurchaseError" class="text-red-500 text-xs mt-1"></p>
 </div>
 <div>
 <label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Usage Limit / User</label>
-<input name="usageLimit" class="w-full px-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="1" type="number"/>
+<input name="usageLimit" id="usageLimit" class="w-full px-4 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" placeholder="1" type="number"/>
+<p id="usageLimitError" class="text-red-500 text-xs mt-1"></p>
 </div>
 <div>
 <label class="block mb-2 text-sm font-semibold text-[#181610] dark:text-gray-200">Expiry Date</label>
 <div class="relative">
-<input name="expiryDate" required class="w-full pl-4 pr-10 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" type="date"/>
+<input name="expiryDate" id="expiryDate" class="w-full pl-4 pr-10 h-14 bg-[#fbfaf9] dark:bg-background-dark border border-[#e7e2da] dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-[#181610] dark:text-white font-medium" type="date"/>
 <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[#8d7c5e] pointer-events-none">calendar_month</span>
 </div>
+<p id="expiryDateError" class="text-red-500 text-xs mt-1"></p>
 </div>
 </div>
 </div>
@@ -154,5 +163,242 @@ Create Coupon
 </div>
 </div>
 </main>
+
+<script>
+const form = document.getElementById("couponForm");
+
+const codeInput          = document.getElementById("code");
+const discountTypeInput  = document.getElementById("discountType");
+const discountValueInput = document.getElementById("discountValue");
+const discountValueUnit  = document.getElementById("discountValueUnit");
+const maxDiscountInput   = document.getElementById("maxDiscount");
+const minPurchaseInput   = document.getElementById("minPurchase");
+const usageLimitInput    = document.getElementById("usageLimit");
+const expiryDateInput    = document.getElementById("expiryDate");
+
+function setError(input, id, message) {
+  const el = document.getElementById(id);
+  el.textContent = message;
+  input.classList.add("input-error");
+}
+
+function clearError(input, id) {
+  const el = document.getElementById(id);
+  el.textContent = "";
+  input.classList.remove("input-error");
+}
+
+// Swap the % / $ unit hint based on discount type
+function updateDiscountUnit() {
+  if (discountTypeInput.value === "percentage") {
+    discountValueUnit.textContent = "%";
+    discountValueUnit.classList.remove("hidden");
+  } else if (discountTypeInput.value === "fixed") {
+    discountValueUnit.textContent = "$";
+    discountValueUnit.classList.remove("hidden");
+  } else {
+    // free shipping — no numeric discount value needed
+    discountValueUnit.classList.add("hidden");
+  }
+}
+discountTypeInput.addEventListener("change", () => {
+  updateDiscountUnit();
+  validateDiscountValue();
+  validateMinPurchase(); // discount type affects the min-purchase comparison
+});
+updateDiscountUnit();
+
+// ── Individual validators (each returns true if valid) ──────────────────
+
+function validateCode(showError = true) {
+  const value = codeInput.value.trim();
+  const pattern = /^[A-Za-z0-9_-]{3,20}$/;
+  let valid = true;
+  let message = "";
+
+  if (!value) {
+    message = "Coupon code is required";
+    valid = false;
+  } else if (!pattern.test(value)) {
+    message = "3-20 characters, letters/numbers/-/_ only";
+    valid = false;
+  }
+
+  if (!valid && showError) setError(codeInput, "codeError", message);
+  else clearError(codeInput, "codeError");
+  return valid;
+}
+
+function validateDiscountValue(showError = true) {
+  // Free shipping coupons don't need a numeric discount value
+  if (discountTypeInput.value === "shipping") {
+    clearError(discountValueInput, "discountValueError");
+    return true;
+  }
+
+  const raw = discountValueInput.value;
+  let valid = true;
+  let message = "";
+
+  if (raw === "" || Number(raw) <= 0) {
+    message = "Enter a value greater than 0";
+    valid = false;
+  } else if (discountTypeInput.value === "percentage" && Number(raw) > 100) {
+    message = "Percentage discount can't exceed 100%";
+    valid = false;
+  }
+
+  if (!valid && showError) setError(discountValueInput, "discountValueError", message);
+  else clearError(discountValueInput, "discountValueError");
+  return valid;
+}
+
+function validateMaxDiscount(showError = true) {
+  const raw = maxDiscountInput.value;
+  let valid = true;
+  let message = "";
+
+  // optional field — only validate if the admin entered something
+  if (raw !== "" && Number(raw) <= 0) {
+    message = "Must be greater than 0";
+    valid = false;
+  }
+
+  if (!valid && showError) setError(maxDiscountInput, "maxDiscountError", message);
+  else clearError(maxDiscountInput, "maxDiscountError");
+  return valid;
+}
+
+// The actual dollar amount a customer could redeem from this coupon:
+// fixed discounts redeem their full value; percentage discounts are capped
+// by maxDiscount if one is set (otherwise there's no fixed amount to compare).
+function effectiveDiscountAmount() {
+  if (discountTypeInput.value === "fixed") {
+    return Number(discountValueInput.value) || 0;
+  }
+  if (discountTypeInput.value === "percentage") {
+    return Number(maxDiscountInput.value) || 0;
+  }
+  return 0; // free shipping has no dollar discount to compare
+}
+
+function validateMinPurchase(showError = true) {
+  const raw = minPurchaseInput.value;
+  let valid = true;
+  let message = "";
+
+  if (raw !== "" && Number(raw) < 0) {
+    message = "Cannot be negative";
+    valid = false;
+  } else {
+    const discountAmount = effectiveDiscountAmount();
+    if (discountAmount > 0) {
+      const minVal = raw === "" ? 0 : Number(raw);
+      if (minVal <= discountAmount) {
+        message = `Min. purchase must be greater than the discount amount ($${discountAmount})`;
+        valid = false;
+      }
+    }
+  }
+
+  if (!valid && showError) setError(minPurchaseInput, "minPurchaseError", message);
+  else clearError(minPurchaseInput, "minPurchaseError");
+  return valid;
+}
+
+function validateUsageLimit(showError = true) {
+  const raw = usageLimitInput.value;
+  let valid = true;
+  let message = "";
+
+  if (raw !== "" && Number(raw) <= 0) {
+    message = "Must be at least 1";
+    valid = false;
+  }
+
+  if (!valid && showError) setError(usageLimitInput, "usageLimitError", message);
+  else clearError(usageLimitInput, "usageLimitError");
+  return valid;
+}
+
+function validateExpiryDate(showError = true) {
+  const raw = expiryDateInput.value;
+  let valid = true;
+  let message = "";
+
+  if (!raw) {
+    message = "Expiry date is required";
+    valid = false;
+  } else {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const picked = new Date(raw);
+    if (picked < today) {
+      message = "Expiry date can't be in the past";
+      valid = false;
+    }
+  }
+
+  if (!valid && showError) setError(expiryDateInput, "expiryDateError", message);
+  else clearError(expiryDateInput, "expiryDateError");
+  return valid;
+}
+
+// ── Real-time validation (touch-then-live pattern) ───────────────────────
+// First check happens on blur (so we don't yell at an empty field the user
+// hasn't reached yet); after that, every keystroke re-validates live.
+function wireField(input, touchedRef, validateFn, extraOnInput) {
+  input.addEventListener("blur", () => {
+    touchedRef.value = true;
+    validateFn();
+  });
+  input.addEventListener("input", () => {
+    if (touchedRef.value) validateFn();
+    if (extraOnInput) extraOnInput();
+  });
+}
+
+const touched = {
+  code: { value: false },
+  discountValue: { value: false },
+  maxDiscount: { value: false },
+  minPurchase: { value: false },
+  usageLimit: { value: false },
+  expiryDate: { value: false },
+};
+
+wireField(codeInput, touched.code, validateCode);
+wireField(discountValueInput, touched.discountValue, validateDiscountValue, () => {
+  if (touched.minPurchase.value) validateMinPurchase();
+});
+wireField(maxDiscountInput, touched.maxDiscount, validateMaxDiscount, () => {
+  if (touched.minPurchase.value) validateMinPurchase();
+});
+wireField(minPurchaseInput, touched.minPurchase, validateMinPurchase);
+wireField(usageLimitInput, touched.usageLimit, validateUsageLimit);
+wireField(expiryDateInput, touched.expiryDate, validateExpiryDate);
+
+// ── Final gate on submit ─────────────────────────────────────────────────
+// preventDefault on failure so the page never reloads and nothing typed is lost.
+form.addEventListener("submit", function (e) {
+  Object.values(touched).forEach(t => t.value = true);
+
+  const codeValid          = validateCode();
+  const discountValueValid = validateDiscountValue();
+  const maxDiscountValid   = validateMaxDiscount();
+  const minPurchaseValid   = validateMinPurchase();
+  const usageLimitValid    = validateUsageLimit();
+  const expiryDateValid    = validateExpiryDate();
+
+  const allValid = codeValid && discountValueValid && maxDiscountValid &&
+                    minPurchaseValid && usageLimitValid && expiryDateValid;
+
+  if (!allValid) {
+    e.preventDefault();
+    const firstError = document.querySelector("p.text-red-500:not(:empty)");
+    if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+});
+</script>
 
 </body></html>

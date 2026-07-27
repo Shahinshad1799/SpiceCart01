@@ -56,13 +56,6 @@
     <span class="material-symbols-outlined text-xs">chevron_right</span>
     <span class="text-[#181311] dark:text-white font-medium">Shopping Cart</span>
   </div>
-  
-    
-  <h1 class="text-3xl lg:text-5xl font-bold text-[#181311] dark:text-white mb-10">Your Cart <%=item.totalItem %></h1>
-    
- 
-
-
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
     <!-- LEFT: Cart Items -->
@@ -192,7 +185,7 @@
 
         <h2 class="text-xl font-bold mb-6 text-[#181311] dark:text-white">Order Summary</h2>
 
-        <div class="flex flex-col gap-3 mb-6">
+        <!-- <div class="flex flex-col gap-3 mb-6">
           <div class="flex justify-between text-sm">
             <span class="text-[#886e63] dark:text-[#9CA3AF]">
               baseprice (<span id="cart-items"><%= totalItems %></span> items)
@@ -207,21 +200,73 @@
             <span class="text-[#886e63] dark:text-[#9CA3AF]">Tax</span>
             <span id="cart-tax" class="font-medium">₹ <%= tax.toFixed(2) %></span>
           </div>
-        </div>
+        </div> -->
 
         <!-- Promo Code -->
-        <div class="mb-6">
-          <div class="flex gap-2">
-            <input
-              class="flex-1 rounded-lg border border-[#E6E0DC] dark:border-[#3E302A] bg-transparent text-sm px-3 py-2 placeholder-[#886e63] focus:border-primary focus:ring-primary dark:text-white"
-              placeholder="Promo code"
-              type="text"
-            />
-            <button class="px-4 py-2 bg-[#f4f1f0] dark:bg-[#2C201A] text-[#181311] dark:text-white font-medium rounded-lg hover:bg-[#e6e0dc] dark:hover:bg-[#3E302A] transition-colors text-sm">
-              Apply
-            </button>
-          </div>
+      <div class="mb-6">
+    <!-- Applied coupon banner -->
+    <% if (appliedCoupon) { %>
+    <div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-3">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-green-600 text-lg">confirmation_number</span>
+            <div>
+                <p class="text-sm font-bold text-green-700"><%= appliedCoupon.code %></p>
+                <p class="text-xs text-green-600">You save ₹<%= appliedCoupon.discount %>!</p>
+            </div>
         </div>
+        <button id="removeCouponBtn"
+            class="text-xs text-red-500 hover:text-red-700 font-medium transition-colors">
+            Remove
+        </button>
+    </div>
+    <% } else { %>
+
+    <!-- Coupon input -->
+    <div class="flex gap-2">
+        <input id="couponInput"
+            class="flex-1 rounded-lg border border-[#E6E0DC] bg-transparent text-sm px-3 py-2 placeholder-[#886e63] focus:border-primary focus:ring-primary"
+            placeholder="Promo code"
+            type="text" />
+        <button id="applyCouponBtn"
+            class="px-4 py-2 bg-[#f4f1f0] text-[#181311] font-medium rounded-lg hover:bg-[#e6e0dc] transition-colors text-sm">
+            Apply
+        </button>
+    </div>
+    <p id="couponMsg" class="text-xs mt-1 hidden"></p>
+
+    <% } %>
+</div>
+
+<!-- Order Summary Numbers -->
+<div class="flex flex-col gap-2 text-sm">
+    <div class="flex justify-between">
+        <span class="text-[#886e63]">Subtotal</span>
+        <span id="summarySubtotal">₹<%= subtotal %></span>
+    </div>
+    <div class="flex justify-between">
+        <span class="text-[#886e63]">Shipping</span>
+        <span id="summaryShipping">₹<%= shipping %></span>
+    </div>
+    <div class="flex justify-between">
+        <span class="text-[#886e63]">Tax</span>
+        <span id="summaryTax">₹<%= tax %></span>
+    </div>
+    <% if (discount > 0) { %>
+    <div class="flex justify-between text-green-600">
+        <span>Discount</span>
+        <span id="summaryDiscount">-₹<%= discount %></span>
+    </div>
+    <% } else { %>
+    <div class="flex justify-between text-green-600 hidden" id="discountRow">
+        <span>Discount</span>
+        <span id="summaryDiscount">-₹0</span>
+    </div>
+    <% } %>
+    <!-- <div class="flex justify-between font-bold text-base border-t border-[#E6E0DC] pt-2 mt-1">
+        <span>Total</span>
+        <span id="summaryTotal">₹<%= total %></span>
+    </div> -->
+</div>
 
         <!-- Order Total -->
         <div class="border-t-2 border-dashed border-[#E6E0DC] dark:border-[#3E302A] py-6 mb-4">
@@ -381,6 +426,81 @@ function confirmRemove(event, form) {
   }).then((result) => {
     if (result.isConfirmed) form.submit();
   });
+}
+</script>
+<script>
+// Apply coupon
+const applyCouponBtn = document.getElementById("applyCouponBtn");
+const removeCouponBtn = document.getElementById("removeCouponBtn");
+
+if (applyCouponBtn) {
+    applyCouponBtn.addEventListener("click", async () => {
+        const code = document.getElementById("couponInput").value.trim();
+        const msg = document.getElementById("couponMsg");
+
+        if (!code) {
+            msg.textContent = "Please enter a coupon code";
+            msg.className = "text-xs mt-1 text-red-500";
+            msg.classList.remove("hidden");
+            return;
+        }
+
+        applyCouponBtn.disabled = true;
+        applyCouponBtn.textContent = "Applying...";
+
+try {
+    const res = await fetch("/cart/apply-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code })
+    });
+
+    // ✅ Check if response is ok before parsing
+    if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (data.success) {
+        // Show success with SweetAlert, THEN reload
+        await Swal.fire({
+            icon: "success",
+            title: "Coupon Applied!",
+            text: `${data.couponCode} — You save ₹${data.discount}`,
+            confirmButtonColor: "#16a34a",
+            timer: 2000,
+            timerProgressBar: true,
+            showConfirmButton: false
+        });
+
+        location.reload(); // ✅ reload after alert closes
+
+    } else {
+        msg.textContent = data.message;
+        msg.className = "text-xs mt-1 text-red-500";
+        msg.classList.remove("hidden");
+        applyCouponBtn.disabled = false;
+        applyCouponBtn.textContent = "Apply";
+    }
+
+} catch (err) {
+    console.error("Coupon apply error:", err); // log for debugging
+    msg.textContent = "Something went wrong. Try again.";
+    msg.className = "text-xs mt-1 text-red-500";
+    msg.classList.remove("hidden");
+    applyCouponBtn.disabled = false;
+    applyCouponBtn.textContent = "Apply";
+}
+    });
+}
+// Remove coupon
+if (removeCouponBtn) {
+    removeCouponBtn.addEventListener("click", async () => {
+        const res = await fetch("/cart/remove-coupon", { method: "POST" });
+        const data = await res.json();
+        if (data.success) location.reload();
+    });
 }
 </script>
 

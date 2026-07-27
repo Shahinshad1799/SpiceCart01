@@ -93,7 +93,7 @@
 <div class="flex flex-col gap-3">
 <div class="flex flex-wrap items-center gap-3">
 <!-- Hidden File Input -->
- <form class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8"
+ <form id="editProfileForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8"
       action="/editprofile?_method=PATCH"
       method="post"
       enctype="multipart/form-data">
@@ -114,13 +114,19 @@
   Upload New Picture
 </button>
 
+<!-- Delete calls /deleteProfile directly via fetch (see script below) —
+     no nested <form> here since nested forms are invalid HTML and were
+     silently breaking. -->
 <button type="button"
         onclick="confirmDelete()"
+        id="deleteImageBtn"
+        <%= user.profileImage ? '' : 'disabled' %>
         class="px-5 py-2.5 rounded-lg border border-[#E6E0DC] 
                dark:border-[#3E302A] text-[#5C4D46] 
                dark:text-[#A8A29E] text-sm font-bold 
                hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] 
-               hover:text-[#cd4e18] transition-colors">
+               hover:text-[#cd4e18] transition-colors
+               disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#5C4D46]">
   Delete
 </button>
 </div>
@@ -138,11 +144,6 @@
   <%= error?.fullname %>
 </p></div>
 </div>
-<p class="error-msg text-red-500 text-sm mt-1 
-  <%= error?.fullname ? '' : 'hidden' %>" 
-  id="fullnameError">
-  <%= error?.fullname %>
-</p>
 <div class="col-span-1">
   <div class="flex justify-between items-center mb-2">
     <label class="block text-sm font-bold text-[#181311] dark:text-white">
@@ -208,12 +209,27 @@ value="<%= user.dateofbirth
 <div class="col-span-1">
 <div class="flex justify-between items-center mb-2">
 <label class="block text-sm font-bold text-[#181311] dark:text-white">Password</label>
+<% if (!user.googleId) { %>
 <a class="text-xs font-bold text-primary hover:underline hover:text-primary/80 transition-colors" href="/changepassword">Change Password</a>
+<% } else { %>
+<span class="text-xs font-bold text-[#886e63] dark:text-[#9CA3AF] flex items-center gap-1">
+  <span class="material-symbols-outlined text-[14px]">info</span>
+  Managed by Google
+</span>
+<% } %>
 </div>
 <div class="relative group">
-<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#886e63] transition-colors group-focus-within:text-primary">lock</span>
-<input class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0 transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium tracking-widest" type="password" value="Password123"/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#886e63] <%= user.googleId ? '' : 'transition-colors group-focus-within:text-primary' %>">lock</span>
+<input
+  class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border border-transparent transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium tracking-widest <%= user.googleId ? 'opacity-70 cursor-not-allowed' : 'focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0' %>"
+  type="password"
+  value="Password123"
+  <%= user.googleId ? 'disabled' : '' %>
+/>
 </div>
+<% if (user.googleId) { %>
+<p class="text-xs text-[#886e63] dark:text-[#9CA3AF] mt-1">You signed in with Google, so there's no password to change here.</p>
+<% } %>
 </div>
 <div class="col-span-1 md:col-span-2 pt-6 flex justify-end border-t border-[#f4f1f0] dark:border-[#3E302A] mt-2">
 <button class="h-12 px-8 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition-transform active:scale-95 shadow-lg shadow-primary/30 flex items-center gap-2" type="submit">
@@ -230,17 +246,78 @@ value="<%= user.dateofbirth
 </main>
 <%- include("../partials/footer") %>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+const imagePreview      = document.getElementById("imagePreview");
+const profileImageInput = document.getElementById("profileImageInput");
+const deleteImageBtn    = document.getElementById("deleteImageBtn");
+const DEFAULT_IMAGE     = "/images/default.png";
+
 function previewImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
   const reader = new FileReader();
   reader.onload = function () {
-    document.getElementById("imagePreview").src = reader.result;
+    imagePreview.src = reader.result;
   };
-  reader.readAsDataURL(event.target.files[0]);
+  reader.readAsDataURL(file);
+
+  deleteImageBtn.disabled = false;
+}
+
+function confirmDelete() {
+  Swal.fire({
+    title: "Remove profile picture?",
+    text: "You can always upload a new one later.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#cd4e18",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Yes, remove it"
+  }).then((result) => {
+    if (!result.isConfirmed) return;
+    deleteProfileImage();
+  });
+}
+
+async function deleteProfileImage() {
+  deleteImageBtn.disabled = true;
+
+  try {
+  const res = await fetch("/delete-profile-image", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
+    const data = await res.json();
+
+    if (data.success) {
+      // Clear any file the user had queued for upload, since there's
+      // nothing left to preview against.
+      profileImageInput.value = "";
+      imagePreview.src = DEFAULT_IMAGE;
+
+      Swal.fire({
+        title: "Picture removed",
+        icon: "success",
+        timer: 1800,
+        showConfirmButton: false
+      });
+    } else {
+      deleteImageBtn.disabled = false;
+      Swal.fire("Oops", "Failed to remove profile picture. Please try again.", "error");
+    }
+  } catch (err) {
+    console.error("Delete profile image error:", err);
+    deleteImageBtn.disabled = false;
+    Swal.fire("Oops", "Something went wrong removing your picture.", "error");
+  }
 }
 </script>
 <script>
-const form = document.querySelector("form");
+const form = document.getElementById("editProfileForm");
 const fullname = document.querySelector("input[name='fullname']");
 const phone = document.querySelector("input[name='phonenumber']");
 const dob = document.querySelector("input[name='dateofbirth']");
@@ -319,16 +396,14 @@ imageInput.addEventListener("change", () => {
 });
 
 // ===== Final Submit Check =====
+// NOTE: email is a disabled, read-only field on this page (changing it happens on a
+// separate /changeemail flow), so it isn't part of this form's submission and doesn't
+// need validating here.
 form.addEventListener("submit", (e) => {
   let isValid = true;
 
   // Fullname
   if (fullname.value.trim().length < 3) {
-    isValid = false;
-  }
-
-  // Email
-  if (!/^[^ ]+@[^ ]+\.[a-z]{2,}$/.test(email.value.trim())) {
     isValid = false;
   }
 
@@ -364,5 +439,4 @@ form.addEventListener("submit", (e) => {
   }
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body></html>

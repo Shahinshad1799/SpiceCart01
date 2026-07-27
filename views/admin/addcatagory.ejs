@@ -83,7 +83,7 @@ placeholder="e.g., Exotic Blends"
 type="text"
 />
 
-<!-- <p id="name-error" class="text-red-500 text-sm hidden">Category name is required</p> -->
+<p id="name-error" class="text-red-500 text-sm hidden">Category name is required</p>
 
 </div>
 </div>
@@ -100,7 +100,7 @@ name="description"
 placeholder="Describe the spices included in this category..."
 rows="4"></textarea>
 
-<!-- <p id="desc-error" class="text-red-500 text-sm hidden">Description is required</p> -->
+<p id="desc-error" class="text-red-500 text-sm hidden">Description is required</p>
 
 </div>
 
@@ -131,7 +131,7 @@ accept="image/*"
 </label>
 </div>
 
-<!-- <p id="image-error" class="text-red-500 text-sm hidden">Please upload an image</p> -->
+<p id="image-error" class="text-red-500 text-sm hidden">Please upload an image</p>
 
 </div>
 
@@ -217,57 +217,104 @@ const nameError = document.getElementById("name-error");
 const descError = document.getElementById("desc-error");
 const imageError = document.getElementById("image-error");
 
-form.addEventListener("submit", function(e){
-
+// ── Individual field validators (return true if valid) ─────────────────
+function validateName(showError = true) {
+    const value = nameInput.value.trim();
     let valid = true;
+    let message = "";
 
-    // reset errors
-    nameError.classList.add("hidden");
-    descError.classList.add("hidden");
-    imageError.classList.add("hidden");
-
-    // name validation
- // name validation
-if(nameInput.value.trim() === ""){
-    nameError.textContent = "Category name is required";
-    nameError.classList.remove("hidden");
-    valid = false;
-}
-else if(nameInput.value.trim().length < 3){
-    nameError.textContent = "Category name must be at least 3 characters";
-    nameError.classList.remove("hidden");
-    valid = false;
-}
-
-// description validation
-if(descInput.value.trim() === ""){
-    descError.textContent = "Description is required";
-    descError.classList.remove("hidden");
-    valid = false;
-}
-else if(descInput.value.trim().length < 20){
-    descError.textContent = "Description must be at least 20 characters";
-    descError.classList.remove("hidden");
-    valid = false;
-}
-
-// image validation
-if(imageInput.files.length === 0){
-    imageError.textContent = "Please upload an image";
-    imageError.classList.remove("hidden");
-    valid = false;
-}
-    // image validation
-    if(imageInput.files.length === 0){
-        imageError.textContent = "Please upload an image";
-        imageError.classList.remove("hidden");
+    if (value === "") {
+        message = "Category name is required";
+        valid = false;
+    } else if (value.length < 3) {
+        message = "Category name must be at least 3 characters";
         valid = false;
     }
 
-    if(!valid){
-        e.preventDefault();
+    if (!valid && showError) {
+        nameError.textContent = message;
+        nameError.classList.remove("hidden");
+    } else {
+        nameError.classList.add("hidden");
+    }
+    return valid;
+}
+
+function validateDescription(showError = true) {
+    const value = descInput.value.trim();
+    let valid = true;
+    let message = "";
+
+    if (value === "") {
+        message = "Description is required";
+        valid = false;
+    } else if (value.length < 20) {
+        message = "Description must be at least 20 characters";
+        valid = false;
     }
 
+    if (!valid && showError) {
+        descError.textContent = message;
+        descError.classList.remove("hidden");
+    } else {
+        descError.classList.add("hidden");
+    }
+    return valid;
+}
+
+function validateImage(showError = true) {
+    const valid = imageInput.files.length > 0;
+
+    if (!valid && showError) {
+        imageError.textContent = "Please upload an image";
+        imageError.classList.remove("hidden");
+    } else {
+        imageError.classList.add("hidden");
+    }
+    return valid;
+}
+
+// ── Real-time validation as the user types/uploads ──────────────────────
+// Once a field has been touched (blurred or submitted once), keep validating
+// it live on every keystroke/change so the error clears the moment it's fixed.
+let nameTouched = false;
+let descTouched = false;
+let imageTouched = false;
+
+nameInput.addEventListener("input", function () {
+    if (nameTouched) validateName();
+});
+nameInput.addEventListener("blur", function () {
+    nameTouched = true;
+    validateName();
+});
+
+descInput.addEventListener("input", function () {
+    if (descTouched) validateDescription();
+});
+descInput.addEventListener("blur", function () {
+    descTouched = true;
+    validateDescription();
+});
+
+imageInput.addEventListener("change", function () {
+    imageTouched = true;
+    validateImage();
+});
+
+// ── Final gate on submit ─────────────────────────────────────────────────
+form.addEventListener("submit", function (e) {
+    nameTouched = true;
+    descTouched = true;
+    imageTouched = true;
+
+    const nameValid = validateName();
+    const descValid = validateDescription();
+    const imageValid = validateImage();
+
+    if (!(nameValid && descValid && imageValid)) {
+        e.preventDefault();
+    }
 });
 
 </script>

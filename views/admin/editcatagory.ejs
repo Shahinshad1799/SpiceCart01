@@ -438,57 +438,6 @@ Update Catagory
 
 <!-- JS -->
 <script>
-
-// IMAGE PREVIEW
-const fileInput = document.getElementById("dropzone-file");
-const preview = document.getElementById("image-preview");
-
-fileInput.addEventListener("change", function () {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            preview.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-// VALIDATION
-const form = document.querySelector("form");
-
-const nameInput = document.getElementById("catagory-name");
-const descInput = document.getElementById("catagory-description");
-
-const nameError = document.getElementById("name-error");
-const descError = document.getElementById("desc-error");
-
-form.addEventListener("submit", function(e){
-
-    let valid = true;
-
-    nameError.classList.add("hidden");
-    descError.classList.add("hidden");
-
-    if(nameInput.value.trim() === ""){
-        nameError.textContent = "Catagory name is required";
-        nameError.classList.remove("hidden");
-        valid = false;
-    }
-
-    if(descInput.value.trim().length < 10){
-        descError.textContent = "Description must be at least 10 characters";
-        descError.classList.remove("hidden");
-        valid = false;
-    }
-
-    if(!valid){
-        e.preventDefault();
-    }
-
-});
-</script>
-<script>
 function previewImage(event) {
     const file = event.target.files[0];
     const preview = document.getElementById("imagePreview");
@@ -503,6 +452,77 @@ function previewImage(event) {
         reader.readAsDataURL(file);
     }
 }
+
+// VALIDATION
+const form = document.querySelector("form");
+
+const nameInput = document.getElementById("catagory-name");
+const descInput = document.getElementById("catagory-description");
+
+const nameError = document.getElementById("name-error");
+const descError = document.getElementById("desc-error");
+
+// ── Individual field validators (return true if valid) ─────────────────
+function validateName(showError = true) {
+    const value = nameInput.value.trim();
+    const valid = value !== "";
+
+    if (!valid && showError) {
+        nameError.textContent = "Catagory name is required";
+        nameError.classList.remove("hidden");
+    } else {
+        nameError.classList.add("hidden");
+    }
+    return valid;
+}
+
+function validateDescription(showError = true) {
+    const value = descInput.value.trim();
+    const valid = value.length >= 10;
+
+    if (!valid && showError) {
+        descError.textContent = "Description must be at least 10 characters";
+        descError.classList.remove("hidden");
+    } else {
+        descError.classList.add("hidden");
+    }
+    return valid;
+}
+
+// ── Real-time validation as the user types ──────────────────────────────
+// Once a field has been touched (blurred or submitted once), keep validating
+// it live on every keystroke so the error clears the instant it's fixed.
+let nameTouched = false;
+let descTouched = false;
+
+nameInput.addEventListener("input", function () {
+    if (nameTouched) validateName();
+});
+nameInput.addEventListener("blur", function () {
+    nameTouched = true;
+    validateName();
+});
+
+descInput.addEventListener("input", function () {
+    if (descTouched) validateDescription();
+});
+descInput.addEventListener("blur", function () {
+    descTouched = true;
+    validateDescription();
+});
+
+// ── Final gate on submit ─────────────────────────────────────────────────
+form.addEventListener("submit", function (e) {
+    nameTouched = true;
+    descTouched = true;
+
+    const nameValid = validateName();
+    const descValid = validateDescription();
+
+    if (!(nameValid && descValid)) {
+        e.preventDefault();
+    }
+});
 </script>
 
 </body>

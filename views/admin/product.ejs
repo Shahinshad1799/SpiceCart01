@@ -248,22 +248,47 @@ function confirmAction(id, status, name) {
       form.submit();
     }
   });
-}</script>
+}
+</script>
+
 <script>
   const searchForm = document.getElementById("searchForm");
   const searchInput = document.getElementById("searchInput");
   const clearBtn = document.getElementById("clearBtn");
 
-  // Show/hide clear button
   searchInput.addEventListener("input", () => {
     clearBtn.classList.toggle("hidden", searchInput.value.trim() === "");
   });
 
-  // Clear button functionality
   clearBtn.addEventListener("click", () => {
     searchInput.value = "";
     clearBtn.classList.add("hidden");
-    searchForm.submit(); // reload page with all customers
+    searchForm.submit();
   });
+</script>
+
+<!-- ✅ Flash success message after block/unblock redirect -->
+<script>
+  (function () {
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get('success');
+
+    if (success === 'blocked' || success === 'unblocked') {
+      Swal.fire({
+        icon: 'success',
+        title: success === 'blocked' ? 'Product Blocked' : 'Product Unblocked',
+        text: success === 'blocked'
+          ? 'The product has been blocked successfully.'
+          : 'The product is now active again.',
+        timer: 2000,
+        showConfirmButton: false,
+        background: '#f9fafb'
+      });
+
+      params.delete('success');
+      const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  })();
 </script>
 </body></html>

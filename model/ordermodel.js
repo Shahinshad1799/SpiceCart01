@@ -29,6 +29,15 @@ const orderItemSchema = new mongoose.Schema({
     lineTotal: {
         type: Number,
         require: true
+    },
+    itemStatus: {
+        type: String,
+        enum: ["active", "cancelled"],
+        default: "active"
+    },
+    cancelReason: {
+        type: String,
+        default: null
     }
 })
 
@@ -79,7 +88,7 @@ const orderSchema = new mongoose.Schema({
 
     paymentMethod: {
         type: String,
-        enum: ["cash_on_delivery", "online"],
+        enum: ["cash_on_delivery", "online",'wallet'],
         default: "cash_on_delivery"
     },
     paymentStatus: {
@@ -90,7 +99,7 @@ const orderSchema = new mongoose.Schema({
 
     status: {
         type: String,
-        enum: ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled", "returned"],
+        enum: ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled", "returned", "refunded"],
         default: "pending"
     },
     // orderSchema — add this field
@@ -118,6 +127,14 @@ returnRequest: {
     tax: {
         type: Number,
         default: 0
+    },
+      discount: {
+        type: Number,
+        default: 0
+    },
+    couponCode: {
+        type: String,
+        default: null
     },
     total: {
         type: Number,

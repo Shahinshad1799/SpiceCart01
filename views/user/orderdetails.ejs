@@ -9,7 +9,6 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<!-- SweetAlert2 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script id="tailwind-config">
@@ -88,7 +87,7 @@
   .swal2-icon.swal2-success { border-color: #22c55e !important; }
   .swal2-icon.swal2-success [class^='swal2-success-line'] { background: #22c55e !important; }
   .swal2-icon.swal2-success .swal2-success-ring { border-color: #bbf7d0 !important; }
-  /* reason select inside swal */
+
   #swal-cancel-reason {
     width: 100%;
     margin-top: 1rem;
@@ -103,6 +102,22 @@
     cursor: pointer;
   }
   #swal-cancel-reason:focus { border-color: #cd4e18; box-shadow: 0 0 0 3px rgba(205,78,24,0.15); }
+
+  /* Wallet refund notice box inside SweetAlert */
+  .refund-notice {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    text-align: left;
+  }
+  .refund-notice .icon { font-size: 1rem; color: #16a34a; flex-shrink: 0; margin-top: 1px; }
+  .refund-notice .text { font-size: 0.78rem; color: #15803d; line-height: 1.5; }
+  .refund-notice .amount { font-weight: 800; color: #14532d; }
 
   /* ── Print / Invoice styles ── */
   @media print {
@@ -128,7 +143,7 @@
 
         <!-- Breadcrumb -->
         <div class="mb-10 flex items-center gap-2 text-[13px] text-text-muted dark:text-[#9CA3AF]">
-          <a class="hover:text-primary" href="/">Home</a>
+          <a class="hover:text-primary" href="/home">Home</a>
           <span class="material-symbols-outlined text-[10px]">chevron_right</span>
           <a class="hover:text-primary" href="/order">My Orders</a>
           <span class="material-symbols-outlined text-[10px]">chevron_right</span>
@@ -183,10 +198,14 @@
                   shipped:    { bg: 'bg-blue-50',   text: 'text-blue-600',   border: 'border-blue-100',  label: 'In Transit',  step: 3 },
                   delivered:  { bg: 'bg-green-50',  text: 'text-green-600',  border: 'border-green-100', label: 'Delivered',   step: 4 },
                   cancelled:  { bg: 'bg-red-50',    text: 'text-red-500',    border: 'border-red-100',   label: 'Cancelled',   step: 0 },
+                  returned:  { bg: 'bg-red-50',    text: 'text-red-500',    border: 'border-red-100',   label: 'Returned',   step: 0 },
                 };
                 const badge = statusMap[order.status] || statusMap['pending'];
                 const step  = badge.step;
                 const progressWidth = { 0: '0%', 1: '0%', 2: '33%', 3: '66%', 4: '100%' };
+
+                // Determine if this is a paid online order (eligible for wallet refund)
+                const isOnlinePaid = order.paymentMethod === 'online' && order.paymentStatus === 'paid';
               %>
 
               <!-- Header -->
@@ -207,32 +226,34 @@
                     </p>
                   </div>
                   <div class="flex flex-wrap items-center gap-3">
+
                     <!-- Contact Support -->
                     <a href="mailto:support@spicemarket.com?subject=Order%20%23<%= order._id.toString().slice(-6).toUpperCase() %>&body=Hi%2C%20I%20need%20help%20with%20my%20order%20%23<%= order._id %>">
                       <button class="px-5 py-2.5 text-xs font-bold text-text-main dark:text-white bg-surface-muted dark:bg-[#3E302A] hover:bg-border-subtle dark:hover:bg-[#4a3a33] rounded-xl transition-all flex items-center gap-2">
                         <span class="material-symbols-outlined text-lg">support_agent</span> Contact Support
                       </button>
                     </a>
-                    <!-- Cancel button — only if order is pending -->
-                   <!-- Cancel button -->
-<% if (order.status === 'pending') { %>
-<button
-  onclick="openCancelModal('<%= order._id %>')"
-  class="px-5 py-2.5 text-xs font-bold text-red-500/80 hover:bg-red-50/50 dark:hover:bg-red-950/20 rounded-xl transition-all flex items-center gap-2">
-  <span class="material-symbols-outlined text-lg">cancel</span>
-  Cancel Order
-</button>
-<% } %>
 
-<!-- Return button -->
-<% if (order.status === 'delivered') { %>
-<button
-  onclick="openReturnModal('<%= order._id %>')"
-  class="px-5 py-2.5 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20 rounded-xl transition-all flex items-center gap-2">
-  <span class="material-symbols-outlined text-lg">keyboard_return</span>
-  Return Order
-</button>
-<% } %>
+                    <!-- Cancel Order button — pending orders only (both COD and online) -->
+                    <% if (order.status === 'pending') { %>
+                    <button
+                      onclick="openCancelModal('<%= order._id %>', <%= isOnlinePaid %>, <%= order.total %>)"
+                      class="px-5 py-2.5 text-xs font-bold text-red-500/80 hover:bg-red-50/50 dark:hover:bg-red-950/20 rounded-xl transition-all flex items-center gap-2">
+                      <span class="material-symbols-outlined text-lg">cancel</span>
+                      Cancel Order
+                    </button>
+                    <% } %>
+
+                    <!-- Return button — delivered orders only -->
+                    <% if (order.status === 'delivered') { %>
+                    <button
+                      onclick="openReturnModal('<%= order._id %>')"
+                      class="px-5 py-2.5 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20 rounded-xl transition-all flex items-center gap-2">
+                      <span class="material-symbols-outlined text-lg">keyboard_return</span>
+                      Return Order
+                    </button>
+                    <% } %>
+
                   </div>
                 </div>
               </div>
@@ -292,42 +313,78 @@
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-12">
 
                   <!-- ── ITEMS LIST ── -->
-                  <div class="xl:col-span-7 space-y-8">
-                    <div class="flex items-center justify-between mb-2">
-                      <h3 class="text-xl font-bold text-text-main dark:text-white">Order Items</h3>
-                      <!-- ✅ Invoice download button -->
-                      <button
-                        onclick="downloadInvoice()"
-                        class="text-sm font-bold text-primary flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-                        <span class="material-symbols-outlined text-lg">receipt_long</span>
-                        <span>Invoice</span>
-                      </button>
-                    </div>
+                <div class="flex items-center justify-between mb-2">
+  <h3 class="text-xl font-bold text-text-main dark:text-white">Order Items</h3>
+  <% if (order.status !== 'cancelled') { %>
+  <button
+    onclick="downloadInvoice()"
+    class="text-sm font-bold text-primary flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+    <span class="material-symbols-outlined text-lg">receipt_long</span>
+    <span>Invoice</span>
+  </button>
+  <% } %>
+</div>
+
                     <div class="space-y-5">
-                      <% order.items.forEach(item => { %>
-                      <div class="flex items-center gap-6 p-5 rounded-2xl hover:bg-[#fcfbfb] dark:hover:bg-[#32241E] transition-all border border-border-subtle/50 dark:border-[#3E302A]/50">
-                        <div class="size-24 rounded-xl overflow-hidden bg-white border border-border-subtle dark:border-[#3E302A] flex-shrink-0 shadow-sm">
+                      <% order.items.forEach(item => {
+                           const itemCancelled = item.itemStatus === 'cancelled';
+                           const canCancelItem = ['pending', 'processing'].includes(order.status) && !itemCancelled;
+                      %>
+                      <div class="flex items-start gap-6 p-5 rounded-2xl transition-all border <%= itemCancelled ? 'opacity-50 bg-red-50/40 dark:bg-red-950/10 border-red-100 dark:border-red-900/30' : 'hover:bg-[#fcfbfb] dark:hover:bg-[#32241E] border-border-subtle/50 dark:border-[#3E302A]/50' %>">
+
+                        <!-- Product image with cancelled overlay -->
+                        <div class="relative size-24 rounded-xl overflow-hidden bg-white border border-border-subtle dark:border-[#3E302A] flex-shrink-0 shadow-sm">
                           <% if (item.productImage) { %>
-                            <img alt="<%= item.productName %>" class="w-full h-full object-cover" src="/uploads/product/<%= item.productImage %>"/>
+                            <img alt="<%= item.productName %>" class="w-full h-full object-cover <%= itemCancelled ? 'grayscale' : '' %>" src="/uploads/product/<%= item.productImage %>"/>
                           <% } else { %>
                             <div class="w-full h-full bg-surface-muted flex items-center justify-center">
                               <span class="material-symbols-outlined text-text-muted text-3xl">inventory_2</span>
                             </div>
                           <% } %>
-                        </div>
-                        <div class="flex-1">
-                          <div class="flex justify-between items-start">
-                            <div>
-                              <p class="font-bold text-lg text-text-main dark:text-white"><%= item.productName %></p>
-                            </div>
-                            <p class="font-bold text-lg text-text-main dark:text-white">₹<%= item.lineTotal.toFixed(2) %></p>
+                          <% if (itemCancelled) { %>
+                          <div class="absolute inset-0 bg-red-500/10 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-red-400 text-3xl">cancel</span>
                           </div>
-                          <div class="mt-4 flex items-center gap-4 text-xs font-semibold text-text-muted">
+                          <% } %>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                          <div class="flex justify-between items-start gap-2">
+                            <p class="font-bold text-lg text-text-main dark:text-white leading-tight"><%= item.productName %></p>
+                            <p class="font-bold text-lg text-text-main dark:text-white flex-shrink-0 <%= itemCancelled ? 'line-through text-text-muted' : '' %>">
+                              ₹<%= item.lineTotal.toFixed(2) %>
+                            </p>
+                          </div>
+
+                          <div class="mt-3 flex items-center gap-4 text-xs font-semibold text-text-muted">
                             <span class="bg-surface-muted dark:bg-[#3E302A] px-2 py-1 rounded">
                               Qty: <span class="text-text-main dark:text-white"><%= item.quantity %></span>
                             </span>
                             <span class="size-1 rounded-full bg-border-subtle"></span>
                             <span>₹<%= item.unitPrice.toFixed(2) %> per unit</span>
+                          </div>
+
+                          <div class="mt-4 flex items-center justify-between">
+                            <!-- Item status badge -->
+                            <% if (itemCancelled) { %>
+                            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-red-500 bg-red-50 dark:bg-red-950/30 px-2.5 py-1 rounded-lg border border-red-100 dark:border-red-900/40">
+                              <span class="material-symbols-outlined text-sm">cancel</span>
+                              Item Cancelled
+                              <% if (isOnlinePaid) { %>
+                              · Refunded to Wallet
+                              <% } %>
+                            </span>
+                            <% } %>
+
+                            <!-- Per-item cancel button -->
+                            <% if (canCancelItem) { %>
+                            <button
+                              onclick="cancelItem('<%= order._id %>', '<%= item.productId %>', '<%= item.productName.replace(/'/g, "\\'") %>', <%= isOnlinePaid %>, <%= item.lineTotal %>)"
+                              class="ml-auto text-xs font-bold text-red-400 hover:text-red-600 dark:hover:text-red-400 flex items-center gap-1 transition-colors group">
+                              <span class="material-symbols-outlined text-base group-hover:scale-110 transition-transform">remove_shopping_cart</span>
+                              Cancel Item
+                            </button>
+                            <% } %>
                           </div>
                         </div>
                       </div>
@@ -356,12 +413,39 @@
                           <span class="text-text-muted font-medium">Tax (5%)</span>
                           <span class="font-bold text-text-main dark:text-white">₹<%= order.tax.toFixed(2) %></span>
                         </div>
+                        <% if (order.discount && order.discount > 0) { %>
+                        <div class="flex justify-between text-sm">
+                          <span class="text-text-muted font-medium">Discount</span>
+                          <span class="font-bold text-green-600">-₹<%= order.discount.toFixed(2) %></span>
+                        </div>
+                        <% } %>
                         <div class="pt-6 border-t border-border-subtle dark:border-[#3E302A] flex justify-between items-end">
                           <span class="text-base font-extrabold text-text-main dark:text-white">Total Amount</span>
                           <span class="text-3xl font-bold text-primary tracking-tight font-display">₹<%= order.total.toFixed(2) %></span>
                         </div>
                       </div>
                     </div>
+
+                    <!-- Wallet Refund Notice — show if online paid and order/items were cancelled -->
+                    <%
+                      const hasCancelledItems = order.items.some(i => i.itemStatus === 'cancelled');
+                      const orderWasCancelled = order.status === 'cancelled';
+                    %>
+                    <% if (isOnlinePaid && (hasCancelledItems || orderWasCancelled)) { %>
+                    <div class="p-5 rounded-2xl border border-green-200 dark:border-green-900/40 bg-green-50 dark:bg-green-950/20 flex items-start gap-3">
+                      <span class="material-symbols-outlined text-green-600 text-xl flex-shrink-0 mt-0.5">account_balance_wallet</span>
+                      <div>
+                        <p class="text-sm font-bold text-green-800 dark:text-green-400 mb-1">Refund Credited to Wallet</p>
+                        <p class="text-xs text-green-700 dark:text-green-500 leading-relaxed">
+                          The refund for cancelled item(s) has been added to your SpiceCart wallet. You can use it on your next order.
+                        </p>
+                        <a href="/wallet" class="inline-flex items-center gap-1 mt-2 text-xs font-bold text-green-700 dark:text-green-400 hover:underline">
+                          <span class="material-symbols-outlined text-sm">open_in_new</span>
+                          View Wallet
+                        </a>
+                      </div>
+                    </div>
+                    <% } %>
 
                     <!-- Shipping Address -->
                     <div class="p-6 rounded-2xl border border-border-subtle dark:border-[#3E302A] bg-white dark:bg-[#2C201A] shadow-sm">
@@ -405,9 +489,6 @@
 
   <%- include("../partials/footer") %>
 </div>
-
-
-<!-- SweetAlert2 handles the cancel modal — no HTML needed here -->
 
 
 <!-- ════════════════════════════════════════════
@@ -469,10 +550,17 @@
     <tbody>
       <% order.items.forEach((item, i) => { %>
       <tr style="border-bottom:1px solid #E6E0DC; background:<%= i % 2 === 0 ? '#fff' : '#fbf9f8' %>;">
-        <td style="padding:0.85rem 1rem; font-size:0.85rem; font-weight:600; color:#181311;"><%= item.productName %></td>
+        <td style="padding:0.85rem 1rem; font-size:0.85rem; font-weight:600; color:<%= item.itemStatus === 'cancelled' ? '#886e63' : '#181311' %>;">
+          <%= item.productName %>
+          <% if (item.itemStatus === 'cancelled') { %>
+          <span style="margin-left:0.5rem; font-size:0.65rem; font-weight:700; background:#fee2e2; color:#ef4444; padding:0.1rem 0.4rem; border-radius:0.25rem;">CANCELLED</span>
+          <% } %>
+        </td>
         <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:center; color:#886e63;"><%= item.quantity %></td>
         <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:right; color:#886e63;">₹<%= item.unitPrice.toFixed(2) %></td>
-        <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:right; font-weight:700; color:#181311;">₹<%= item.lineTotal.toFixed(2) %></td>
+        <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:right; font-weight:700; color:<%= item.itemStatus === 'cancelled' ? '#886e63' : '#181311' %>; text-decoration:<%= item.itemStatus === 'cancelled' ? 'line-through' : 'none' %>;">
+          ₹<%= item.lineTotal.toFixed(2) %>
+        </td>
       </tr>
       <% }) %>
     </tbody>
@@ -512,10 +600,25 @@
      SCRIPTS
 ════════════════════════════════════════════ -->
 <script>
+
+  /* ─────────────────────────────────────────────
+     Shared helper — build the refund notice HTML
+  ───────────────────────────────────────────── */
+  function refundNoticeHTML(amount) {
+    return `
+      <div class="refund-notice">
+        <span class="icon material-symbols-outlined">account_balance_wallet</span>
+        <span class="text">
+          ₹<span class="amount">${Number(amount).toFixed(2)}</span> will be instantly credited to your
+          <strong style="color:#15803d;">SpiceCart Wallet</strong> — use it on any future order.
+        </span>
+      </div>`;
+  }
+
   /* ─────────────────────────────
      CANCEL ORDER — SweetAlert2
   ───────────────────────────── */
-  async function openCancelModal(orderId) {
+  async function openCancelModal(orderId, isOnlinePaid, orderTotal) {
 
     // ── Step 1: Pick a reason ──
     const { value: reason, isConfirmed: pickedReason } = await Swal.fire({
@@ -535,7 +638,7 @@
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Continue',
-      cancelButtonText:  'Go Back',
+      cancelButtonText: 'Go Back',
       preConfirm: () => {
         const val = document.getElementById('swal-cancel-reason').value;
         if (!val) {
@@ -546,27 +649,31 @@
       }
     });
 
-    if (!pickedReason) return; // user hit "Go Back"
+    if (!pickedReason) return;
 
-    // ── Step 2: Final confirmation ──
+    // ── Step 2: Final confirmation (with refund notice if online paid) ──
+    const refundHTML = isOnlinePaid ? refundNoticeHTML(orderTotal) : '';
+
     const { isConfirmed } = await Swal.fire({
       title: 'Cancel this order?',
-      html: `<p style="font-size:0.875rem;color:#886e63;line-height:1.6;">
-               This action <strong style="color:#181311;">cannot be undone</strong>.<br/>
-               Your order will be cancelled and a refund will be initiated if payment was made.
-             </p>`,
+      html: `
+        <p style="font-size:0.875rem;color:#886e63;line-height:1.6;">
+          This action <strong style="color:#181311;">cannot be undone</strong>.<br/>
+          Your order will be cancelled immediately.
+        </p>
+        ${refundHTML}`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, Cancel Order',
-      cancelButtonText:  'Keep Order',
+      cancelButtonText: 'Keep Order',
       reverseButtons: true,
     });
 
     if (!isConfirmed) return;
 
-    // ── Step 3: API call with loading state ──
+    // ── Step 3: API call ──
     Swal.fire({
-      title: 'Cancelling…',
+      title: 'Cancelling order…',
       text: 'Please wait a moment.',
       allowOutsideClick: false,
       allowEscapeKey: false,
@@ -582,12 +689,18 @@
       const data = await res.json();
 
       if (data.success) {
+        const successText = isOnlinePaid
+          ? `Your order has been cancelled. ₹${Number(data.refundAmount || orderTotal).toFixed(2)} has been credited to your wallet.`
+          : 'Your order has been successfully cancelled.';
+
         await Swal.fire({
           title: 'Order Cancelled',
-          text: 'Your order has been successfully cancelled.',
+          html: `
+            <p style="font-size:0.875rem;color:#886e63;">${successText}</p>
+            ${isOnlinePaid ? refundNoticeHTML(data.refundAmount || orderTotal) : ''}`,
           icon: 'success',
           confirmButtonText: 'OK',
-          timer: 2500,
+          timer: 3000,
           timerProgressBar: true,
         });
         window.location.reload();
@@ -609,130 +722,221 @@
     }
   }
 
+
   /* ─────────────────────────────
-   RETURN ORDER — SweetAlert2
-───────────────────────────── */
-async function openReturnModal(orderId) {
+     CANCEL SINGLE ITEM — SweetAlert2
+  ───────────────────────────── */
+  async function cancelItem(orderId, productId, productName, isOnlinePaid, lineTotal) {
 
-  // ── Step 1: Pick a return reason ──
-  const { value: reason, isConfirmed: pickedReason } = await Swal.fire({
-    title: 'Why are you returning this order?',
-    html: `
-      <p style="margin-bottom:0.75rem;font-size:0.875rem;color:#886e63;">
-        Please select a return reason.
-      </p>
-      <select id="swal-cancel-reason">
-        <option value="" disabled selected>Select a reason…</option>
-        <option value="damaged_product">Damaged Product</option>
-        <option value="wrong_item">Wrong Item Delivered</option>
-        <option value="quality_issue">Quality Issue</option>
-        <option value="not_needed">No Longer Needed</option>
-        <option value="other">Other</option>
-      </select>`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Continue',
-    cancelButtonText: 'Go Back',
-    preConfirm: () => {
-      const val = document.getElementById('swal-cancel-reason').value;
-
-      if (!val) {
-        Swal.showValidationMessage('Please select a reason.');
-        return false;
+    // ── Step 1: Pick a reason ──
+    const { value: reason, isConfirmed: pickedReason } = await Swal.fire({
+      title: `Cancel "${productName}"?`,
+      html: `
+        <p style="margin-bottom:0.75rem;font-size:0.875rem;color:#886e63;">
+          Please select a reason for cancelling this item.
+        </p>
+        <select id="swal-cancel-reason">
+          <option value="" disabled selected>Select a reason…</option>
+          <option value="changed_mind">Changed my mind</option>
+          <option value="wrong_item">Ordered the wrong item</option>
+          <option value="better_price">Found a better price elsewhere</option>
+          <option value="other">Other</option>
+        </select>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Continue',
+      cancelButtonText: 'Go Back',
+      preConfirm: () => {
+        const val = document.getElementById('swal-cancel-reason').value;
+        if (!val) {
+          Swal.showValidationMessage('Please select a reason.');
+          return false;
+        }
+        return val;
       }
-
-      return val;
-    }
-  });
-
-  if (!pickedReason) return;
-
-  // ── Step 2: Final confirmation ──
-  const { isConfirmed } = await Swal.fire({
-    title: 'Return this order?',
-    html: `
-      <p style="font-size:0.875rem;color:#886e63;line-height:1.6;">
-        Your return request will be sent for approval.
-      </p>`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, Return Order',
-    cancelButtonText: 'Keep Order',
-    reverseButtons: true,
-  });
-
-  if (!isConfirmed) return;
-
-  // ── Step 3: API call ──
-  Swal.fire({
-    title: 'Submitting Return Request…',
-    text: 'Please wait a moment.',
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    didOpen: () => Swal.showLoading()
-  });
-
-  try {
-
-    const res = await fetch(`/orders/${orderId}/return`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ reason })
     });
 
-    const data = await res.json();
+    if (!pickedReason) return;
 
-    if (data.success) {
+    // ── Step 2: Confirm (with refund notice if online paid) ──
+    const refundHTML = isOnlinePaid ? refundNoticeHTML(lineTotal) : '';
 
-      await Swal.fire({
-        title: 'Return Requested',
-        text: 'Your return request has been submitted.',
-        icon: 'success',
-        confirmButtonText: 'OK',
-        timer: 2500,
-        timerProgressBar: true,
+    const { isConfirmed } = await Swal.fire({
+      title: 'Cancel this item?',
+      html: `
+        <p style="font-size:0.875rem;color:#886e63;line-height:1.6;">
+          Only <strong style="color:#181311;">${productName}</strong> will be cancelled.<br/>
+          The rest of your order will continue as normal.
+        </p>
+        ${refundHTML}`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Cancel Item',
+      cancelButtonText: 'Keep Item',
+      reverseButtons: true,
+    });
+
+    if (!isConfirmed) return;
+
+    // ── Step 3: API call ──
+    Swal.fire({
+      title: 'Cancelling item…',
+      text: 'Please wait.',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    try {
+      const res = await fetch(`/orders/${orderId}/cancel-item`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, reason })
       });
+      const data = await res.json();
 
-      window.location.reload();
+      if (data.success) {
+        const successText = isOnlinePaid
+          ? `"${productName}" was cancelled. ₹${Number(data.refundAmount || lineTotal).toFixed(2)} has been credited to your wallet.`
+          : `"${productName}" has been removed from your order.`;
 
-    } else {
-
+        await Swal.fire({
+          title: 'Item Cancelled',
+          html: `
+            <p style="font-size:0.875rem;color:#886e63;">${successText}</p>
+            ${isOnlinePaid ? refundNoticeHTML(data.refundAmount || lineTotal) : ''}`,
+          icon: 'success',
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false
+        });
+        window.location.reload();
+      } else {
+        Swal.fire({
+          title: 'Failed',
+          text: data.message || 'Could not cancel this item.',
+          icon: 'error',
+          confirmButtonText: 'Close'
+        });
+      }
+    } catch (err) {
       Swal.fire({
-        title: 'Failed',
-        text: data.message || 'Could not process return request.',
+        title: 'Error',
+        text: 'Something went wrong. Please try again.',
         icon: 'error',
         confirmButtonText: 'Close'
       });
-
     }
+  }
 
-  } catch (err) {
 
-    Swal.fire({
-      title: 'Error',
-      text: 'Something went wrong. Please try again later.',
-      icon: 'error',
-      confirmButtonText: 'Close'
+  /* ─────────────────────────────
+     RETURN ORDER — SweetAlert2
+  ───────────────────────────── */
+  async function openReturnModal(orderId) {
+
+    // ── Step 1: Pick a return reason ──
+    const { value: reason, isConfirmed: pickedReason } = await Swal.fire({
+      title: 'Why are you returning this order?',
+      html: `
+        <p style="margin-bottom:0.75rem;font-size:0.875rem;color:#886e63;">
+          Please select a return reason.
+        </p>
+        <select id="swal-cancel-reason">
+          <option value="" disabled selected>Select a reason…</option>
+          <option value="damaged_product">Damaged Product</option>
+          <option value="wrong_item">Wrong Item Delivered</option>
+          <option value="quality_issue">Quality Issue</option>
+          <option value="not_needed">No Longer Needed</option>
+          <option value="other">Other</option>
+        </select>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Continue',
+      cancelButtonText: 'Go Back',
+      preConfirm: () => {
+        const val = document.getElementById('swal-cancel-reason').value;
+        if (!val) {
+          Swal.showValidationMessage('Please select a reason.');
+          return false;
+        }
+        return val;
+      }
     });
 
+    if (!pickedReason) return;
+
+    // ── Step 2: Final confirmation ──
+    const { isConfirmed } = await Swal.fire({
+      title: 'Return this order?',
+      html: `
+        <p style="font-size:0.875rem;color:#886e63;line-height:1.6;">
+          Your return request will be reviewed by our team.<br/>
+          Refund will be processed after approval.
+        </p>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Return Order',
+      cancelButtonText: 'Keep Order',
+      reverseButtons: true,
+    });
+
+    if (!isConfirmed) return;
+
+    // ── Step 3: API call ──
+    Swal.fire({
+      title: 'Submitting return request…',
+      text: 'Please wait a moment.',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    try {
+      const res = await fetch(`/orders/${orderId}/return`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        await Swal.fire({
+          title: 'Return Requested',
+          text: 'Your return request has been submitted and is pending review.',
+          icon: 'success',
+          confirmButtonText: 'OK',
+          timer: 2500,
+          timerProgressBar: true,
+        });
+        window.location.reload();
+      } else {
+        Swal.fire({
+          title: 'Failed',
+          text: data.message || 'Could not process return request.',
+          icon: 'error',
+          confirmButtonText: 'Close'
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Something went wrong. Please try again later.',
+        icon: 'error',
+        confirmButtonText: 'Close'
+      });
+    }
   }
-}
 
 
   /* ─────────────────────────────
      DOWNLOAD INVOICE
   ───────────────────────────── */
   function downloadInvoice() {
-    // Show the hidden invoice element, trigger print, then hide again
     const el = document.getElementById('invoice-printable');
     el.style.display = 'block';
-
-    // Small delay so browser paints the element before print dialog
     setTimeout(() => {
       window.print();
-      // After dialog closes (or on cancel), hide again
       el.style.display = 'none';
     }, 100);
   }

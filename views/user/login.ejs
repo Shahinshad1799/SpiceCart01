@@ -66,8 +66,15 @@
 <input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" id="email" placeholder="you@example.com" name="email" type="email"/>
 </div>
 <div class="space-y-1">
-<label class="block text-sm font-bold text-[#181311] dark:text-white" for="password">Password</label>
-<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" id="password" placeholder="Enter your password" name="password" type="password"/>
+  <label class="block text-sm font-bold text-[#181311] dark:text-white" for="password">Password</label>
+  <div class="relative">
+    <input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 pr-12 placeholder-[#886e63]/50" 
+           id="password" placeholder="Enter your password" name="password" type="password"/>
+    <button type="button" onclick="togglePassword()" 
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-[#886e63] hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-[22px]" id="toggleIcon">visibility</span>
+    </button>
+  </div>
 </div>
 <div class="flex justify-end pt-1">
 <a class="text-sm font-bold text-primary hover:underline" href="/forgotpassword">Forgot Password?</a>
@@ -173,6 +180,20 @@
   }, 3000);
 </script>
 <% } %>
+
+<script>
+  function togglePassword() {
+    const input = document.getElementById("password");
+    const icon = document.getElementById("toggleIcon");
+    if (input.type === "password") {
+      input.type = "text";
+      icon.textContent = "visibility_off";
+    } else {
+      input.type = "password";
+      icon.textContent = "visibility";
+    }
+  }
+</script>
 
 
 </body></html>
