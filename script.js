@@ -4,7 +4,7 @@ const app = express();
 const session = require("express-session");
 const userrouter = require("./route/user");
 const adminrouter = require("./route/admin");
-const connectdb = require("./config/db,js");
+const connectdb = require("./config/db.js");
 const dotenv = require("dotenv").config();
 const passport = require("./config/passport");
 const methodOverride = require('method-override');
@@ -82,6 +82,7 @@ app.use("/", userrouter);
 app.use("/admin", adminrouter);
 
 connectdb();
-app.listen("9000", () => {
+const PORT = process.env.PORT || 9000;
+app.listen(PORT, () => {
   console.log("server ready");
 });
