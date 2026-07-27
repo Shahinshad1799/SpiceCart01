@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>SpiceCart Admin - Coupon Management</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#F97316",
+            "primary-dark": "#EA580C",
+            "saffron": "#FF9933",
+            "background-light": "#FDFCFB",
+            "background-dark": "#131f1b",
+            "sidebar-orange": "#F97316",
+            "active-green": "#16a34a",
+            "inactive-red": "#dc2626",
+          },
+          fontFamily: { "display": ["Manrope", "sans-serif"] },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body { font-family: 'Manrope', sans-serif; }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181610] dark:text-white transition-colors duration-200">
+<div class="flex min-h-screen">
+
+  <%- include("../partials/sidebar") %>
+
+  <main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark">
+    <div class="max-w-7xl mx-auto p-8 lg:p-12">
+
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">Coupon Management</h2>
+          <p class="text-zinc-500 dark:text-zinc-400 mt-1">Create and manage your promotional offers and discounts.</p>
+        </div>
+        <a href="/admin/addcoupon">
+          <button class="bg-primary hover:bg-primary/90 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 shadow-xl shadow-primary/10 transition-transform active:scale-95">
+            <span class="material-symbols-outlined">add_circle</span>
+            Add New Coupon
+          </button>
+        </a>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-zinc-500 font-medium text-sm">Active Coupons</span>
+            <span class="material-symbols-outlined text-primary">check_circle</span>
+          </div>
+          <p class="text-3xl font-black mt-2"><%= activeCount %></p>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-zinc-500 font-medium text-sm">Total Redeemed</span>
+            <span class="material-symbols-outlined text-primary">local_activity</span>
+          </div>
+          <p class="text-3xl font-black mt-2"><%= totalRedeemed %></p>
+          <div class="mt-4 flex items-center gap-1 text-zinc-400 text-xs font-medium">
+            <span>Across all active codes</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-zinc-500 font-medium text-sm">Total Coupons</span>
+            <span class="material-symbols-outlined text-primary">sell</span>
+          </div>
+          <p class="text-3xl font-black mt-2"><%= totalCoupons %></p>
+        </div>
+      </div>
+
+      <!-- Main Table Section -->
+      <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden flex flex-col mt-6">
+
+        <!-- Search Bar -->
+        <div class="p-4 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row gap-4 items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
+          <form method="GET" action="/admin/coupons" class="flex gap-2 w-full sm:w-auto">
+            <div class="relative flex-1 sm:w-80">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xl">search</span>
+              <input
+                name="search"
+                value="<%= search %>"
+                class="w-full pl-10 pr-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm focus:ring-primary focus:border-primary outline-none"
+                placeholder="Filter by code or type..."
+                type="text"
+              />
+            </div>
+            <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-bold text-sm transition-colors">
+              Search
+            </button>
+            <% if (search) { %>
+              <a href="/admin/coupons" class="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg font-bold text-sm transition-colors flex items-center gap-1">
+                <span class="material-symbols-outlined text-base">close</span>
+                Clear
+              </a>
+            <% } %>
+          </form>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider">
+                <th class="px-6 py-4">Coupon Code</th>
+                <th class="px-6 py-4">Discount Type</th>
+                <th class="px-6 py-4 text-center">Value</th>
+                <th class="px-6 py-4">Usage Limit</th>
+                <th class="px-6 py-4">Expiry Date</th>
+                <th class="px-6 py-4">Status</th>
+                <th class="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+
+              <% if (coupons.length === 0) { %>
+              <tr>
+                <td colspan="7" class="px-6 py-10 text-center text-zinc-400 font-medium">
+                  <div class="flex flex-col items-center gap-2">
+                    <span class="material-symbols-outlined text-4xl opacity-30">sell</span>
+                    No coupons found.
+                    <% if (search) { %>
+                      <a href="/admin/coupons" class="text-primary text-sm font-bold hover:underline">Clear search</a>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+              <% } %>
+
+              <% coupons.forEach(function(coupon) { %>
+              <%
+                const isExpired = new Date(coupon.expiryDate) < now;
+                const usagePercent = coupon.usageLimit > 0 ? Math.min(100, Math.round((coupon.usedCount / coupon.usageLimit) * 100)) : 0;
+                const statusLabel = isExpired ? "Expired" : (coupon.isActive ? "Active" : "Blocked");
+                const statusBadgeClass = isExpired
+                  ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
+                  : coupon.isActive
+                  ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
+                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700";
+                const statusDotClass = isExpired ? "bg-red-500" : coupon.isActive ? "bg-emerald-500" : "bg-zinc-400";
+                const iconBgClass = (coupon.isActive && !isExpired) ? "bg-primary/10" : "bg-zinc-100 dark:bg-zinc-800";
+                const iconColorClass = (coupon.isActive && !isExpired) ? "text-primary" : "text-zinc-400";
+                const valueDisplay = coupon.discountType === "percentage"
+                  ? `${coupon.discountValue}%`
+                  : coupon.discountType === "fixed"
+                  ? `&#8377;${coupon.discountValue.toFixed(2)}`
+                  : "Free Shipping";
+                const progressBarColor = usagePercent >= 100 ? "bg-red-500" : "bg-primary";
+              %>
+              <tr class="group hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors" id="row-<%= coupon._id %>">
+
+                <!-- Code -->
+                <td class="px-6 py-5">
+                  <div class="flex items-center gap-3">
+                    <div class="size-8 rounded <%= iconBgClass %> flex items-center justify-center">
+                      <span class="material-symbols-outlined <%= iconColorClass %> text-sm">sell</span>
+                    </div>
+                    <span class="font-bold text-zinc-900 dark:text-white"><%= coupon.code %></span>
+                  </div>
+                </td>
+
+                <!-- Discount Type -->
+                <td class="px-6 py-5 text-sm text-zinc-600 dark:text-zinc-400 capitalize">
+                  <%= coupon.discountType === "fixed" ? "Fixed Amount" : coupon.discountType %>
+                </td>
+
+                <!-- Value -->
+                <td class="px-6 py-5 text-center">
+                  <span class="inline-flex px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 font-bold text-zinc-900 dark:text-white text-sm"><%- valueDisplay %></span>
+                </td>
+
+                <!-- Usage -->
+                <td class="px-6 py-5">
+                  <div class="flex flex-col gap-1.5 min-w-[120px]">
+                    <div class="flex items-center justify-between text-[10px] font-bold text-zinc-400 uppercase">
+                      <span>Usage</span>
+                      <span><%= coupon.usedCount %>/<%= coupon.usageLimit %></span>
+                    </div>
+                    <div class="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                      <div class="<%= progressBarColor %> h-full rounded-full" style="width: <%= usagePercent %>%;"></div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Expiry -->
+                <td class="px-6 py-5 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                  <%= new Date(coupon.expiryDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: '2-digit' }) %>
+                </td>
+
+                <!-- Status Badge -->
+                <td class="px-6 py-5">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full <%= statusBadgeClass %> text-xs font-bold border" id="badge-<%= coupon._id %>">
+                    <span class="size-1.5 rounded-full <%= statusDotClass %>"></span>
+                    <%= statusLabel %>
+                  </span>
+                </td>
+
+                <!-- Actions -->
+           <td class="px-6 py-5 text-right">
+  <div class="flex items-center justify-end gap-2">
+
+    <!-- Edit -->
+    <a href="/admin/editcoupon/<%= coupon._id %>" 
+       class="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 transition-colors inline-flex" 
+       title="Edit">
+      <span class="material-symbols-outlined text-xl">edit</span>
+    </a>
+
+    <!-- Block / Unblock -->
+    <% if (!isExpired) { %>
+      <% if (coupon.isActive) { %>
+        <button
+          onclick="toggleCoupon('<%= coupon._id %>', true)"
+          class="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors"
+          title="Block coupon">
+          <span class="material-symbols-outlined text-xl">block</span>
+        </button>
+      <% } else { %>
+        <button
+          onclick="toggleCoupon('<%= coupon._id %>', false)"
+          class="p-2 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-500 transition-colors"
+          title="Unblock coupon">
+          <span class="material-symbols-outlined text-xl">check_circle</span>
+        </button>
+      <% } %>
+    <% } %>
+
+  </div>
+</td>
+
+              </tr>
+              <% }) %>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/30 dark:bg-zinc-800/30">
+          <p class="text-sm text-zinc-500 font-medium">
+            Showing
+            <span class="font-bold text-zinc-800 dark:text-white"><%= coupons.length === 0 ? 0 : ((currentPage - 1) * limit) + 1 %></span>
+            to
+            <span class="font-bold text-zinc-800 dark:text-white"><%= ((currentPage - 1) * limit) + coupons.length %></span>
+            of
+            <span class="font-bold text-zinc-800 dark:text-white"><%= totalCoupons %></span>
+            results
+          </p>
+          <% if (totalPages > 1) { %>
+          <div class="flex items-center gap-1">
+            <a href="?page=<%= currentPage - 1 %>&search=<%= encodeURIComponent(search) %>" class="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors <%= currentPage <= 1 ? 'opacity-50 pointer-events-none' : '' %>">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </a>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <a href="?page=<%= i %>&search=<%= encodeURIComponent(search) %>" class="size-8 flex items-center justify-center rounded-lg text-sm font-bold transition-colors <%= i === currentPage ? 'bg-primary text-white' : 'hover:bg-zinc-200 dark:hover:bg-zinc-700' %>">
+                <%= i %>
+              </a>
+            <% } %>
+            <a href="?page=<%= currentPage + 1 %>&search=<%= encodeURIComponent(search) %>" class="p-2 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors <%= currentPage >= totalPages ? 'opacity-50 pointer-events-none' : '' %>">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </a>
+          </div>
+          <% } %>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  async function toggleCoupon(id, currentlyActive) {
+    const action = currentlyActive ? "Block" : "Unblock";
+    const actionLower = action.toLowerCase();
+    const iconHtml = currentlyActive
+      ? '<span style="font-size:3rem;color:#ef4444;" class="material-symbols-outlined">block</span>'
+      : '<span style="font-size:3rem;color:#16a34a;" class="material-symbols-outlined">check_circle</span>';
+
+    const result = await Swal.fire({
+      title: `${action} Coupon?`,
+      html: `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+          ${iconHtml}
+          <p style="color:#6b7280;font-size:0.95rem;">
+            Are you sure you want to <strong>${actionLower}</strong> this coupon?
+            ${currentlyActive ? "<br>Users will no longer be able to use it." : "<br>Users will be able to use it again."}
+          </p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: action,
+      cancelButtonText: "Cancel",
+      confirmButtonColor: currentlyActive ? "#ef4444" : "#16a34a",
+      cancelButtonColor: "#6b7280",
+      borderRadius: "1rem",
+      customClass: {
+        popup: "rounded-2xl",
+        confirmButton: "rounded-lg font-bold",
+        cancelButton: "rounded-lg font-bold",
+      }
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+   const res = await fetch(`/admin/coupons/${id}/toggle`, { method: "POST" });
+      const data = await res.json();
+
+      if (!data.success) {
+        Swal.fire({ icon: "error", title: "Failed", text: data.message || "Something went wrong.", confirmButtonColor: "#F97316" });
+        return;
+      }
+
+      const isNowActive = data.isActive;
+
+      // Update badge
+      const badge = document.getElementById(`badge-${id}`);
+      if (badge) {
+        badge.className = isNowActive
+          ? "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold"
+          : "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 border border-zinc-200 text-xs font-bold";
+        badge.innerHTML = isNowActive
+          ? '<span class="size-1.5 rounded-full bg-emerald-500"></span> Active'
+          : '<span class="size-1.5 rounded-full bg-zinc-400"></span> Blocked';
+      }
+
+      // Update button
+      const row = document.getElementById(`row-${id}`);
+      if (row) {
+        const btn = row.querySelector("button[title='Block coupon'], button[title='Unblock coupon']");
+        if (btn) {
+          if (isNowActive) {
+            btn.setAttribute("onclick", `toggleCoupon('${id}', true)`);
+            btn.setAttribute("title", "Block coupon");
+            btn.className = "p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors";
+            btn.innerHTML = '<span class="material-symbols-outlined text-xl">block</span>';
+          } else {
+            btn.setAttribute("onclick", `toggleCoupon('${id}', false)`);
+            btn.setAttribute("title", "Unblock coupon");
+            btn.className = "p-2 rounded-lg hover:bg-emerald-50 text-emerald-500 transition-colors";
+            btn.innerHTML = '<span class="material-symbols-outlined text-xl">check_circle</span>';
+          }
+        }
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: isNowActive ? "Coupon Unblocked" : "Coupon Blocked",
+        text: isNowActive ? "The coupon is now active." : "The coupon has been blocked.",
+        timer: 1800,
+        showConfirmButton: false,
+        iconColor: isNowActive ? "#16a34a" : "#ef4444",
+      });
+
+    } catch (err) {
+      console.error(err);
+      Swal.fire({ icon: "error", title: "Error", text: "Something went wrong.", confirmButtonColor: "#F97316" });
+    }
+  }
+</script>
+
+</body>
+</html>

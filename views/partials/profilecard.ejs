@@ -4,17 +4,16 @@
 <div class="relative mb-4 group cursor-pointer">
 <div class="size-24 rounded-full overflow-hidden border-4 border-[#F0F3F1] dark:border-[#1A120E] shadow-inner">
   <img 
-    alt="User"
     class="w-full h-full object-cover"
-  src="<%= user.profileImage 
-  ? '/uploads/profile/' + user.profileImage 
-  : '/images/default.png' %>"
+   src="<%= user.profileImage 
+      ? '/uploads/profile/' + user.profileImage 
+      : '/images/default.png' %>"
   />
 </div>
 
 </div>
-<h3 class="text-xl font-bold text-[#181311] dark:text-white"><%= user.fullname %></h3>
-<p class="text-sm text-[#886e63] dark:text-[#9CA3AF] mb-6"><%= user.email %></p>
+<h3 class="text-xl font-bold text-[#181311] dark:text-white"><%= user?.fullname || '' %></h3>
+<p class="text-sm text-[#886e63] dark:text-[#9CA3AF] mb-6"><%= user?.email || '' %></p>
 <a href="/editprofile">
     <button class="w-full py-2.5 rounded-lg border border-[#E6E0DC] dark:border-[#3E302A] font-medium text-[#181311] dark:text-white hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] transition-colors mb-8 text-sm flex items-center justify-center gap-2">
 <span class="material-symbols-outlined text-sm">settings</span>
@@ -28,14 +27,14 @@
 <span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Member Since</span>
 <span class="text-sm font-bold text-[#181311] dark:text-white">Oct 2021</span>
 </div>
-<div class="flex items-center justify-between">
+<!-- <div class="flex items-center justify-between">
 <span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Total Orders</span>
 <span class="text-sm font-bold text-[#181311] dark:text-white">0</span>
 </div>
 <div class="flex items-center justify-between">
 <span class="text-sm text-[#886e63] dark:text-[#9CA3AF]">Wallet Balance</span>
 <span class="text-sm font-bold text-primary">00</span>
+</div> -->
 </div>
 </div>
-</div>
-</aside> 
+</aside>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spice Market - Wallet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary":          "#cd4e18",
+          "background-light": "#f8f6f6",
+          "background-dark":  "#211611",
+          "secondary":        "#B89F73",
+          "forest":           "#4C5E4E",
+          "muted-green":      "#F0F3F1",
+        },
+        fontFamily: {
+          "display": ["Epilogue", "sans-serif"],
+          "body":    ["Manrope", "sans-serif"],
+        },
+        borderRadius: {
+          "DEFAULT": "0.25rem",
+          "lg":  "0.5rem",
+          "xl":  "0.75rem",
+          "2xl": "1rem",
+          "full": "9999px"
+        },
+      },
+    },
+  }
+</script>
+<style>
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  body { font-family: 'Manrope', sans-serif; }
+  h1,h2,h3,h4,.font-display { font-family: 'Epilogue', sans-serif; }
+
+  /* SweetAlert2 theme */
+  .swal2-popup {
+    font-family: 'Manrope', sans-serif !important;
+    border-radius: 1.25rem !important;
+    padding: 2rem !important;
+  }
+  .swal2-title {
+    font-family: 'Epilogue', sans-serif !important;
+    font-size: 1.25rem !important;
+    color: #181311 !important;
+  }
+  .swal2-confirm {
+    background-color: #cd4e18 !important;
+    border-radius: 0.75rem !important;
+    font-weight: 700 !important;
+    padding: 0.75rem 1.5rem !important;
+    box-shadow: none !important;
+  }
+  .swal2-cancel {
+    background-color: #f4f1f0 !important;
+    color: #181311 !important;
+    border-radius: 0.75rem !important;
+    font-weight: 700 !important;
+    padding: 0.75rem 1.5rem !important;
+    box-shadow: none !important;
+  }
+
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .balance-anim { animation: countUp 0.6s ease forwards; }
+
+  .tx-row { transition: background 0.15s; }
+</style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-body text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+
+  <%- include("../partials/header") %>
+
+  <main class="flex-1 bg-muted-green dark:bg-[#1A120E]">
+    <section class="px-6 py-10 lg:px-20 xl:px-40 min-h-[calc(100vh-80px)]">
+      <div class="mx-auto max-w-[1280px]">
+
+        <!-- Breadcrumb -->
+        <div class="mb-8 flex items-center gap-2 text-sm text-[#886e63] dark:text-[#9CA3AF]">
+          <a class="hover:text-primary" href="/">Home</a>
+          <span class="material-symbols-outlined text-xs">chevron_right</span>
+          <span class="text-[#181311] dark:text-white font-medium">My Wallet</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+          <%- include("../partials/profilecard") %>
+
+          <!-- ── MAIN CONTENT ── -->
+          <div class="lg:col-span-8 xl:col-span-9">
+            <div class="bg-white dark:bg-[#2C201A] rounded-2xl shadow-sm border border-[#E6E0DC] dark:border-[#3E302A] overflow-hidden">
+
+              <div class="px-6 py-6 lg:px-8 border-b border-[#f4f1f0] dark:border-[#3E302A]">
+                <h1 class="text-2xl font-bold text-[#181311] dark:text-white mb-6">My Wallet</h1>
+                <%- include("../partials/topbar") %>
+              </div>
+
+              <div class="p-6 lg:p-8 space-y-8">
+
+                <!-- ── BALANCE CARD ── -->
+                <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#211611] to-[#423129] p-8 text-white shadow-lg">
+                  <div class="absolute right-0 top-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-white/5 blur-3xl"></div>
+                  <div class="absolute bottom-0 left-0 -mb-16 -ml-16 h-64 w-64 rounded-full bg-primary/20 blur-3xl"></div>
+
+                  <div class="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+                    <div>
+                      <p class="mb-2 text-sm font-medium text-[#B89F73]">Current Balance</p>
+                      <h2 class="balance-anim font-display text-4xl font-bold tracking-tight md:text-5xl">
+                        ₹<%= (walletBalance || 0).toFixed(2) %>
+                      </h2>
+                      <p class="mt-2 text-xs text-white/60">Available for your next order</p>
+                    </div>
+
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <!-- Transaction count badge -->
+                      <div class="flex items-center gap-2 bg-white/10 rounded-lg px-4 py-2.5 text-sm">
+                        <span class="material-symbols-outlined text-[#B89F73] text-base">receipt_long</span>
+                        <span class="text-white/80"><%= transactions.length %> transaction<%= transactions.length !== 1 ? 's' : '' %></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Quick stats row -->
+                  <%
+                    const credits = transactions.filter(t => t.type === 'credit').reduce((s,t) => s + t.amount, 0);
+                    const debits  = transactions.filter(t => t.type === 'debit').reduce((s,t)  => s + t.amount, 0);
+                  %>
+                  <div class="relative z-10 mt-6 pt-6 border-t border-white/10 grid grid-cols-2 gap-4">
+                    <div>
+                      <p class="text-xs text-white/50 mb-1">Total Credited</p>
+                      <p class="text-lg font-bold text-green-400">+₹<%= credits.toFixed(2) %></p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-white/50 mb-1">Total Debited</p>
+                      <p class="text-lg font-bold text-red-400">-₹<%= debits.toFixed(2) %></p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ── TRANSACTIONS ── -->
+                <div>
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-[#181311] dark:text-white">Transactions</h3>
+
+                    <!-- Filter tabs -->
+                    <div class="flex items-center gap-1 bg-[#f4f1f0] dark:bg-[#3E302A] rounded-lg p-1">
+                      <button onclick="filterTx('all')" id="filter-all"
+                        class="filter-btn active px-3 py-1 rounded-md text-xs font-bold transition-all bg-white dark:bg-[#2C201A] text-[#181311] dark:text-white shadow-sm">
+                        All
+                      </button>
+                      <button onclick="filterTx('credit')" id="filter-credit"
+                        class="filter-btn px-3 py-1 rounded-md text-xs font-bold transition-all text-[#886e63]">
+                        Credits
+                      </button>
+                      <button onclick="filterTx('debit')" id="filter-debit"
+                        class="filter-btn px-3 py-1 rounded-md text-xs font-bold transition-all text-[#886e63]">
+                        Debits
+                      </button>
+                    </div>
+                  </div>
+
+                  <% if (!transactions || transactions.length === 0) { %>
+                  <!-- Empty state -->
+                  <div class="flex flex-col items-center justify-center py-16 rounded-xl border border-dashed border-[#E6E0DC] dark:border-[#3E302A]">
+                    <span class="material-symbols-outlined text-5xl text-[#d1cac7] mb-3">account_balance_wallet</span>
+                    <p class="text-[#886e63] font-medium mb-1">No transactions yet</p>
+                    <p class="text-xs text-[#886e63]/70">Refunds and credits will appear here</p>
+                  </div>
+
+                  <% } else { %>
+                  <div id="tx-list" class="flex flex-col divide-y divide-[#f4f1f0] dark:divide-[#3E302A] rounded-xl border border-[#E6E0DC] dark:border-[#3E302A] bg-white dark:bg-[#2C201A] overflow-hidden">
+
+                    <% transactions.forEach(tx => {
+                      const isCredit = tx.type === 'credit';
+                      const txDate   = new Date(tx.date).toLocaleDateString('en-IN', {
+                        day: 'numeric', month: 'short', year: 'numeric'
+                      });
+
+                      // Pick icon based on description keywords
+                      let icon = 'account_balance_wallet';
+                      let iconBg = 'bg-[#f4f1f0] dark:bg-[#3E302A]';
+                      let iconColor = 'text-[#5C4D46] dark:text-[#A8A29E]';
+
+                      if (tx.description && tx.description.toLowerCase().includes('refund')) {
+                        icon = 'undo';
+                        iconBg = 'bg-green-100 dark:bg-green-900/20';
+                        iconColor = 'text-green-700 dark:text-green-400';
+                      } else if (tx.description && tx.description.toLowerCase().includes('cancel')) {
+                        icon = 'cancel';
+                        iconBg = 'bg-red-100 dark:bg-red-900/20';
+                        iconColor = 'text-red-500 dark:text-red-400';
+                      } else if (tx.description && tx.description.toLowerCase().includes('order')) {
+                        icon = isCredit ? 'undo' : 'shopping_bag';
+                        iconBg = isCredit ? 'bg-green-100 dark:bg-green-900/20' : 'bg-[#f4f1f0] dark:bg-[#3E302A]';
+                        iconColor = isCredit ? 'text-green-700 dark:text-green-400' : 'text-[#5C4D46] dark:text-[#A8A29E]';
+                      } else if (isCredit) {
+                        icon = 'add_card';
+                        iconBg = 'bg-green-100 dark:bg-green-900/20';
+                        iconColor = 'text-green-700 dark:text-green-400';
+                      }
+                    %>
+                    <div class="tx-row flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-[#f8f6f6] dark:hover:bg-[#3E302A]/50 gap-4"
+                         data-type="<%= tx.type %>">
+                      <div class="flex items-start gap-4">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full <%= iconBg %> <%= iconColor %>">
+                          <span class="material-symbols-outlined text-xl"><%= icon %></span>
+                        </div>
+                        <div>
+                          <p class="font-bold text-[#181311] dark:text-white text-sm">
+                            <%= isCredit ? 'Credit' : 'Debit' %>
+                          </p>
+                          <p class="text-xs text-[#886e63] dark:text-[#9CA3AF] mt-0.5 max-w-xs leading-relaxed">
+                            <%= tx.description || (isCredit ? 'Wallet credit' : 'Wallet debit') %>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto flex-shrink-0">
+                        <span class="text-xs text-[#886e63] dark:text-[#9CA3AF]"><%= txDate %></span>
+                        <span class="font-bold text-base <%= isCredit ? 'text-green-600 dark:text-green-400' : 'text-[#181311] dark:text-white' %>">
+                          <%= isCredit ? '+' : '-' %>₹<%= tx.amount.toFixed(2) %>
+                        </span>
+                      </div>
+                    </div>
+                    <% }) %>
+
+                  </div>
+
+                  <!-- ── PAGINATION ── -->
+                  <% if (totalPages > 1) { %>
+                  <div class="flex items-center justify-between mt-6">
+                    <p class="text-xs text-[#886e63]">Page <%= currentPage %> of <%= totalPages %></p>
+                    <div class="flex items-center gap-2">
+                      <% if (currentPage > 1) { %>
+                      <a href="/wallet?page=<%= currentPage - 1 %>"
+                        class="px-4 py-2 rounded-lg border border-[#E6E0DC] dark:border-[#3E302A] text-sm font-bold text-[#181311] dark:text-white hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] transition-all flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">chevron_left</span> Prev
+                      </a>
+                      <% } %>
+
+                      <% for (let p = 1; p <= totalPages; p++) { %>
+                      <a href="/wallet?page=<%= p %>"
+                        class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-all
+                               <%= p === currentPage
+                                 ? 'bg-primary text-white'
+                                 : 'border border-[#E6E0DC] dark:border-[#3E302A] text-[#181311] dark:text-white hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A]' %>">
+                        <%= p %>
+                      </a>
+                      <% } %>
+
+                      <% if (currentPage < totalPages) { %>
+                      <a href="/wallet?page=<%= currentPage + 1 %>"
+                        class="px-4 py-2 rounded-lg border border-[#E6E0DC] dark:border-[#3E302A] text-sm font-bold text-[#181311] dark:text-white hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] transition-all flex items-center gap-1">
+                        Next <span class="material-symbols-outlined text-base">chevron_right</span>
+                      </a>
+                      <% } %>
+                    </div>
+                  </div>
+                  <% } %>
+
+                  <% } %>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <%- include("../partials/footer") %>
+</div>
+
+<script>
+  /* ── Client-side filter (credit / debit / all) ── */
+  function filterTx(type) {
+    // Update button styles
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.remove('bg-white', 'dark:bg-[#2C201A]', 'text-[#181311]', 'dark:text-white', 'shadow-sm');
+      btn.classList.add('text-[#886e63]');
+    });
+    const active = document.getElementById('filter-' + type);
+    active.classList.add('bg-white', 'dark:bg-[#2C201A]', 'text-[#181311]', 'dark:text-white', 'shadow-sm');
+    active.classList.remove('text-[#886e63]');
+
+    // Show/hide rows
+    document.querySelectorAll('.tx-row').forEach(row => {
+      if (type === 'all' || row.dataset.type === type) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    // Show empty message if no rows visible
+    const visible = [...document.querySelectorAll('.tx-row')].filter(r => r.style.display !== 'none');
+    const list    = document.getElementById('tx-list');
+    let emptyMsg  = document.getElementById('filter-empty');
+
+    if (visible.length === 0) {
+      if (!emptyMsg) {
+        emptyMsg = document.createElement('div');
+        emptyMsg.id = 'filter-empty';
+        emptyMsg.className = 'flex flex-col items-center justify-center py-10 text-center';
+        emptyMsg.innerHTML = `
+          <span class="material-symbols-outlined text-4xl text-[#d1cac7] mb-2">
+            ${type === 'credit' ? 'add_card' : 'shopping_bag'}
+          </span>
+          <p class="text-[#886e63] text-sm font-medium">No ${type} transactions</p>`;
+        list.after(emptyMsg);
+      }
+    } else {
+      emptyMsg?.remove();
+    }
+  }
+</script>
+</body>
+</html>

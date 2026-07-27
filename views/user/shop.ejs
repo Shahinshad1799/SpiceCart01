@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html><head>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<meta charset="utf-8"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Epilogue%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+        input[type='range'] {
+            accent-color: #181311;
+        }
+    </style>
+</head>
+<body>
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-white group/design-root overflow-x-hidden" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
+<div class="layout-container flex h-full grow flex-col">
+<%- include("../partials/header") %>
+<main class="flex px-4 gap-4 py-8">
+<!-- Sidebar -->
+<aside class="w-64 shrink-0 flex flex-col gap-8 
+              sticky top-20 
+              max-h-[calc(100vh-120px)] 
+              overflow-y-auto">  <div class="flex flex-col gap-4">
+<h3 class="text-[#181311] text-base font-bold">Filters</h3>
+<div class="flex flex-col gap-2">
+  <p class="text-[#886e63] text-xs font-medium uppercase tracking-wider">Category</p>
+
+  <div class="flex flex-col gap-1">
+
+    <!-- ALL -->
+    <a href="/shop"
+       class="flex items-center h-10 px-4 rounded-lg text-sm leading-normal transition-colors
+       <%= !selectedCategory ? 'bg-[#f4f1f0] text-[#181311] font-bold' : 'text-[#181311] font-medium hover:bg-[#f4f1f0]' %>">
+      All Categories
+    </a>
+
+    <!-- DYNAMIC CATEGORIES -->
+    <% catagory.forEach(cat => { %>
+      <a href="/shop?category=<%= cat._id %>&q=<%= search %>&sort=<%= sort %>%>"
+         class="flex items-center h-10 px-4 rounded-lg text-sm leading-normal transition-colors
+         <%= selectedCategory == cat._id.toString()
+             ? 'bg-[#f4f1f0] text-[#181311] font-bold'
+             : 'text-[#181311] font-medium hover:bg-[#f4f1f0]' %>">
+        <%= cat.name %>
+      </a>
+    <% }) %>
+
+  </div>
+</div>
+</div>
+<form method="GET" action="/shop" id="filterForm">
+<div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-2">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+      <p class="text-[#886e63] text-xs font-medium uppercase tracking-wider">
+        Price Range
+      </p>
+
+      <span class="text-[#181311] text-xs font-bold">
+        ₹0 - ₹<span id="priceValue"><%= selectedPrice || 1000 %></span>
+      </span>
+    </div>
+
+    <!-- Slider -->
+    <input 
+      type="range"
+      name="maxPrice"
+      min="0"
+      max="1000"
+      step="10"
+      value="<%= selectedPrice || 1000 %>"
+      id="priceRange"
+      class="w-full h-1.5 bg-[#f4f1f0] rounded-lg appearance-none cursor-pointer"
+    />
+
+  </div>
+</div>
+</form>
+
+<!-- <div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<p class="text-[#886e63] text-xs font-medium uppercase tracking-wider">Weight</p>
+<div class="flex flex-col gap-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="size-5 rounded border-[#f4f1f0] text-[#181311] focus:ring-[#181311]" type="checkbox"/>
+<span class="text-[#181311] text-sm font-medium leading-normal group-hover:text-[#886e63]">100g</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="size-5 rounded border-[#f4f1f0] text-[#181311] focus:ring-[#181311]" type="checkbox"/>
+<span class="text-[#181311] text-sm font-medium leading-normal group-hover:text-[#886e63]">250g</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="size-5 rounded border-[#f4f1f0] text-[#181311] focus:ring-[#181311]" type="checkbox"/>
+<span class="text-[#181311] text-sm font-medium leading-normal group-hover:text-[#886e63]">500g</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="size-5 rounded border-[#f4f1f0] text-[#181311] focus:ring-[#181311]" type="checkbox"/>
+<span class="text-[#181311] text-sm font-medium leading-normal group-hover:text-[#886e63]">1kg</span>
+</label>
+</div>
+</div>
+</div> -->
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col gap-6">
+<!-- Top Bar Above Grid -->
+<div class="flex flex-col gap-6">
+<h1 class="text-[#181311] tracking-light text-[32px] font-bold leading-tight">Shop All Spices</h1>
+<div class="flex items-center justify-between gap-4">
+<form method="GET" action="/shop" class="flex items-center justify-between gap-4">
+
+  <!-- SEARCH -->
+  <div class="relative flex-1 min-w-[420px] max-w-[600px]">
+    <input
+      type="text"
+      name="q"
+       id="searchInput"
+      value="<%= search %>"
+      placeholder="Search product"
+      class="w-full border rounded px-4 py-2 text-sm"
+    />
+
+    <button type="button" id="clearBtn"
+      class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 <%= search ? '' : 'hidden' %>">
+      ✕
+    </button>
+  </div>
+
+  <!-- PRESERVE CATEGORY -->
+  <input type="hidden" name="category" value="<%= selectedCategory %>">
+
+  <!-- SORT -->
+  <div class="flex items-center gap-3">
+    <span class="text-[#886e63] text-sm">Sort by:</span>
+
+    <select name="sort" onchange="this.form.submit()"
+      class="h-10 rounded-lg bg-[#f4f1f0] px-4 text-sm cursor-pointer">
+
+      <option value="">Featured</option>
+      <option value="price-high" <%= sort==='price-high'?'selected':'' %>>Price: High to Low</option>
+      <option value="price-low" <%= sort==='price-low'?'selected':'' %>>Price: Low to High</option>
+      <option value="name-az" <%= sort==='name-az'?'selected':'' %>>Name: A-Z</option>
+      <option value="name-za" <%= sort==='name-za'?'selected':'' %>>Name: Z-A</option>
+
+    </select>
+  </div>
+
+</form>
+</div>
+</div>
+<!-- Product Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
+
+  <% if (products && products.length > 0) { %>
+
+    <% products.forEach(product => { %>
+
+      <a href="/productdetails/<%= product._id %>" 
+         class="group flex flex-col gap-4 p-4 rounded-xl transition-all duration-300 hover:shadow-lg hover:bg-white border border-transparent hover:border-[#f4f1f0] cursor-pointer">
+
+        <!-- IMAGE -->
+      
+<div class="w-full aspect-square bg-cover rounded-lg overflow-hidden relative">
+
+  <% const img = product.images && product.images.length > 0 
+      ? product.images[0] 
+      : "default.png"; %>
+
+  <div 
+    class="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-500 group-hover:scale-105"
+    style="background-image: url('/uploads/product/<%= img %>');">
+  </div>
+
+  <%
+const productId = product?._id?.toString() || "";
+const isWishlisted = (wishlist || []).includes(productId);
+%>
+  <button
+    class="wishlist-btn absolute top-2 right-2 size-9 flex items-center justify-center rounded-full border transition-colors z-10
+           <%= isWishlisted ? 'border-red-200 bg-red-50' : 'border-[#E6E0DC] hover:bg-red-50' %>"
+    data-id="<%= product._id %>"
+    data-wishlisted="<%= isWishlisted %>"
+    data-variant-id="<%= product.variants[0]?._id %>"
+    title="<%= isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist' %>"
+    onclick="event.preventDefault(); event.stopPropagation();">
+    <span class="material-symbols-outlined text-[18px] pointer-events-none"
+          style="font-variation-settings: 'FILL' <%= isWishlisted ? 1 : 0 %>; color: <%= isWishlisted ? '#E24B4A' : '#886e63' %>;">
+      favorite
+    </span>
+  </button>
+
+
+</div>
+        <!-- DETAILS -->
+        <div class="flex justify-between items-start">
+
+          <div class="flex flex-col gap-1">
+            <p class="text-[#181311] text-base font-bold leading-tight">
+              <%= product.name %>
+            </p>
+
+            <p class="text-[#886e63] text-sm leading-normal">
+              <%= product.description?.substring(0, 40) %>...
+            </p>
+          </div>
+<!-- Shop card / product detail — variant price display -->
+<% const v = product.discountedVariants ? product.discountedVariants[0] : product.variants[0] %>
+
+<% if (v.discountedPrice) { %>
+    <span class="text-gray-400 line-through text-sm">₹<%= v.price %></span>
+    <span class="text-primary font-bold text-lg">₹<%= v.discountedPrice %></span>
+    <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
+        <%= product.offer.discountType === 'percentage' 
+            ? product.offer.discountValue + '% OFF' 
+            : '₹' + product.offer.discountValue + ' OFF' %>
+    </span>
+<% } else { %>
+    <span class="font-bold text-lg">₹<%= v.price %></span>
+<% } %>
+        </div>
+
+        <!-- ARROW -->
+        <div class="flex justify-center mt-2">
+          <span class="material-symbols-outlined text-[#181311] text-lg transition-transform group-hover:translate-x-1">
+            chevron_right
+          </span>
+        </div>
+
+      </a>
+
+    <% }) %>
+
+  <% } else { %>
+
+    <p class="text-center col-span-3 text-gray-500">
+      No products available
+    </p>
+
+  <% } %>
+
+</div>
+<div class="flex justify-center mt-6 gap-2">
+  <% if (currentPage > 1) { %>
+    <a href="?q=<%= search %>&page=<%= currentPage - 1 %>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Prev</a>
+  <% } %>
+
+  <% for (let i = 1; i <= totalPages; i++) { %>
+    <a href="?q=<%= search %>&page=<%= i %>" class="px-3 py-1 rounded 
+      <%= i === currentPage ? 'bg-primary text-white' : 'bg-gray-200 hover:bg-gray-300' %>">
+      <%= i %>
+    </a>
+  <% } %>
+
+  <% if (currentPage < totalPages) { %>
+    <a href="?q=<%= search %>&page=<%= currentPage + 1 %>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>
+  <% } %>
+</div>
+</div>
+</main>
+<%- include("../partials/footer") %>
+</div>
+</div>
+</body>
+<script>
+  const searchInput = document.getElementById("searchInput");
+  const clearBtn = document.getElementById("clearBtn");
+
+  if (searchInput && clearBtn) {
+    searchInput.addEventListener("input", () => {
+      clearBtn.classList.toggle("hidden", searchInput.value.trim() === "");
+    });
+
+    clearBtn.addEventListener("click", () => {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("q");
+      window.location.href = url.toString();
+    });
+  }
+</script>
+
+<script>
+  const priceRange = document.getElementById("priceRange");
+  const priceValue = document.getElementById("priceValue");
+  const filterForm = document.getElementById("filterForm");
+
+  if (priceRange) {
+    priceRange.addEventListener("input", () => {
+      priceValue.textContent = priceRange.value;
+    });
+
+    priceRange.addEventListener("change", () => {
+      filterForm.submit();
+    });
+  }
+</script>
+
+<script>
+  document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const productId = btn.dataset.id;
+      const isWishlisted = btn.dataset.wishlisted === 'true';
+      const icon = btn.querySelector('.material-symbols-outlined');
+
+      try {
+        const res = await fetch('/wishlist/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            productId,
+            variantId: btn.dataset.variantId
+          })
+        });
+
+        if (res.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
+
+        if (res.ok) {
+          const data = await res.json(); // ← you need the body now, not just res.ok
+
+          const nowWishlisted = !isWishlisted;
+          btn.dataset.wishlisted = String(nowWishlisted);
+
+          icon.style.fontVariationSettings = `'FILL' ${nowWishlisted ? 1 : 0}`;
+          icon.style.color = nowWishlisted ? '#E24B4A' : '#886e63';
+
+          btn.classList.toggle('border-red-200', nowWishlisted);
+          btn.classList.toggle('bg-red-50', nowWishlisted);
+          btn.classList.toggle('border-[#E6E0DC]', !nowWishlisted);
+
+          btn.style.transform = 'scale(1.3)';
+          setTimeout(() => btn.style.transform = '', 200);
+
+          // ✅ update header badge
+          if (typeof data.wishCount !== 'undefined') {
+            window.updateWishCount(data.wishCount);
+          }
+        }
+
+      } catch (err) {
+        console.error('Wishlist error:', err);
+      }
+    });
+  });
+</script>
+</html>

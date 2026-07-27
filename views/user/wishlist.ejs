@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wishlist - Spice Market</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#cd4e18",
+          "background-light": "#f8f6f6",
+          "background-dark": "#211611",
+          "secondary": "#B89F73",
+          "forest": "#4C5E4E",
+        },
+        fontFamily: {
+          "display": ["Epilogue", "sans-serif"],
+          "body": ["Manrope", "sans-serif"],
+        },
+      },
+    },
+  }
+</script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+
+  <%- include("../partials/header") %>
+
+  <main class="flex-1 py-10 lg:py-16 px-6 lg:px-20 xl:px-40 bg-background-light dark:bg-background-dark">
+    <div class="mx-auto max-w-[1280px]">
+
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 mb-8 text-sm text-[#886e63] dark:text-[#9CA3AF]">
+        <a class="hover:text-primary" href="/">Home</a>
+        <span class="material-symbols-outlined text-xs">chevron_right</span>
+        <span class="text-[#181311] dark:text-white font-medium">Wishlist</span>
+      </div>
+
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+        <h1 class="text-3xl lg:text-5xl font-bold text-[#181311] dark:text-white">Your Wishlist</h1>
+        <span class="item-count text-[#886e63] dark:text-[#9CA3AF] font-medium">
+          <%= wishlistItems.length %> item<%= wishlistItems.length !== 1 ? 's' : '' %> saved
+        </span>
+      </div>
+
+      <% if (wishlistItems.length === 0) { %>
+
+        <!-- Empty State -->
+        <div class="text-center py-24 flex flex-col items-center gap-4">
+          <span class="material-symbols-outlined text-6xl text-[#886e63]">favorite</span>
+          <h2 class="text-xl font-bold text-[#181311] dark:text-white">Your wishlist is empty</h2>
+          <p class="text-[#886e63] dark:text-[#9CA3AF]">Save items you love and come back to them later.</p>
+          <a href="/shop" class="mt-4 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors">
+            Browse Products
+          </a>
+        </div>
+
+      <% } else { %>
+
+        <!-- Wishlist Table -->
+        <div class="bg-white dark:bg-[#1A120E] rounded-2xl shadow-sm border border-[#E6E0DC] dark:border-[#3E302A] overflow-hidden max-w-5xl mx-auto">
+
+          <!-- Table Header -->
+          <div class="hidden md:grid grid-cols-12 gap-4 border-b border-[#E6E0DC] dark:border-[#3E302A] p-6 bg-[#fcfbfb] dark:bg-[#211611] text-sm font-bold text-[#5C4D46] dark:text-[#A8A29E] uppercase tracking-wider">
+            <div class="col-span-6">Product Details</div>
+            <div class="col-span-2 text-center">Price</div>
+            <div class="col-span-4 text-right">Actions</div>
+          </div>
+
+          <!-- Rows -->
+          <% wishlistItems.forEach(item => { %>
+            <div class="wishlist-row flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-4 items-center border-b border-[#E6E0DC] dark:border-[#3E302A] p-6 last:border-0 hover:bg-[#fcfbfb] dark:hover:bg-[#211611]/50 transition-colors"
+                 data-id="<%= item.product._id %>">
+
+              <!-- Product Info -->
+              <div class="flex items-center gap-5 w-full md:col-span-6">
+
+                <!-- Image -->
+                <div class="size-24 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-[#E6E0DC] dark:border-[#3E302A]">
+                  <% const img = item.product.images?.length > 0 ? item.product.images[0] : 'default.png'; %>
+                  <img
+                    src="/uploads/product/<%= img %>"
+                    alt="<%= item.product.name %>"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+
+                <!-- Name, Variant, Stock -->
+                <div class="flex flex-col gap-1">
+                  <h3 class="font-bold text-lg text-[#181311] dark:text-white leading-tight">
+                    <%= item.product.name %>
+                  </h3>
+
+                  <!-- Saved variant badge -->
+                  <span class="text-xs border border-[#E6E0DC] dark:border-[#3E302A] text-[#5C4D46] dark:text-[#A8A29E] px-2 py-0.5 rounded-full w-fit">
+                    <%= item.variant.name %> — ₹<%= item.variant.price %>
+                  </span>
+
+                  <!-- Stock status -->
+                  <% if (item.variant.stock > 10) { %>
+                    <p class="text-xs text-forest mt-1 font-medium bg-forest/10 w-fit px-2 py-0.5 rounded-full dark:text-green-400 dark:bg-green-900/30">In Stock</p>
+                  <% } else if (item.variant.stock > 0) { %>
+                    <p class="text-xs text-[#886e63] mt-1 font-medium bg-[#886e63]/10 w-fit px-2 py-0.5 rounded-full">Low Stock</p>
+                  <% } else { %>
+                    <p class="text-xs text-red-500 mt-1 font-medium bg-red-50 dark:bg-red-900/20 w-fit px-2 py-0.5 rounded-full">Out of Stock</p>
+                  <% } %>
+                </div>
+
+              </div>
+
+              <!-- Price -->
+              <div class="flex justify-between items-center w-full md:block md:col-span-2 md:text-center">
+                <span class="md:hidden font-bold text-[#5C4D46] dark:text-[#A8A29E]">Price</span>
+                <div class="font-bold text-lg text-[#181311] dark:text-white">
+                  ₹<%= item.variant.price %>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center justify-between md:justify-end gap-3 w-full md:col-span-4">
+                <button
+  onclick="addToCart('<%= item.product._id %>', '<%= item.variant?.variantId || item.variant?._id %>')"
+  class="flex-1 md:flex-none px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-md shadow-primary/20 flex items-center justify-center gap-2">
+  Add to Cart
+</button>
+                <button
+                  onclick="removeFromWishlist('<%= item.product._id %>', this)"
+                  class="size-10 flex items-center justify-center rounded-lg border border-[#E6E0DC] dark:border-[#3E302A] text-[#886e63] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 transition-colors"
+                  title="Remove">
+                  <span class="material-symbols-outlined text-[20px]">delete</span>
+                </button>
+              </div>
+
+            </div>
+          <% }) %>
+
+        </div>
+
+        <!-- Continue Shopping -->
+        <div class="mt-8 text-center md:text-left max-w-5xl mx-auto">
+          <a class="inline-flex items-center gap-2 text-primary font-bold hover:text-primary/80 transition-colors" href="/shop">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Continue Shopping
+          </a>
+        </div>
+
+      <% } %>
+
+    </div>
+  </main>
+
+  <%- include("../partials/footer") %>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  // ── HELPERS ──────────────────────────────────────────────────────────────
+
+  function updateItemCount() {
+    const remaining = document.querySelectorAll('.wishlist-row').length;
+    const countEl   = document.querySelector('.item-count');
+    if (countEl) {
+      countEl.textContent = `${remaining} item${remaining !== 1 ? 's' : ''} saved`;
+    }
+    return remaining;
+  }
+
+  function removeRow(productId) {
+    document.querySelector(`.wishlist-row[data-id="${productId}"]`)?.remove();
+  }
+
+  async function toggleWishlist(productId) {
+    await fetch('/wishlist/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ productId })
+    });
+  }
+
+  // ── REMOVE FROM WISHLIST ─────────────────────────────────────────────────
+
+  async function removeFromWishlist(productId) {
+    try {
+      const res = await toggleWishlist(productId);
+      removeRow(productId);
+      const remaining = updateItemCount();
+      if (remaining === 0) location.reload();
+    } catch (err) {
+      console.error('Remove wishlist error:', err);
+    }
+  }
+
+  // ── ADD TO CART ──────────────────────────────────────────────────────────
+
+  async function addToCart(productId, variantId) {
+    try {
+      const res = await fetch('/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ productId, variantId, quantity: 1 })
+      });
+
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+
+      if (!res.ok) throw new Error('Cart add failed');
+
+      await toggleWishlist(productId);
+      removeRow(productId);
+      const remaining = updateItemCount();
+
+      const result = await Swal.fire({
+        icon: 'success',
+        title: 'Added to Cart!',
+        text: 'Item removed from wishlist and added to your cart.',
+        showCancelButton: true,
+        confirmButtonText: 'Go to Cart',
+        cancelButtonText: 'Continue Shopping',
+        confirmButtonColor: '#cd4e18',
+        cancelButtonColor: '#886e63',
+      });
+
+      if (result.isConfirmed) {
+        window.location.href = '/cart';
+      } else if (remaining === 0) {
+        location.reload();
+      }
+
+    } catch (err) {
+      console.error('Add to cart error:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops!',
+        text: 'Something went wrong. Please try again.',
+        confirmButtonColor: '#cd4e18',
+      });
+    }
+  }
+</script>
+</body>
+</html>

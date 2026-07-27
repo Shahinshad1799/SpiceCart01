@@ -1,58 +1,107 @@
- const express=require("express")
- const user=require("../controller/usercontroller")
- const userauth=require("../middleware/userAuth")
- const route=express.Router()
- const passport = require("passport");
- const upload=require("../config/multer")
-const usermodel=require("../model/usermodel")
-const checkstatus=require("../middleware/userstatus")
-route.get("/", user.loadladingpage);
+// 
 
-route.get("/signup", userauth.isLogout, user.loadsignup);
-route.post("/signup", userauth.isLogout, user.registeruser);
+const express = require("express")
+const route = express.Router()
 
-route.get("/otpverification", user.loadverify);
-route.post("/otpverification", user.veriify);
-route.post("/resendotp", user.resendOtp);
+// Split controllers
+const authController      = require("../controller/user.auth.controller")
+const profileController   = require("../controller/user.profile.controller")
+const addressController   = require("../controller/user.address.controller")
+const shopController      = require("../controller/user.shop.controller")
+const wishlistController  = require("../controller/user.wishlist.controller")
+const checkoutController  = require("../controller/user.checkout.controller")
+const orderController     = require("../controller/user.order.controller")
+const walletController    = require("../controller/user.wallet.controller")
+const referralController  = require("../controller/user.referral.controller")
 
-route.get("/login", userauth.isLogout, user.loadlogin);
-route.post("/login", userauth.isLogout, user.loginuser);
+const cartController = require("../controller/cartcontroller")
+const userauth = require("../middleware/userAuth")
+const upload = require("../config/multer")
+const checkstatus = require("../middleware/userstatus")
 
-route.get("/home", userauth.isLogin, checkstatus, user.loadhome);
+route.get("/", authController.loadladingpage);
 
-route.get("/forgotpassword", userauth.isLogout, user.loadforgotpassword);
-route.post("/forgotpassword", userauth.isLogout, user.forgotpassword);
+route.get("/signup", userauth.isLogout, authController.loadsignup);
+route.post("/signup", userauth.isLogout, authController.registeruser);
 
-route.get("/resetpassword", userauth.isLogout, user.loadresetpassword);
-route.post("/resetpassword", userauth.isLogout, user.resetPassword);
+route.get("/otpverification", authController.loadverify);
+route.post("/otpverification", authController.veriify);
+route.post("/resendotp", authController.resendOtp);
 
-route.get("/successpassword", userauth.isLogout, user.loadsuccess);
+route.get("/login", userauth.isLogout, authController.loadlogin);
+route.post("/login", userauth.isLogout, authController.loginuser);
 
-route.get("/profile", userauth.isLogin, checkstatus, user.loadprofile);
-route.get("/editprofile", userauth.isLogin, checkstatus, user.loadeditprofile);
-route.post("/editprofile", userauth.isLogin, upload.single("profileImage"), user.updateprofile);
+route.get("/home", userauth.isLogin, checkstatus, authController.loadhome);
 
-route.get("/changepassword", userauth.isLogin, checkstatus, user.loadchangepassword);
-route.post("/changepassword", userauth.isLogin, user.changepassword);
+route.get("/forgotpassword", userauth.isLogout, authController.loadforgotpassword);
+route.post("/forgotpassword", userauth.isLogout, authController.forgotpassword);
 
-route.get("/address", userauth.isLogin, checkstatus, user.loadaddress);
-route.get("/addaddress", userauth.isLogin, checkstatus, user.loadaddaddress);
-route.post("/addaddress", userauth.isLogin, user.addaddress);
+route.get("/resetpassword", userauth.isLogout, authController.loadresetpassword);
+route.post("/resetpassword", userauth.isLogout, authController.resetPassword);
 
-route.get("/editaddress/:id", userauth.isLogin, checkstatus, user.loadEditAddress);
-route.post("/editaddress/:id", userauth.isLogin, user.updateAddress);
-route.post("/deleteaddress/:id", userauth.isLogin, user.deleteAddress);
+route.get("/successpassword", userauth.isLogout, authController.loadsuccess);
 
-route.post("/logout", userauth.isLogin, user.logout);
-route.post("/delete-profile-image", userauth.isLogin, user.deleteProfile);
-
+route.get("/profile", userauth.isLogin, checkstatus, profileController.loadprofile);
+route.get("/editprofile", userauth.isLogin, checkstatus, profileController.loadeditprofile);
+route.patch("/editprofile", userauth.isLogin, upload.single("profileImage"), profileController.updateprofile);
 
 
-route.get("/changeemail",user.loadchangeemail)
-route.post("/changeemail",user.changeemail)
+route.get("/changepassword", userauth.isLogin, checkstatus, authController.loadchangepassword);
+route.post("/changepassword", userauth.isLogin, authController.changepassword);
 
+route.get("/address", userauth.isLogin, checkstatus, addressController.loadaddress);
+route.get("/addaddress", userauth.isLogin, checkstatus, addressController.loadaddaddress);
+route.post("/addaddress", userauth.isLogin, addressController.addaddress);
 
-route.get("/auth/google",user.googleAuth);
-route.get("/auth/google/callback",user.googleCallback);
+route.get("/editaddress/:id", userauth.isLogin, checkstatus, addressController.loadEditAddress);
+route.post("/editaddress/:id", userauth.isLogin, addressController.updateAddress);
+route.post("/deleteaddress/:id", userauth.isLogin, addressController.deleteAddress);
 
- module.exports=route
+route.post("/logout", userauth.isLogin, authController.logout);
+route.post("/delete-profile-image", userauth.isLogin, profileController.deleteProfile);
+
+route.get("/changeemail", profileController.loadchangeemail)
+route.post("/changeemail", profileController.changeemail)
+
+route.get("/shop", shopController.loadshop)
+
+route.get("/productdetails/:id", shopController.loaddetails)
+
+route.get("/cart", cartController.getCartPage);
+
+route.post("/cart/add", cartController.addToCart);
+route.post("/cart/update", cartController.updateCart);
+route.post("/cart/remove", cartController.removeFromCart);
+route.post("/cart/apply-coupon", cartController.applyCoupon);
+route.post("/cart/remove-coupon", cartController.removeCoupon);
+
+route.get('/wishlist', wishlistController.loadWishlist);
+route.post('/wishlist/toggle', wishlistController.toggleWishlist);
+
+route.get("/checkout", checkoutController.loadcheckout)
+route.post("/address/add", addressController.addAddress);
+route.put("/address/edit/:addressId", addressController.editAddress);
+
+route.get("/ordersuccess", orderController.loadordersuccess)
+route.post("/place-order", orderController.placeorder)
+route.post('/create-order', orderController.onlineorder)
+route.post('/verify-payment', orderController.verifyOnlineOrder)
+
+route.post('/place-order-wallet', orderController.placeOrderWallet);
+
+route.post("/orders/:id/retry-payment", orderController.retryPayment);
+route.post("/orders/:id/verify-retry-payment", orderController.verifyRetryPayment);
+route.get("/order", orderController.loadorder)
+route.get("/orders/:id", orderController.loadorderdetails)
+route.patch("/orders/:id/cancel", orderController.cancelOrder)
+route.patch('/orders/:id/cancel-item', orderController.cancelOrderItem);
+route.patch("/orders/:id/return", orderController.returnorder);
+
+route.get("/wallet", walletController.loadWallet)
+route.get("/referrals", referralController.loadreferrals)
+route.get("/r/:code", referralController.referralLanding);
+
+route.get("/auth/google", authController.googleAuth);
+route.get("/auth/google/callback", authController.googleCallback);
+
+module.exports = route

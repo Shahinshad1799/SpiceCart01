@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shopping Cart - Spice Market</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#cd4e18",
+          "background-light": "#f8f6f6",
+          "background-dark": "#211611",
+          "secondary": "#B89F73",
+          "forest": "#4C5E4E",
+        },
+        fontFamily: {
+          "display": ["Epilogue", "sans-serif"],
+          "body": ["Manrope", "sans-serif"],
+        },
+        borderRadius: {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "2xl": "1rem",
+          "full": "9999px"
+        },
+      },
+    },
+  }
+</script>
+<style>
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+
+<%- include("../partials/header") %>
+
+<main class="flex-1 py-10 lg:py-16 px-6 lg:px-20 xl:px-40 bg-background-light dark:bg-background-dark">
+<div class="mx-auto max-w-[1280px]">
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 mb-8 text-sm text-[#886e63] dark:text-[#9CA3AF]">
+    <a class="hover:text-primary" href="/home">Home</a>
+    <span class="material-symbols-outlined text-xs">chevron_right</span>
+    <span class="text-[#181311] dark:text-white font-medium">Shopping Cart</span>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+    <!-- LEFT: Cart Items -->
+    <div class="lg:col-span-8">
+      <div class="bg-white dark:bg-[#1A120E] rounded-2xl shadow-sm border border-[#E6E0DC] dark:border-[#3E302A] overflow-hidden">
+
+        <!-- Table Header -->
+        <div class="hidden md:grid grid-cols-12 gap-4 border-b border-[#E6E0DC] dark:border-[#3E302A] p-6 bg-[#fcfbfb] dark:bg-[#211611] text-sm font-bold text-[#5C4D46] dark:text-[#A8A29E] uppercase tracking-wider">
+          <div class="col-span-6">Product</div>
+          <div class="col-span-2 text-center">Quantity</div>
+          <div class="col-span-2 text-right">Price</div>
+          <div class="col-span-2 text-right">Total</div>
+        </div>
+
+        <% if (cartItems.length > 0) { %>
+          <% cartItems.forEach(item => { %>
+            <%
+              const variant = item.productId.variants.find(v =>
+                v._id.toString() === item.variantId?.toString()
+              );
+              const v = item.productId.variants.id(item.variantId);
+              const stock = v ? v.stock : 0;
+              const itemPrice = variant ? variant.price : 0;
+              const MAX_QTY = 5;
+            %>
+
+            <!-- Cart Row -->
+            <div class="flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-4 items-center border-b border-[#E6E0DC] dark:border-[#3E302A] p-6"
+                 id="row-<%= item.productId._id %>-<%= item.variantId %>"
+                 data-price="<%= itemPrice %>"
+                 data-stock="<%= stock %>">
+
+              <!-- Product Info -->
+              <div class="flex items-center gap-5 w-full md:col-span-6">
+                <div class="size-24 rounded-xl overflow-hidden bg-gray-100 border flex-shrink-0">
+                  <img
+                    src="/uploads/product/<%= item.productId?.images?.[0] || 'default.png' %>"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h3 class="font-bold text-lg"><%= item.productId.name %></h3>
+                  <p class="text-sm text-gray-500">
+                    <%= variant ? variant.name : "Variant not selected" %>
+                  </p>
+                  <form action="/cart/remove" method="POST" onsubmit="confirmRemove(event, this)">
+                    <input type="hidden" name="productId" value="<%= item.productId._id %>">
+                    <input type="hidden" name="variantId" value="<%= item.variantId %>">
+                    <button type="submit" class="text-red-500 text-sm mt-2 hover:text-red-700 transition-colors">
+                      Remove
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Quantity Controls -->
+              <div class="flex justify-center md:col-span-2">
+                <div class="flex items-center gap-3">
+
+                  <!-- Minus -->
+                  <button
+                    type="button"
+                    onclick="updateQty('<%= item.productId._id %>', '<%= item.variantId.toString() %>', -1)"
+                    <%= item.quantity <= 1 ? "disabled" : "" %>
+                    class="minus-btn w-10 h-10 flex items-center justify-center text-xl font-bold
+                           rounded-lg border border-gray-300 dark:border-gray-600
+                           hover:bg-gray-100 dark:hover:bg-gray-700
+                           disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    −
+                  </button>
+
+                  <!-- Qty Display -->
+                  <span id="qty-<%= item.productId._id %>-<%= item.variantId %>"
+                        class="w-10 text-center font-semibold text-lg">
+                    <%= item.quantity %>
+                  </span>
+
+                  <!-- Plus -->
+                  <button
+                    type="button"
+                    onclick="updateQty('<%= item.productId._id %>', '<%= item.variantId.toString() %>', 1)"
+                    <%= (item.quantity >= stock || item.quantity >= MAX_QTY) ? "disabled" : "" %>
+                    class="plus-btn w-10 h-10 flex items-center justify-center text-xl font-bold
+                           rounded-lg border border-gray-300 dark:border-gray-600
+                           hover:bg-gray-100 dark:hover:bg-gray-700
+                           disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    +
+                  </button>
+
+                </div>
+              </div>
+
+              <!-- Unit Price -->
+              <div class="text-right md:col-span-2 text-[#181311] dark:text-white">
+                ₹ <%= itemPrice %>
+              </div>
+
+              <!-- Item Total -->
+              <div class="text-right md:col-span-2 font-bold item-total text-[#181311] dark:text-white">
+                ₹ <%= (itemPrice * item.quantity).toFixed(2) %>
+              </div>
+
+            </div>
+
+          <% }) %>
+        <% } else { %>
+          <div class="p-12 text-center text-gray-500">
+            <span class="material-symbols-outlined text-5xl mb-4 block">shopping_cart</span>
+            <p class="text-lg">Your cart is empty</p>
+            <a href="/shop" class="text-primary font-bold hover:underline mt-2 inline-block">Start Shopping</a>
+          </div>
+        <% } %>
+
+      </div>
+
+      <div class="mt-8">
+        <a class="inline-flex items-center gap-2 text-primary font-bold hover:text-primary/80 transition-colors" href="/shop">
+          <span class="material-symbols-outlined">arrow_back</span>
+          Continue Shopping
+        </a>
+      </div>
+    </div>
+
+    <!-- RIGHT: Order Summary -->
+    <div class="lg:col-span-4">
+      <div class="bg-white dark:bg-[#1A120E] border border-[#E6E0DC] dark:border-[#3E302A] rounded-2xl p-6 lg:p-8 shadow-lg lg:sticky lg:top-32">
+
+        <h2 class="text-xl font-bold mb-6 text-[#181311] dark:text-white">Order Summary</h2>
+
+        <!-- <div class="flex flex-col gap-3 mb-6">
+          <div class="flex justify-between text-sm">
+            <span class="text-[#886e63] dark:text-[#9CA3AF]">
+              baseprice (<span id="cart-items"><%= totalItems %></span> items)
+            </span>
+            <span id="cart-subtotal" class="font-medium">₹ <%= subtotal.toFixed(2) %></span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-[#886e63] dark:text-[#9CA3AF]">Shipping</span>
+            <span id="cart-shipping" class="font-medium">₹ <%= shipping %></span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-[#886e63] dark:text-[#9CA3AF]">Tax</span>
+            <span id="cart-tax" class="font-medium">₹ <%= tax.toFixed(2) %></span>
+          </div>
+        </div> -->
+
+        <!-- Promo Code -->
+      <div class="mb-6">
+    <!-- Applied coupon banner -->
+    <% if (appliedCoupon) { %>
+    <div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-3">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-green-600 text-lg">confirmation_number</span>
+            <div>
+                <p class="text-sm font-bold text-green-700"><%= appliedCoupon.code %></p>
+                <p class="text-xs text-green-600">You save ₹<%= appliedCoupon.discount %>!</p>
+            </div>
+        </div>
+        <button id="removeCouponBtn"
+            class="text-xs text-red-500 hover:text-red-700 font-medium transition-colors">
+            Remove
+        </button>
+    </div>
+    <% } else { %>
+
+    <!-- Coupon input -->
+    <div class="flex gap-2">
+        <input id="couponInput"
+            class="flex-1 rounded-lg border border-[#E6E0DC] bg-transparent text-sm px-3 py-2 placeholder-[#886e63] focus:border-primary focus:ring-primary"
+            placeholder="Promo code"
+            type="text" />
+        <button id="applyCouponBtn"
+            class="px-4 py-2 bg-[#f4f1f0] text-[#181311] font-medium rounded-lg hover:bg-[#e6e0dc] transition-colors text-sm">
+            Apply
+        </button>
+    </div>
+    <p id="couponMsg" class="text-xs mt-1 hidden"></p>
+
+    <% } %>
+</div>
+
+<!-- Order Summary Numbers -->
+<div class="flex flex-col gap-2 text-sm">
+    <div class="flex justify-between">
+        <span class="text-[#886e63]">Subtotal</span>
+        <span id="summarySubtotal">₹<%= subtotal %></span>
+    </div>
+    <div class="flex justify-between">
+        <span class="text-[#886e63]">Shipping</span>
+        <span id="summaryShipping">₹<%= shipping %></span>
+    </div>
+    <div class="flex justify-between">
+        <span class="text-[#886e63]">Tax</span>
+        <span id="summaryTax">₹<%= tax %></span>
+    </div>
+    <% if (discount > 0) { %>
+    <div class="flex justify-between text-green-600">
+        <span>Discount</span>
+        <span id="summaryDiscount">-₹<%= discount %></span>
+    </div>
+    <% } else { %>
+    <div class="flex justify-between text-green-600 hidden" id="discountRow">
+        <span>Discount</span>
+        <span id="summaryDiscount">-₹0</span>
+    </div>
+    <% } %>
+    <!-- <div class="flex justify-between font-bold text-base border-t border-[#E6E0DC] pt-2 mt-1">
+        <span>Total</span>
+        <span id="summaryTotal">₹<%= total %></span>
+    </div> -->
+</div>
+
+        <!-- Order Total -->
+        <div class="border-t-2 border-dashed border-[#E6E0DC] dark:border-[#3E302A] py-6 mb-4">
+          <div class="flex justify-between items-end">
+            <span class="font-bold text-lg text-[#181311] dark:text-white">Order Total</span>
+            <span id="cart-total" class="font-black text-2xl text-primary">
+              ₹ <%= total.toFixed(2) %>
+            </span>
+          </div>
+          <p class="text-xs text-[#886e63] dark:text-[#9CA3AF] mt-2 text-right">Taxes calculated at checkout</p>
+        </div>
+
+        <form action="/checkout" method="GET">
+  <button type="submit"
+    class="w-full h-14 bg-primary text-white rounded-lg font-bold text-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 group">
+    Proceed to Checkout
+    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+  </button>
+</form>
+
+        <div class="mt-6 flex items-center justify-center gap-2 text-xs text-[#886e63] dark:text-[#9CA3AF]">
+          <span class="material-symbols-outlined text-sm">lock</span>
+          Secure Checkout
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</main>
+
+<%- include("../partials/footer") %>
+</div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Toast: Success -->
+<% if (typeof success !== "undefined") { %>
+<div id="toast-success"
+     class="fixed bottom-6 right-6 bg-green-600 text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
+            transform translate-y-20 opacity-0 transition-all duration-500 z-50">
+  <%= success %>
+</div>
+<script>
+  const toast = document.getElementById("toast-success");
+  setTimeout(() => toast.classList.remove("translate-y-20", "opacity-0"), 100);
+  setTimeout(() => toast.classList.add("translate-y-20", "opacity-0"), 3000);
+</script>
+<% } %>
+
+<!-- Toast: Error -->
+<% if (typeof error !== "undefined") { %>
+<div id="toast-error"
+     class="fixed bottom-6 right-6 bg-red-600 text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
+            transform translate-y-20 opacity-0 transition-all duration-500 z-50">
+  <%= error %>
+</div>
+<script>
+  const toastErr = document.getElementById("toast-error");
+  setTimeout(() => toastErr.classList.remove("translate-y-20", "opacity-0"), 100);
+  setTimeout(() => toastErr.classList.add("translate-y-20", "opacity-0"), 3000);
+</script>
+<% } %>
+
+<!-- Main Scripts -->
+<script>
+const MAX_QTY = 5;
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: "bottom-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+});
+
+async function updateQty(productId, variantId, change) {
+  try {
+    const res = await fetch("/cart/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId, variantId, change })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      Toast.fire({ icon: "error", title: data.message || "Error updating cart" });
+      return;
+    }
+
+    // item qty hit 0 — remove row
+    if (data.removed) {
+      document.getElementById(`row-${productId}-${variantId}`)?.remove();
+      updateSummary(data);
+      Toast.fire({ icon: "success", title: "Item removed from cart" });
+      return;
+    }
+
+    const newQty = data.qty;
+    const row    = document.getElementById(`row-${productId}-${variantId}`);
+    const price  = parseFloat(row.dataset.price) || 0;
+    const stock  = parseInt(row.dataset.stock)   || 0;
+
+    document.getElementById(`qty-${productId}-${variantId}`).textContent = newQty;
+
+    const totalCell = row.querySelector('.item-total');
+    if (totalCell) totalCell.textContent = '₹ ' + (price * newQty).toFixed(2);
+
+    const minusBtn = row.querySelector('.minus-btn');
+    if (minusBtn) minusBtn.disabled = newQty <= 1;
+
+    const plusBtn = row.querySelector('.plus-btn');
+    if (plusBtn) plusBtn.disabled = (newQty >= stock || newQty >= MAX_QTY);
+
+    updateSummary(data);
+
+    Toast.fire({ icon: "success", title: "Cart updated" });
+
+  } catch (err) {
+    console.error("Cart update error:", err);
+    Toast.fire({ icon: "error", title: "Something went wrong" });
+  }
+}
+
+function updateSummary(data) {
+  const subtotalEl = document.getElementById("cart-subtotal");
+  const totalEl    = document.getElementById("cart-total");
+  const itemsEl    = document.getElementById("cart-items");
+  const taxEl      = document.getElementById("cart-tax");
+  const shippingEl = document.getElementById("cart-shipping");
+
+  if (subtotalEl && data.subtotal != null)
+    subtotalEl.textContent = "₹ " + data.subtotal.toFixed(2);
+  if (totalEl && data.total != null)
+    totalEl.textContent = "₹ " + data.total.toFixed(2);
+  if (itemsEl && data.totalItems != null)
+    itemsEl.textContent = data.totalItems;
+  if (taxEl && data.tax != null)
+    taxEl.textContent = "₹ " + data.tax.toFixed(2);
+  if (shippingEl && data.shipping != null)
+    shippingEl.textContent = "₹ " + data.shipping;
+}
+
+function confirmRemove(event, form) {
+  event.preventDefault();
+  Swal.fire({
+    title: "Remove item?",
+    text: "This item will be removed from your cart.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Yes, remove"
+  }).then((result) => {
+    if (result.isConfirmed) form.submit();
+  });
+}
+</script>
+<script>
+// Apply coupon
+const applyCouponBtn = document.getElementById("applyCouponBtn");
+const removeCouponBtn = document.getElementById("removeCouponBtn");
+
+if (applyCouponBtn) {
+    applyCouponBtn.addEventListener("click", async () => {
+        const code = document.getElementById("couponInput").value.trim();
+        const msg = document.getElementById("couponMsg");
+
+        if (!code) {
+            msg.textContent = "Please enter a coupon code";
+            msg.className = "text-xs mt-1 text-red-500";
+            msg.classList.remove("hidden");
+            return;
+        }
+
+        applyCouponBtn.disabled = true;
+        applyCouponBtn.textContent = "Applying...";
+
+try {
+    const res = await fetch("/cart/apply-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code })
+    });
+
+    // ✅ Check if response is ok before parsing
+    if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (data.success) {
+        // Show success with SweetAlert, THEN reload
+        await Swal.fire({
+            icon: "success",
+            title: "Coupon Applied!",
+            text: `${data.couponCode} — You save ₹${data.discount}`,
+            confirmButtonColor: "#16a34a",
+            timer: 2000,
+            timerProgressBar: true,
+            showConfirmButton: false
+        });
+
+        location.reload(); // ✅ reload after alert closes
+
+    } else {
+        msg.textContent = data.message;
+        msg.className = "text-xs mt-1 text-red-500";
+        msg.classList.remove("hidden");
+        applyCouponBtn.disabled = false;
+        applyCouponBtn.textContent = "Apply";
+    }
+
+} catch (err) {
+    console.error("Coupon apply error:", err); // log for debugging
+    msg.textContent = "Something went wrong. Try again.";
+    msg.className = "text-xs mt-1 text-red-500";
+    msg.classList.remove("hidden");
+    applyCouponBtn.disabled = false;
+    applyCouponBtn.textContent = "Apply";
+}
+    });
+}
+// Remove coupon
+if (removeCouponBtn) {
+    removeCouponBtn.addEventListener("click", async () => {
+        const res = await fetch("/cart/remove-coupon", { method: "POST" });
+        const data = await res.json();
+        if (data.success) location.reload();
+    });
+}
+</script>
+
+</body>
+</html>

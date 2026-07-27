@@ -1,0 +1,529 @@
+<!-- <!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SpiceCart Admin - Add New Category</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.font-fill-1 {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-[#181611] dark:text-white">
+<div class="flex h-screen overflow-hidden">
+<%- include("../partials/sidebar") %>
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark">
+<div class="max-w-4xl mx-auto p-8 lg:p-12">
+<nav class="flex items-center gap-2 mb-6 text-sm font-medium text-[#8a7e60] dark:text-gray-400">
+<a class="hover:text-emerald-dark dark:hover:text-primary transition-colors" href="/admin/catagory">Categories</a>
+<span class="material-symbols-outlined text-base">chevron_right</span>
+<span class="text-[#181611] dark:text-white">Add New Category</span>
+</nav>
+<div class="mb-10">
+<h2 class="text-4xl font-black text-[#181611] dark:text-white tracking-tight">Create New Category</h2>
+<p class="text-[#8a7e60] dark:text-gray-400 mt-2 font-medium">Organize your spice collection with a new high-level category.</p>
+</div>
+<div class="bg-white dark:bg-[#222] rounded-xl border border-[#e6e3db] dark:border-gray-800 shadow-sm overflow-hidden">
+<form id="category-form" class="p-8 lg:p-10 flex flex-col gap-8"
+action="/admin/addcatagory"
+method="POST"
+enctype="multipart/form-data">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#181611] dark:text-gray-200" for="category-name">
+Category Name
+</label>
+
+<input
+class="h-12 px-4 bg-white dark:bg-[#2a2a2a] border border-[#e6e3db] dark:border-gray-700 rounded-lg"
+id="category-name"
+name="name"
+placeholder="e.g., Exotic Blends"
+type="text"
+/>
+
+<p id="name-error" class="text-red-500 text-sm hidden">Category name is required</p>
+
+</div>
+</div>
+
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#181611] dark:text-gray-200" for="category-description">
+Description
+</label>
+
+<textarea
+class="p-4 bg-white dark:bg-[#2a2a2a] border border-[#e6e3db] dark:border-gray-700 rounded-lg"
+id="category-description"
+name="description"
+placeholder="Describe the spices included in this category..."
+rows="4"></textarea>
+
+<p id="desc-error" class="text-red-500 text-sm hidden">Description is required</p>
+
+</div>
+
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-[#181611] dark:text-gray-200">
+Category Icon/Image
+</label>
+
+<div class="flex items-center justify-center w-full">
+<label class="flex flex-col items-center justify-center w-full h-48 border-2 border-[#e6e3db] dark:border-gray-700 border-dashed rounded-xl cursor-pointer bg-gray-50/50 dark:bg-[#2a2a2a]/30 hover:bg-gray-50 dark:hover:bg-[#2a2a2a]/50 transition-all">
+
+<div id="upload-placeholder" class="flex flex-col items-center justify-center pt-5 pb-6">
+<span class="material-symbols-outlined text-4xl text-[#8a7e60] mb-3">cloud_upload</span>
+<p class="mb-2 text-sm font-bold">Click to upload or drag and drop</p>
+<p class="text-xs text-[#8a7e60]">SVG, PNG, JPG or GIF</p>
+</div>
+
+<img id="image-preview" class="hidden w-full h-full object-cover rounded-xl"/>
+
+<input
+class="hidden"
+id="dropzone-file"
+name="image"
+type="file"
+accept="image/*"
+/>
+
+</label>
+</div>
+
+<p id="image-error" class="text-red-500 text-sm hidden">update an image</p>
+
+</div>
+
+<div class="flex items-center justify-end gap-6 pt-4 border-t border-[#e6e3db] dark:border-gray-800 mt-4">
+<a class="text-sm font-bold text-[#8a7e60] hover:text-[#181611] dark:hover:text-white transition-colors" href="#">
+Cancel
+</a>
+
+<button class="h-14 px-10 bg-primary text-emerald-dark rounded-xl font-extrabold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95" type="submit">
+edit Category
+</button>
+
+</div>
+</form>
+</div>
+<div class="mt-8 flex items-center gap-3 p-4 bg-emerald-dark/5 dark:bg-primary/5 rounded-xl border border-emerald-dark/10 dark:border-primary/10">
+<span class="material-symbols-outlined text-emerald-dark dark:text-primary">info</span>
+<p class="text-sm text-emerald-dark/80 dark:text-primary/80 font-medium">
+                    New categories will immediately appear in the store navigation. Ensure images are high quality for the best customer experience.
+                </p>
+</div>
+</div>
+</main>
+</div>
+<script>
+const fileInput = document.getElementById("dropzone-file");
+const preview = document.getElementById("image-preview");
+const placeholder = document.getElementById("upload-placeholder");
+
+fileInput.addEventListener("change", function () {
+
+    const file = this.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+            preview.classList.remove("hidden");
+            placeholder.classList.add("hidden");
+        };
+
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+<% if (typeof error !== "undefined" || typeof success !== "undefined") { %>
+
+<div id="toast"
+     class="fixed bottom-6 right-6 
+     <%= error ? 'bg-red-600' : 'bg-green-600' %> 
+     text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
+     transform translate-y-20 opacity-0 transition-all duration-500">
+
+  <%= error || success %>
+
+</div>
+
+<script>
+  const toast = document.getElementById("toast");
+
+  // Show animation
+  setTimeout(() => {
+    toast.classList.remove("translate-y-20", "opacity-0");
+  }, 100);
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    toast.classList.add("translate-y-20", "opacity-0");
+  }, 3000);
+</script>
+
+<% } %>  
+<script>
+
+const form = document.querySelector("form");
+
+const nameInput = document.getElementById("category-name");
+const descInput = document.getElementById("category-description");
+const imageInput = document.getElementById("dropzone-file");
+
+const nameError = document.getElementById("name-error");
+const descError = document.getElementById("desc-error");
+const imageError = document.getElementById("image-error");
+
+form.addEventListener("submit", function(e){
+
+    let valid = true;
+
+    // reset errors
+    nameError.classList.add("hidden");
+    descError.classList.add("hidden");
+    imageError.classList.add("hidden");
+
+    // name validation
+ // name validation
+if(nameInput.value.trim() === ""){
+    nameError.textContent = "Category name is required";
+    nameError.classList.remove("hidden");
+    valid = false;
+}
+else if(nameInput.value.trim().length < 3){
+    nameError.textContent = "Category name must be at least 3 characters";
+    nameError.classList.remove("hidden");
+    valid = false;
+}
+
+// description validation
+if(descInput.value.trim() === ""){
+    descError.textContent = "Description is required";
+    descError.classList.remove("hidden");
+    valid = false;
+}
+else if(descInput.value.trim().length < 20){
+    descError.textContent = "Description must be at least 20 characters";
+    descError.classList.remove("hidden");
+    valid = false;
+}
+
+// image validation
+if(imageInput.files.length === 0){
+    imageError.textContent = "Please upload an image";
+    imageError.classList.remove("hidden");
+    valid = false;
+}
+    // image validation
+    if(imageInput.files.length === 0){
+        imageError.textContent = "Please upload an image";
+        imageError.classList.remove("hidden");
+        valid = false;
+    }
+
+    if(!valid){
+        e.preventDefault();
+    }
+
+});
+
+</script>
+</body></html> -->
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Edit Catagory</title>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+
+<style>
+body { font-family: 'Manrope', sans-serif; }
+</style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark min-h-screen">
+
+<div class="flex h-screen overflow-hidden">
+
+<%- include("../partials/sidebar") %>
+
+<main class="flex-1 overflow-y-auto p-8 ml-64">
+
+<div class="max-w-4xl mx-auto">
+
+<!-- HEADER -->
+<div class="mb-10">
+<h2 class="text-4xl font-black tracking-tight">Edit Catagory</h2>
+<p class="text-gray-500 mt-2">Update your catagory details</p>
+</div>
+
+<!-- FORM CARD -->
+<div class="bg-white dark:bg-[#222] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+
+<form 
+action="/admin/catagory/<%= catagory._id %>/edit"
+method="POST"
+enctype="multipart/form-data"
+class="p-8 flex flex-col gap-8"
+>
+
+<!-- NAME -->
+<div>
+<label class="text-sm font-bold">Catagory Name</label>
+
+<input
+type="text"
+name="name"
+id="catagory-name"
+value="<%= catagory.name %>"
+class="w-full h-12 px-4 mt-2 bg-white dark:bg-[#2a2a2a] border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+/>
+
+<p id="name-error" class="text-red-500 text-sm hidden"></p>
+</div>
+
+<!-- DESCRIPTION -->
+<div>
+<label class="text-sm font-bold">Description</label>
+
+<textarea
+name="description"
+id="catagory-description"
+rows="4"
+class="w-full p-4 mt-2 bg-white dark:bg-[#2a2a2a] border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+><%= catagory.description %></textarea>
+
+<p id="desc-error" class="text-red-500 text-sm hidden"></p>
+</div>
+
+<!-- IMAGE -->
+<div>
+  <label class="text-sm font-bold">Catagory Image</label>
+
+  <div class="mt-4 flex flex-col items-center gap-4">
+
+    <!-- IMAGE PREVIEW -->
+    <img 
+      id="imagePreview"
+      src="/uploads/catagory/<%= catagory.image %>"
+      class="w-40 h-40 object-cover rounded-xl border shadow"
+    />
+
+    <!-- HIDDEN INPUT -->
+    <input 
+      type="file"
+      name="image"
+      id="profileImageInput"
+      class="hidden"
+      accept="image/*"
+      onchange="previewImage(event)"
+    >
+
+    <!-- BUTTON -->
+    <button 
+      type="button"
+      onclick="document.getElementById('profileImageInput').click()"
+      class="px-5 py-2.5 rounded-lg bg-[#181311] dark:bg-white text-white dark:text-[#181311] text-sm font-bold hover:opacity-90 transition-all shadow-sm flex items-center gap-2"
+    >
+      <span class="material-symbols-outlined text-sm">upload</span>
+      Upload New Image
+    </button>
+
+    <p class="text-xs text-gray-500">Leave it unchanged if you don’t want to update</p>
+
+  </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+
+<a href="/admin/catagory"
+class="px-6 py-3 rounded-lg font-bold text-gray-600 hover:bg-gray-100">
+Cancel
+</a>
+
+<button 
+type="submit"
+class="px-8 py-3 bg-primary text-white rounded-lg font-bold hover:opacity-90 transition-all">
+Update Catagory
+</button>
+
+</div>
+
+</form>
+</div>
+
+</div>
+</main>
+</div>
+
+<!-- JS -->
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById("imagePreview");
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        };
+
+        reader.readAsDataURL(file);
+    }
+}
+
+// VALIDATION
+const form = document.querySelector("form");
+
+const nameInput = document.getElementById("catagory-name");
+const descInput = document.getElementById("catagory-description");
+
+const nameError = document.getElementById("name-error");
+const descError = document.getElementById("desc-error");
+
+// ── Individual field validators (return true if valid) ─────────────────
+function validateName(showError = true) {
+    const value = nameInput.value.trim();
+    const valid = value !== "";
+
+    if (!valid && showError) {
+        nameError.textContent = "Catagory name is required";
+        nameError.classList.remove("hidden");
+    } else {
+        nameError.classList.add("hidden");
+    }
+    return valid;
+}
+
+function validateDescription(showError = true) {
+    const value = descInput.value.trim();
+    const valid = value.length >= 10;
+
+    if (!valid && showError) {
+        descError.textContent = "Description must be at least 10 characters";
+        descError.classList.remove("hidden");
+    } else {
+        descError.classList.add("hidden");
+    }
+    return valid;
+}
+
+// ── Real-time validation as the user types ──────────────────────────────
+// Once a field has been touched (blurred or submitted once), keep validating
+// it live on every keystroke so the error clears the instant it's fixed.
+let nameTouched = false;
+let descTouched = false;
+
+nameInput.addEventListener("input", function () {
+    if (nameTouched) validateName();
+});
+nameInput.addEventListener("blur", function () {
+    nameTouched = true;
+    validateName();
+});
+
+descInput.addEventListener("input", function () {
+    if (descTouched) validateDescription();
+});
+descInput.addEventListener("blur", function () {
+    descTouched = true;
+    validateDescription();
+});
+
+// ── Final gate on submit ─────────────────────────────────────────────────
+form.addEventListener("submit", function (e) {
+    nameTouched = true;
+    descTouched = true;
+
+    const nameValid = validateName();
+    const descValid = validateDescription();
+
+    if (!(nameValid && descValid)) {
+        e.preventDefault();
+    }
+});
+</script>
+
+</body>
+</html>

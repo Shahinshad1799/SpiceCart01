@@ -1,70 +1,155 @@
-<header class="sticky top-0 z-50 w-full border-b border-[#E6E0DC] dark:border-[#3E302A] bg-white/90 dark:bg-[#211611]/90 backdrop-blur-md transition-all duration-300">
+
+
+<header class="sticky top-0 z-50 w-full border-b border-[#E6E0DC] bg-white/90 backdrop-blur-md transition-all duration-300">
 <div class="layout-container flex h-full flex-col">
 <div class="flex items-center justify-between px-6 py-4 lg:px-20 xl:px-40">
+
 <div class="flex items-center gap-4 lg:gap-12 flex-1">
+
 <div class="flex items-center gap-2 cursor-pointer">
-<span class="material-symbols-outlined text-primary" style="font-size: 32px;">local_fire_department</span>
-<h2 class="text-xl lg:text-2xl font-bold tracking-tight text-[#181311] dark:text-white">Spice Cart</h2>
+<h2 class="text-xl lg:text-2xl font-bold tracking-tight text-[#181311]">Spice Cart</h2>
 </div>
-<div class="hidden md:flex flex-1 max-w-md">
-<label class="flex w-full items-center h-12 rounded-full bg-[#f4f1f0] dark:bg-[#2C201A] border border-transparent focus-within:border-primary/50 transition-colors overflow-hidden px-4">
-<span class="material-symbols-outlined text-[#886e63] dark:text-[#9CA3AF]">search</span>
-<input class="flex-1 bg-transparent border-none focus:ring-0 text-base ml-2 placeholder-[#886e63] dark:placeholder-[#9CA3AF] text-[#181311] dark:text-white h-full" placeholder="Search for saffron, curry..."/>
+
+<!-- <div class="hidden md:flex flex-1 max-w-md">
+<label class="flex w-full items-center h-12 rounded-full bg-[#f4f1f0] border border-transparent focus-within:border-primary/50 transition-colors overflow-hidden px-4">
+<span class="material-symbols-outlined text-[#886e63]">search</span>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-base ml-2 placeholder-[#886e63] text-[#181311] h-full"
+placeholder="Search for saffron, curry..." />
 </label>
+</div> -->
+
 </div>
-</div>
+
 <div class="flex items-center justify-end gap-6 lg:gap-8">
+
 <nav class="hidden lg:flex items-center gap-8 font-body font-medium text-sm">
-<a class="hover:text-primary transition-colors" href="#">Shop</a>
-<a class="hover:text-primary transition-colors" href="#">About</a>
-<a class="hover:text-primary transition-colors" href="#">Recipes</a>
-<a class="hover:text-primary transition-colors" href="#">Blog</a>
+<a class="hover:text-primary transition-colors" href="/home">Home</a>
+<a class="hover:text-primary transition-colors" href="/shop">Shop</a>
+<a class="hover:text-primary transition-colors" href="#">About us</a>
+<a class="hover:text-primary transition-colors" href="#">Contact us</a>
 </nav>
 
-
 <div class="flex items-center gap-3">
-<button class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] dark:hover:bg-[#2C201A] transition-colors relative">
-<span class="material-symbols-outlined">shopping_cart</span>
-<span class="absolute top-1 right-1 size-2.5 bg-primary rounded-full border-2 border-white dark:border-[#211611]"></span>
-</button>
-<button class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] dark:hover:bg-[#2C201A] transition-colors">
-<span class="material-symbols-outlined">favorite</span>
-</button>
-<div class="relative">
-  <!-- Profile Button -->
-  <button onclick="toggleProfileMenu()" 
-    class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] dark:hover:bg-[#2C201A] transition-colors">
-    <span class="material-symbols-outlined">account_circle</span>
-  </button>
+<div class="flex items-center gap-3">
+  <a href="/cart">
+    <button class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors relative">
+      <span class="material-symbols-outlined">shopping_cart</span>
+      <span id="cartCountBadge"
+        class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full items-center justify-center border-2 border-white <%= (locals.cartCount && cartCount > 0) ? 'flex' : 'hidden' %>">
+        <%= locals.cartCount && cartCount > 99 ? '99+' : (locals.cartCount || 0) %>
+      </span>
+    </button>
+  </a>
 
-  <!-- Dropdown -->
-  <div id="profileDropdown" 
-       class="hidden absolute right-0 mt-3 w-44 bg-white dark:bg-[#2C201A] rounded-xl shadow-lg border border-[#E6E0DC] dark:border-[#3E302A] overflow-hidden">
-
-    <a href="/profile" 
-       class="flex items-center gap-2 px-4 py-3 text-sm hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] transition-colors">
-      <span class="material-symbols-outlined text-base">person</span>
-      Profile
-    </a>
-
-    <form action="/logout" method="post">
-      <button type="submit"
-        class="w-full text-left flex items-center gap-2 px-4 py-3 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 transition-colors">
-        <span class="material-symbols-outlined text-base">logout</span>
-        Logout
-      </button>
-    </form>
-
-  </div>
+  <a href="/wishlist">
+    <button class="relative flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors">
+      <span class="material-symbols-outlined">favorite</span>
+      <span id="wishCountBadge"
+        class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full items-center justify-center border-2 border-white <%= (locals.wishCount && wishCount > 0) ? 'flex' : 'hidden' %>">
+        <%= locals.wishCount && wishCount > 99 ? '99+' : (locals.wishCount || 0) %>
+      </span>
+    </button>
+  </a>
+  <!-- rest unchanged -->
 </div>
 
-<button class="lg:hidden flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] dark:hover:bg-[#2C201A]">
+
+<div class="relative">
+
+<button onclick="toggleProfileMenu()" 
+class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+
+<div id="profileDropdown" 
+class="hidden absolute right-0 mt-3 w-44 bg-white rounded-xl shadow-lg border border-[#E6E0DC] overflow-hidden">
+
+<a href="/profile" 
+class="flex items-center gap-2 px-4 py-3 text-sm hover:bg-[#f4f1f0] transition-colors">
+<span class="material-symbols-outlined text-base">person</span>
+Profile
+</a>
+
+<form action="/logout" method="post">
+<button type="submit"
+class="w-full text-left flex items-center gap-2 px-4 py-3 text-sm hover:bg-red-50 text-red-600 transition-colors">
+<span class="material-symbols-outlined text-base">logout</span>
+Logout
+</button>
+</form>
+
+</div>
+</div>
+
+<button class="lg:hidden flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0]">
 <span class="material-symbols-outlined">menu</span>
 </button>
+
 </div>
 </div>
 </div>
 </div>
 </header>
 
+<script>
+  function toggleProfileMenu() {
+    document.getElementById("profileDropdown").classList.toggle("hidden");
+  }
 
+  // Close when clicking outside
+  document.addEventListener("click", function (event) {
+    const dropdown = document.getElementById("profileDropdown");
+    const button = event.target.closest("button");
+
+    if (!event.target.closest("#profileDropdown") && 
+        !event.target.closest("button[onclick='toggleProfileMenu()']")) {
+      dropdown.classList.add("hidden");
+    }
+  });
+</script>
+<script>
+  function toggleProfileMenu() { /* unchanged */ }
+  document.addEventListener("click", function (event) { /* unchanged */ });
+
+  function setBadge(el, count) {
+    if (!el) return;
+    if (count > 0) {
+      el.textContent = count > 99 ? "99+" : count;
+      el.classList.remove("hidden");
+      el.classList.add("flex");
+    } else {
+      el.classList.add("hidden");
+      el.classList.remove("flex");
+    }
+  }
+
+  window.updateWishCount = function (count) {
+    setBadge(document.getElementById("wishCountBadge"), count);
+  };
+
+  window.updateCartCount = function (count) {
+    setBadge(document.getElementById("cartCountBadge"), count);
+  };
+
+  // Generic AJAX helper — call this instead of submitting a form / reloading
+  // Expects your route to respond with JSON like { success: true, cartCount, wishCount }
+  window.spiceCartRequest = async function (url, method = "POST", body = null) {
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: body ? JSON.stringify(body) : null,
+      });
+      const data = await res.json();
+
+      if (typeof data.cartCount !== "undefined") window.updateCartCount(data.cartCount);
+      if (typeof data.wishCount !== "undefined") window.updateWishCount(data.wishCount);
+
+      return data;
+    } catch (err) {
+      console.error("SpiceCart request failed:", err);
+      Swal.fire("Oops", "Something went wrong. Please try again.", "error");
+      return null;
+    }
+  };
+</script>

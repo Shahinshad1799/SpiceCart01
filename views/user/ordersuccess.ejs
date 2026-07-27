@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+  <link as="style" href="https://fonts.googleapis.com/css2?display=swap&family=Epilogue:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+  <title>Order Placed Successfully</title>
+  <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+</head>
+<body>
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-white group/design-root overflow-x-hidden" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
+  <div class="layout-container flex h-full grow flex-col">
+    <%- include("../partials/header") %>
+
+    <div class="flex flex-1 justify-center py-12 px-5 md:px-10 lg:px-20 xl:px-40">
+      <div class="layout-content-container flex flex-col max-w-[640px] flex-1 items-center text-center">
+
+        <!-- Success Icon -->
+        <div class="bg-green-100 text-green-600 rounded-full p-6 mb-8 flex items-center justify-center">
+          <span class="material-symbols-outlined text-6xl">check</span>
+        </div>
+
+        <!-- Heading -->
+        <h1 class="text-[#181311] text-3xl md:text-4xl font-bold leading-tight mb-4">Order Placed Successfully!</h1>
+        <p class="text-[#181311] text-lg font-medium mb-2">
+          Thank you for your purchase. Your order <strong>#<%= order.id %></strong> has been received.
+        </p>
+        <p class="text-[#886e63] text-base mb-10">Please check your email for confirmation details.</p>
+
+        <!-- Order Summary Card -->
+        <div class="w-full bg-[#f9f8f8] border border-[#f4f1f0] rounded-2xl p-6 md:p-8 mb-10 text-left">
+          <h3 class="text-[#181311] text-lg font-bold mb-6">Order Summary</h3>
+
+          <div class="flex flex-col gap-4 mb-6">
+            <% order.items.forEach(function(item) { %>
+            <div class="flex gap-4 items-center">
+              <div
+                class="w-16 h-16 rounded-lg bg-cover bg-center shrink-0 border border-[#f4f1f0]"
+               style="background-image: url('/uploads/product/<%= item.image %>');"
+              ></div>
+              <div class="flex-1">
+                <p class="text-[#181311] font-medium text-sm"><%= item.name %></p>
+                <p class="text-[#886e63] text-xs">Qty: <%= item.quantity %></p>
+              </div>
+              <p class="text-[#181311] font-bold text-sm">₹<%= (item.price * item.quantity).toFixed(2) %></p>
+            </div>
+            <% }); %>
+          </div>
+
+          <!-- Total -->
+          <div class="border-t border-[#e5e7eb] pt-4 flex justify-between items-center">
+            <span class="text-[#181311] font-bold text-lg">Total</span>
+            <span class="text-[#ea580c] font-bold text-lg">
+              $<%= order.items.reduce(function(sum, item) { return sum + item.price * item.quantity; }, 0).toFixed(2) %>
+            </span>
+          </div>
+        </div>
+
+        <!-- CTA -->
+       <div class="flex flex-col md:flex-row items-center justify-center gap-4 mt-6">
+
+  <a href="/shop" class="w-full md:w-auto">
+    <button class="w-full min-w-[200px] bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold py-4 px-8 rounded-xl shadow-sm transition-colors text-base flex items-center justify-center gap-2">
+      <span>Continue Shopping</span>
+    </button>
+  </a>
+
+  <a href="/order" class="w-full md:w-auto">
+    <button class="w-full min-w-[200px] bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold py-4 px-8 rounded-xl shadow-sm transition-colors text-base flex items-center justify-center gap-2">
+      <span>Manage Orders</span>
+    </button>
+  </a>
+
+</div>
+
+      </div>
+    </div>
+
+    <%- include("../partials/footer") %>
+  </div>
+</div>
+</body>
+</html>

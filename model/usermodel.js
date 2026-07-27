@@ -6,7 +6,8 @@ const userschema=new mongoose.Schema({
     },
     email:{
         type:String,
-        require:true
+        require:true,
+        unique:true
     },
     password:{
         type:String,
@@ -26,6 +27,20 @@ const userschema=new mongoose.Schema({
 profileImage: {
   type: String,
 require:false
+},
+referralCode: {
+  type: String,
+  unique: true,
+  sparse: true
+},
+referredBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'user',
+  default: null
+},
+referralRewardGiven: {
+  type: Boolean,
+  default: false
 },
  status: { type: String, enum: ["Active", "Blocked"], default: "Active" }
 

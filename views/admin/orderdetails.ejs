@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SpiceCart Admin - Order Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#121715] dark:text-white">
+<div class="flex min-h-screen">
+<!-- Sidebar Navigation -->
+<%- include("../partials/sidebar") %>
+<!-- Main Content -->
+<main class="flex-1 ml-72">
+<div class="max-w-6xl mx-auto px-8 py-8">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 mb-6">
+<a class="text-[#67837a] hover:text-primary transition-colors text-sm font-medium" href="#">Dashboard</a>
+<span class="text-[#67837a] text-sm font-medium">/</span>
+<a class="text-[#67837a] hover:text-primary transition-colors text-sm font-medium" href="">Orders</a>
+<span class="text-[#67837a] text-sm font-medium">/</span>
+<span class="text-[#121715] dark:text-white text-sm font-bold">Order #<%= order._id.toString().slice(-6).toUpperCase() %></span>
+</div>
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-3">
+<h2 class="text-3xl font-black tracking-tight">Order #<%= order._id.toString().slice(-6).toUpperCase() %></h2>
+<span class="px-3 py-1 bg-accent-saffron/10 text-accent-saffron border border-accent-saffron/20 rounded-full text-xs font-bold uppercase tracking-wider"></span>
+</div>
+<p class="text-[#67837a] text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+                         Placed on <%= order.createdAt.toDateString() %>
+                        </p>
+</div>
+
+<div class="flex items-center gap-3">
+<% if (order.status === 'cancelled' || order.status === 'returned') { %>
+
+  <% const isReturned = order.status === 'returned'; %>
+  <span class="px-4 py-2 <%= isReturned ? 'bg-purple-100 text-purple-600 border-purple-200' : 'bg-red-100 text-red-600 border-red-200' %> border rounded-lg text-sm font-bold flex items-center gap-2 cursor-not-allowed">
+    <span class="material-symbols-outlined text-base">lock</span>
+    <%= isReturned ? 'Returned' : 'Cancelled' %>
+  </span>
+
+<% } else { %>
+
+    <form action="/admin/orders/<%= order._id %>/status" method="POST">
+  <%
+    const statusOrder = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    const currentIndex = statusOrder.indexOf(order.status);
+  %>
+  <select
+    name="status"
+    onchange="this.form.submit()"
+    class="form-input rounded-lg text-[#121715] focus:ring-primary border border-[#dde4e2] bg-white h-11 px-4 text-sm font-medium"
+  >
+    <% statusOrder.forEach((s, i) => { %>
+      <% if (i >= currentIndex) { %>
+        <option value="<%= s %>" <%= order.status === s ? 'selected' : '' %>>
+          <%= s.charAt(0).toUpperCase() + s.slice(1) %>
+        </option>
+      <% } %>
+    <% }) %>
+  </select>
+</form>
+
+  <% } %>
+
+</div>
+
+<% if (order.status === 'cancelled' && order.cancelReason) { %>
+<div class="mt-6 bg-red-50 border border-red-200 rounded-xl p-5 flex items-start gap-4">
+  <span class="material-symbols-outlined text-red-500 mt-0.5">cancel</span>
+  <div>
+    <p class="text-sm font-bold text-red-700 mb-1">Cancellation Reason</p>
+    <p class="text-sm text-red-600"><%= order.cancelReason %></p>
+  </div>
+</div>
+<% } %>
+<% if (
+  order.returnRequest &&
+  order.returnRequest.reason &&
+  order.returnRequest.status === 'requested'
+) { %>
+
+<div class="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-5">
+
+  <div class="flex items-start justify-between gap-6">
+
+    <div class="flex items-start gap-4">
+
+      <span class="material-symbols-outlined text-amber-500 mt-1">
+        keyboard_return
+      </span>
+
+      <div>
+
+        <p class="text-sm font-bold text-amber-700 mb-2">
+          Return Request
+        </p>
+
+        <div class="space-y-1 text-sm text-amber-600">
+
+          <p>
+            <span class="font-semibold">Reason:</span>
+            <%= order.returnRequest.reason %>
+          </p>
+
+          <p>
+            <span class="font-semibold">Requested At:</span>
+            <%= order.returnRequest?.requestedAt
+ ? new Date(order.returnRequest.requestedAt).toDateString()
+ : "No Request Date" %>
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="flex items-center gap-3">
+
+      <!-- Approve -->
+      <form action="/admin/orders/<%= order._id %>/approve-return" method="POST">
+
+        <button
+          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold transition-all flex items-center gap-2"
+        >
+          <span class="material-symbols-outlined text-base">
+            check_circle
+          </span>
+
+          Approve
+        </button>
+
+      </form>
+
+      <!-- Reject -->
+      <form action="/admin/orders/<%= order._id %>/reject-return" method="POST">
+
+        <button
+          class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition-all flex items-center gap-2"
+        >
+          <span class="material-symbols-outlined text-base">
+            cancel
+          </span>
+
+          Reject
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+<% } %>
+
+<!-- Also fix the status badge in the h2 line — replace the hardcoded "Processing" span -->
+<%
+  const badgeStyles = {
+    pending:    'bg-orange-100  text-orange-600  border-orange-200',
+    confirmed:  'bg-blue-100    text-blue-600    border-blue-200',
+    processing: 'bg-yellow-100  text-yellow-600  border-yellow-200',
+    shipped:    'bg-indigo-100  text-indigo-600  border-indigo-200',
+    delivered:  'bg-green-100   text-green-600   border-green-200',
+    cancelled:  'bg-red-100     text-red-600     border-red-200',
+    returned: 'bg-purple-100 text-purple-600 border-purple-200',
+  };
+  const badgeClass = badgeStyles[order.status] || badgeStyles['pending'];
+  const badgeLabel = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+%>
+<span class="px-3 py-1 <%= badgeClass %> border rounded-full text-xs font-bold uppercase tracking-wider">
+  <%= badgeLabel %>
+</span>
+
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Order Items -->
+<div class="lg:col-span-2 space-y-6">
+<div class="bg-white dark:bg-background-dark/50 border border-slate-100 dark:border-white/5 rounded-xl shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 flex justify-between items-center">
+<h3 class="font-bold text-lg">Items Ordered</h3>
+<span class="text-xs font-bold text-[#67837a] uppercase tracking-widest"><%= order.items.length %> Items</span>
+</div>
+<div class="p-0">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-[#67837a] text-[10px] uppercase tracking-widest border-b border-slate-50 dark:border-white/5">
+<th class="px-6 py-4 font-bold">Product</th>
+<th class="px-6 py-4 font-bold text-center">Quantity</th>
+<th class="px-6 py-4 font-bold text-right">Price</th>
+<th class="px-6 py-4 font-bold text-right">Total</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-50 dark:divide-white/5">
+
+<% order.items.forEach(item => {
+  const itemCancelled = item.itemStatus === 'cancelled';
+%>
+
+<tr class="hover:bg-slate-50 transition-colors <%= itemCancelled ? 'opacity-50 bg-red-50/40' : '' %>">
+
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+
+<div class="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 relative">
+<img
+  class="w-full h-full object-cover <%= itemCancelled ? 'grayscale' : '' %>"
+  src="/uploads/product/<%= item.productImage %>"
+  alt=""
+>
+<% if (itemCancelled) { %>
+<div class="absolute inset-0 bg-red-500/10 flex items-center justify-center">
+  <span class="material-symbols-outlined text-red-400 text-xl">cancel</span>
+</div>
+<% } %>
+</div>
+
+<div>
+<p class="font-bold text-sm <%= itemCancelled ? 'text-slate-400' : '' %>">
+  <%= item.productName %>
+</p>
+
+<p class="text-xs text-[#67837a]">
+Variant ID: <%= item.variantId %>
+</p>
+
+<% if (itemCancelled) { %>
+<span class="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100">
+  <span class="material-symbols-outlined text-xs">cancel</span>
+  Cancelled
+  <% if (item.cancelReason) { %> · <%= item.cancelReason %><% } %>
+</span>
+<% } %>
+</div>
+
+</div>
+</td>
+
+<td class="px-6 py-4 text-center font-medium <%= itemCancelled ? 'text-slate-400' : '' %>">
+<%= item.quantity %>
+</td>
+
+<td class="px-6 py-4 text-right font-medium <%= itemCancelled ? 'text-slate-400' : '' %>">
+₹<%= item.unitPrice %>
+</td>
+
+<td class="px-6 py-4 text-right font-bold <%= itemCancelled ? 'text-slate-400 line-through' : 'text-primary' %>">
+₹<%= item.lineTotal %>
+</td>
+
+</tr>
+
+<% }) %>
+
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+<!-- Right Column: Info Cards & Summary -->
+<div class="space-y-6">
+<!-- Customer Info -->
+<div class="bg-white dark:bg-background-dark/50 border border-slate-100 dark:border-white/5 rounded-xl shadow-sm p-6">
+<h3 class="font-bold text-base mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">person</span>
+                                Customer Information
+                            </h3>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-primary font-bold">JD</div>
+<div>
+<p class="text-sm font-bold"><%= order.userId.fullname %></p>
+<p class="text-xs text-[#67837a]">Customer since 2022</p>
+</div>
+</div>
+<div class="pt-2 border-t border-slate-50 dark:border-white/5">
+<p class="text-xs text-[#67837a] uppercase font-bold tracking-widest mb-1">Email</p>
+<p class="text-sm font-medium"><%= order.userId.email %></p>
+</div>
+<div class="pt-2">
+<p class="text-xs text-[#67837a] uppercase font-bold tracking-widest mb-1">Phone</p>
+<p class="text-sm font-medium"><%= order.shippingAddress.phonenumber %></p>
+</div>
+</div>
+</div>
+<!-- Shipping Address -->
+<div class="bg-white dark:bg-background-dark/50 border border-slate-100 dark:border-white/5 rounded-xl shadow-sm p-6">
+<h3 class="font-bold text-base mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">local_shipping</span>
+                                Shipping Address
+                            </h3>
+<div class="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+<p class="font-bold text-[#121715] dark:text-white">
+  <%= order.shippingAddress.fullname %>
+</p>
+
+<p>
+  <%= order.shippingAddress.address %>
+</p>
+
+<p>
+  <%= order.shippingAddress.appartment %>
+</p>
+
+<p>
+  <%= order.shippingAddress.city %>,
+  <%= order.shippingAddress.state %>
+</p>
+
+<p>
+  <%= order.shippingAddress.zipcode %>
+</p>
+</div>
+</div>
+<!-- Payment Details -->
+<div class="bg-white dark:bg-background-dark/50 border border-slate-100 dark:border-white/5 rounded-xl shadow-sm p-6">
+<h3 class="font-bold text-base mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">payments</span>
+                                Payment Details
+                            </h3>
+<div class="space-y-3">
+<div class="flex justify-between items-center text-sm">
+<span class="text-[#67837a]">Method</span>
+<span class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-base">credit_card</span>
+                                        <%= order.paymentMethod %>
+                                    </span>
+</div>
+<!-- <div class="flex justify-between items-center text-sm">
+<span class="text-[#67837a]">Trans ID</span>
+<span class="font-mono text-xs">#TXN-987654321</span>
+</div> -->
+<div class="flex justify-between items-center text-sm">
+<span class="text-[#67837a]">Status</span>
+<span class="text-green-600 font-bold"><%= order.paymentStatus %></span>
+</div>
+</div>
+</div>
+<!-- Order Summary -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-6 shadow-sm">
+<h3 class="font-black text-lg mb-4 text-primary">Order Summary</h3>
+<div class="space-y-3 mb-6">
+<div class="flex justify-between text-sm">
+<span class="text-[#67837a]">Subtotal</span>
+<span class="font-medium">₹<%= order.subtotal %></span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-[#67837a]">Tax </span>
+<span class="font-medium">₹<%= order.tax %></span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-[#67837a]">Shipping</span>
+<span class="font-medium">₹<%= order.shipping %></span>
+</div>
+</div>
+<div class="pt-4 border-t border-primary/20 flex justify-between items-end">
+<span class="text-sm font-bold uppercase tracking-widest text-primary">Total Amount</span>
+<span class="text-2xl font-black text-primary">₹<%= order.total %></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  (function () {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('returnApproved') === 'true') {
+      const amount = params.get('amount') || '0';
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Return Approved',
+        html: `Refund of <b>₹${amount}</b> has been credited to the customer's wallet<br>and stock has been restored.`,
+        confirmButtonColor: '#F97316'
+      });
+
+      // clean the URL so refresh doesn't re-trigger the alert
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (params.get('returnRejected') === 'true') {
+      Swal.fire({
+        icon: 'info',
+        title: 'Return Rejected',
+        text: 'The return request has been rejected.',
+        confirmButtonColor: '#F97316'
+      });
+
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  })();
+</script>
+</body></html>

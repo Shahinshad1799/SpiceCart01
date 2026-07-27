@@ -1,0 +1,7 @@
+  <div class="flex flex-wrap gap-1 mt-1">
+  <% product.variants.forEach(variant => { %>
+    <span class="text-xs border border-[#E6E0DC] dark:border-[#3E302A] text-[#5C4D46] dark:text-[#A8A29E] px-2 py-0.5 rounded-full">
+      <%= variant.name %> — ₹<%= variant.price %>
+    </span>
+  <% }) %>
+</div>

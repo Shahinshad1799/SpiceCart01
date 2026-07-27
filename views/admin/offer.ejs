@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>SpiceCart Admin Offers Management</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#F97316",
+            "primary-dark": "#EA580C",
+            "saffron": "#FF9933",
+            "background-light": "#FDFCFB",
+            "background-dark": "#131f1b",
+            "sidebar-orange": "#F97316",
+            "active-green": "#16a34a",
+            "inactive-red": "#dc2626",
+            "block-red": "#dc2626",
+            "unblock-green": "#16a34a"
+          },
+          fontFamily: { "display": ["Manrope", "sans-serif"] },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body { font-family: 'Manrope', sans-serif; }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-[#181611] dark:text-white">
+<div class="flex h-screen overflow-hidden">
+
+  <%- include("../partials/sidebar") %>
+
+  <main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark">
+    <div class="max-w-7xl mx-auto p-8 lg:p-12">
+
+      <!-- Header -->
+      <div class="flex flex-wrap justify-between items-center gap-6 mb-10">
+        <div>
+          <h2 class="text-4xl font-black text-[#181611] dark:text-white tracking-tight">Promotions &amp; Offers</h2>
+          <p class="text-[#8a7e60] dark:text-gray-400 mt-1 font-medium">Create and manage marketing campaigns to boost your spice sales.</p>
+        </div>
+        <a href="/admin/addoffer">
+          <button class="bg-primary hover:bg-primary/90 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 shadow-xl shadow-primary/10 transition-transform active:scale-95">
+            <span class="material-symbols-outlined">add_circle</span>
+            Create New Offer
+          </button>
+        </a>
+      </div>
+
+      <!-- Search & Filter Form -->
+      <form method="GET" action="/admin/offers" class="flex flex-col lg:flex-row gap-4 mb-8">
+        <div class="relative flex-1 group">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#8a7e60] group-focus-within:text-primary transition-colors">search</span>
+          <input
+            name="search"
+            value="<%= search %>"
+            class="w-full h-14 pl-12 pr-4 bg-white dark:bg-[#2a2a2a] border border-[#e6e3db] dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-base font-medium placeholder:text-[#8a7e60]/60 transition-all"
+            placeholder="Search offers by name or coupon code..."
+            type="text"
+          />
+        </div>
+        <div class="w-full lg:w-64 relative group">
+          <select
+            name="status"
+            onchange="this.form.submit()"
+            class="w-full h-14 px-4 bg-white dark:bg-[#2a2a2a] border border-[#e6e3db] dark:border-gray-700 rounded-xl appearance-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-base font-medium text-[#181611] dark:text-white"
+          >
+            <option value="all"     <%= (!status || status === "all") ? "selected" : "" %>>All Statuses</option>
+            <option value="active"  <%= status === "active"  ? "selected" : "" %>>Active</option>
+            <option value="draft"   <%= status === "draft"   ? "selected" : "" %>>Draft</option>
+            <option value="expired" <%= status === "expired" ? "selected" : "" %>>Expired</option>
+          </select>
+          <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#8a7e60] pointer-events-none">expand_more</span>
+        </div>
+        <button type="submit" class="h-14 px-6 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors flex items-center gap-2">
+          <span class="material-symbols-outlined">search</span>
+          Search
+        </button>
+        <% if (search || (status && status !== "all")) { %>
+          <a href="/admin/offers" class="h-14 px-5 flex items-center gap-2 bg-gray-100 dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#333] text-[#181611] dark:text-white font-bold rounded-xl transition-colors">
+            <span class="material-symbols-outlined">close</span>
+            Clear
+          </a>
+        <% } %>
+      </form>
+
+      <!-- Table -->
+      <div class="bg-white dark:bg-[#222] rounded-xl border border-[#e6e3db] dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 dark:bg-[#2a2a2a] border-b border-[#e6e3db] dark:border-gray-800">
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400">Offer Details</th>
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400">Offer Type</th>
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400">Discount</th>
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400">Start Date</th>
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400">End Date</th>
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400">Status</th>
+                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#8a7e60] dark:text-gray-400 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#e6e3db] dark:divide-gray-800">
+
+              <% if (offers.length > 0) { %>
+                <% offers.forEach(function(offer) { %>
+                <tr class="hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors" id="row-<%= offer._id %>">
+
+                  <td class="px-6 py-4">
+                    <div>
+                      <p class="font-bold text-[#181611] dark:text-white"><%= offer.title %></p>
+                      <p class="text-xs text-[#8a7e60] font-medium"><%= offer.description || "No description" %></p>
+                    </div>
+                  </td>
+
+                  <td class="px-6 py-4">
+                    <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-bold uppercase">
+                      <%= offer.applicableFor %>
+                    </div>
+                  </td>
+
+                  <td class="px-6 py-4">
+                    <% if (offer.discountType === "percentage") { %>
+                      <span class="text-sm font-bold text-green-600"><%= offer.discountValue %>% OFF</span>
+                    <% } else { %>
+                      <span class="text-sm font-bold text-green-600">&#8377;<%= offer.discountValue %> OFF</span>
+                    <% } %>
+                  </td>
+
+                  <td class="px-6 py-4">
+                    <span class="text-sm"><%= new Date(offer.startDate).toLocaleDateString("en-IN") %></span>
+                  </td>
+
+                  <td class="px-6 py-4">
+                    <span class="text-sm"><%= new Date(offer.endDate).toLocaleDateString("en-IN") %></span>
+                  </td>
+
+                  <!-- Status Badge -->
+                  <td class="px-6 py-4">
+                    <% if (offer.status === "active") { %>
+                      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold uppercase" id="badge-<%= offer._id %>">
+                        <span class="size-2 rounded-full bg-green-600"></span>Active
+                      </div>
+                    <% } else if (offer.status === "draft") { %>
+                      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold uppercase" id="badge-<%= offer._id %>">
+                        <span class="size-2 rounded-full bg-yellow-600"></span>Blocked
+                      </div>
+                    <% } else { %>
+                      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold uppercase" id="badge-<%= offer._id %>">
+                        <span class="size-2 rounded-full bg-red-600"></span>Expired
+                      </div>
+                    <% } %>
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex justify-end gap-2">
+
+                      <!-- Edit -->
+                      <a href="/admin/offers/edit/<%= offer._id %>">
+                        <button class="p-2 rounded-lg hover:bg-primary/20 transition-colors" title="Edit offer">
+                          <span class="material-symbols-outlined text-lg">edit</span>
+                        </button>
+                      </a>
+
+                      <!-- Block / Unblock (not shown for expired) -->
+                      <% if (offer.status !== "expired") { %>
+                        <% if (offer.status === "active") { %>
+                          <button
+                            onclick="toggleOffer('<%= offer._id %>', 'active')"
+                            class="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors"
+                            title="Block offer"
+                            id="toggle-<%= offer._id %>">
+                            <span class="material-symbols-outlined text-lg">block</span>
+                          </button>
+                        <% } else { %>
+                          <button
+                            onclick="toggleOffer('<%= offer._id %>', 'draft')"
+                            class="p-2 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-500 transition-colors"
+                            title="Unblock offer"
+                            id="toggle-<%= offer._id %>">
+                            <span class="material-symbols-outlined text-lg">check_circle</span>
+                          </button>
+                        <% } %>
+                      <% } %>
+
+                    </div>
+                  </td>
+
+                </tr>
+                <% }) %>
+
+              <% } else { %>
+              <tr>
+                <td colspan="7" class="text-center py-16">
+                  <div class="flex flex-col items-center gap-3 text-[#8a7e60]">
+                    <span class="material-symbols-outlined text-5xl opacity-30">local_offer</span>
+                    <p class="font-semibold text-base">No offers found</p>
+                    <% if (search || (status && status !== "all")) { %>
+                      <a href="/admin/offers" class="text-primary text-sm font-bold hover:underline">Clear filters</a>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+              <% } %>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex flex-col sm:flex-row items-center justify-between mt-8 gap-4 px-2">
+        <p class="text-sm text-[#8a7e60] font-medium">
+          <% if (totalOffers === 0) { %>
+            No offers found
+          <% } else { %>
+            Showing
+            <span class="text-[#181611] dark:text-white font-bold">
+              <%= (currentPage - 1) * limit + 1 %>&#8211;<%= Math.min(currentPage * limit, totalOffers) %>
+            </span>
+            of
+            <span class="text-[#181611] dark:text-white font-bold"><%= totalOffers %></span>
+            offers
+          <% } %>
+        </p>
+
+        <% if (totalPages > 1) { %>
+        <div class="flex items-center gap-1">
+          <a
+            href="?page=<%= currentPage - 1 %>&search=<%= encodeURIComponent(search) %>&status=<%= status %>"
+            class="size-10 flex items-center justify-center rounded-lg border border-[#e6e3db] dark:border-gray-700 text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors <%= currentPage === 1 ? 'pointer-events-none opacity-40' : '' %>"
+          >
+            <span class="material-symbols-outlined text-lg">chevron_left</span>
+          </a>
+
+          <%
+            let pages = [];
+            for (let i = 1; i <= totalPages; i++) {
+              if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                pages.push(i);
+              } else if (i === currentPage - 2 || i === currentPage + 2) {
+                pages.push("...");
+              }
+            }
+            pages = pages.filter(function(p, idx) { return !(p === "..." && pages[idx - 1] === "..."); });
+          %>
+
+          <% pages.forEach(function(p) { %>
+            <% if (p === "...") { %>
+              <span class="px-2 text-[#8a7e60] select-none">&#8230;</span>
+            <% } else { %>
+              <a
+                href="?page=<%= p %>&search=<%= encodeURIComponent(search) %>&status=<%= status %>"
+                class="size-10 flex items-center justify-center rounded-lg font-bold transition-colors <%= currentPage === p ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5' %>"
+              ><%= p %></a>
+            <% } %>
+          <% }) %>
+
+          <a
+            href="?page=<%= currentPage + 1 %>&search=<%= encodeURIComponent(search) %>&status=<%= status %>"
+            class="size-10 flex items-center justify-center rounded-lg border border-[#e6e3db] dark:border-gray-700 text-[#181611] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors <%= currentPage === totalPages ? 'pointer-events-none opacity-40' : '' %>"
+          >
+            <span class="material-symbols-outlined text-lg">chevron_right</span>
+          </a>
+        </div>
+        <% } %>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+ async function toggleOffer(id, currentStatus) {
+    const isActive = currentStatus === "draft";
+    const action = isActive ? "Unblock" : "Block";   // ← swapped
+    const iconHtml = isActive
+        ? '<span style="font-size:3rem;color:#16a34a" class="material-symbols-outlined">check_circle</span>'
+        : '<span style="font-size:3rem;color:#ef4444" class="material-symbols-outlined">block</span>';
+
+    const result = await Swal.fire({
+        title: `${action} Offer?`,
+        html: `
+            <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+                ${iconHtml}
+                <p style="color:#6b7280;font-size:0.95rem;">
+                    Are you sure you want to <strong>${action.toLowerCase()}</strong> this offer?
+                    ${isActive ? "<br>It will become active and visible to users." : "<br>It will no longer be visible to users."}
+                </p>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: action,
+        cancelButtonText: "Cancel",
+        confirmButtonColor: isActive ? "#16a34a" : "#ef4444",   // ← swapped
+        cancelButtonColor: "#6b7280",
+        customClass: {
+            popup: "rounded-2xl",
+            confirmButton: "rounded-lg font-bold",
+            cancelButton: "rounded-lg font-bold",
+        }
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const res = await fetch(`/admin/offers/${id}/toggle`, { method: "POST" });
+        const data = await res.json();
+
+        if (!data.success) {
+            Swal.fire({ icon: "error", title: "Failed", text: data.message || "Something went wrong.", confirmButtonColor: "#F97316" });
+            return;
+        }
+
+        const newStatus = data.status;
+
+        // Update badge
+        const badge = document.getElementById(`badge-${id}`);
+        if (badge) {
+            if (newStatus === "active") {
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold uppercase";
+                badge.innerHTML = '<span class="size-2 rounded-full bg-green-600"></span>Active';
+            } else {
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold uppercase";
+                badge.innerHTML = '<span class="size-2 rounded-full bg-yellow-600"></span>Blocked';
+            }
+        }
+
+        // Update toggle button
+        const btn = document.getElementById(`toggle-${id}`);
+        if (btn) {
+            if (newStatus === "active") {
+                btn.setAttribute("onclick", `toggleOffer('${id}', 'active')`);
+                btn.setAttribute("title", "Unblock offer");
+                btn.className = "p-2 rounded-lg hover:bg-emerald-50 text-emerald-500 transition-colors";
+                btn.innerHTML = '<span class="material-symbols-outlined text-lg">check_circle</span>';
+            } else {
+                btn.setAttribute("onclick", `toggleOffer('${id}', 'draft')`);
+                btn.setAttribute("title", "Block offer");
+                btn.className = "p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors";
+                btn.innerHTML = '<span class="material-symbols-outlined text-lg">block</span>';
+            }
+        }
+
+        Swal.fire({
+            icon: "success",
+            title: newStatus === "active" ? "Offer Unblocked" : "Offer Blocked",
+            text: newStatus === "active" ? "The offer is now active." : "The offer has been blocked.",
+            timer: 1800,
+            showConfirmButton: false,
+            iconColor: newStatus === "active" ? "#16a34a" : "#ef4444",
+        });
+
+    } catch (err) {
+        console.error(err);
+        Swal.fire({ icon: "error", title: "Error", text: "Something went wrong.", confirmButtonColor: "#F97316" });
+    }
+}
+</script>
+
+</body>
+</html>

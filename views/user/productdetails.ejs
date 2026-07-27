@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-white">
+<%- include("../partials/header") %>
+
+<div class="px-5 md:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+
+  <!-- Breadcrumb -->
+  <div class="mb-8 flex items-center gap-2 text-sm text-[#886e63]">
+    <a href="/shop" class="hover:text-primary">Shop</a>
+    <span class="material-symbols-outlined text-xs">chevron_right</span>
+    <span class="text-[#181311] font-medium"><%= product.name %></span>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 p-4">
+
+    <!-- LEFT: Images -->
+    <div class="flex flex-col gap-4">
+
+      <!-- Zoom container — only wraps the main image -->
+      <div id="zoomWrapper" style="position: relative; width: 100%;">
+
+        <!-- Main Image -->
+        <div
+          id="mainImage"
+          class="w-full bg-no-repeat bg-center rounded-xl"
+          style="
+            background-image: url('/uploads/product/<%= product.images[0] %>');
+            background-size: cover;
+            aspect-ratio: 1 / 1;
+            cursor: crosshair;
+          ">
+        </div>
+
+        <!-- Lens -->
+        <div id="lens" style="
+          position: absolute; top: 0; left: 0;
+          pointer-events: none; display: none;
+          border: 2px solid #e77600;
+          background: rgba(255,232,180,0.35);
+        "></div>
+
+        <!-- Zoom result panel (floats right) -->
+        <div id="zoomResult" style="
+          position: absolute;
+          left: calc(100% + 12px);
+          top: 0;
+          width: 450px;
+          height: 450px;
+          border: 1px solid #ccc;
+          background-color: #fff;
+          background-repeat: no-repeat;
+          display: none;
+          z-index: 100;
+          border-radius: 8px;
+        "></div>
+
+      </div>
+
+      <!-- Thumbnails -->
+  <div class="grid grid-cols-4 gap-3" id="thumbnailGrid">
+  <% product.images.forEach((img, i) => { %>
+    <div
+      onclick="changeImage('<%= img %>', this)"
+      class="thumbnail aspect-square rounded-lg bg-center bg-cover cursor-pointer <%= i === 0 ? 'border-2 border-black' : 'opacity-60' %>"
+      style="background-image: url('/uploads/product/<%= img %>')">
+    </div>
+  <% }) %>
+</div>
+
+    </div>
+
+    <!-- RIGHT: Details -->
+    <div class="flex flex-col gap-6">
+
+      <div>
+        <h1 class="text-[#181311] text-4xl font-bold"><%= product.name %></h1>
+        <p class="text-[#886e63] text-lg mt-2"><%= product.description.split('.')[0] + '.' %></p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="text-3xl font-bold">₹<span id="price"><%= product.variants[0]?.price || 0 %></span></div>
+      </div>
+
+<!-- ADD stock badge here: -->
+<div id="stockBadge">
+  <% if (product.variants[0]?.stock > 0) { %>
+    <span class="text-green-600 text-sm font-medium">
+      In Stock (<%= product.variants[0].stock %> available)
+    </span>
+  <% } else { %>
+    <span class="text-red-500 text-sm font-medium">Out of Stock</span>
+  <% } %>
+</div>
+      <div>
+        <p class="font-bold">Weight</p>
+        <div class="flex gap-3 flex-wrap mt-2">
+        <% product.variants.forEach((v, i) => { %>
+  <button
+    type="button"
+    onclick="selectVariant('<%= v._id %>', '<%= v.price %>', <%= v.stock %>, this)"
+    data-stock="<%= v.stock %>"
+    class="variant-btn h-10 px-4 rounded-lg border
+           <%= i === 0 ? 'bg-black text-white border-black' : 'bg-white' %>
+           <%= v.stock === 0 ? 'opacity-40 cursor-not-allowed' : '' %>">
+    <%= v.name %>
+    <% if (v.stock === 0) { %><span class="text-xs ml-1">(Out of stock)</span><% } %>
+  </button>
+<% }) %>
+        </div>
+      </div>
+
+      <div>
+        <p class="font-bold">Quantity</p>
+        <div class="flex items-center w-32 h-10 border rounded-lg bg-gray-100 mt-2">
+          <button onclick="changeQty(-1)" class="w-10">-</button>
+          <input id="qty" type="number" value="1" class="w-12 text-center bg-transparent">
+          <button onclick="changeQty(1)" class="w-10">+</button>
+        </div>
+      </div>
+
+    <div class="flex flex-col gap-3 mt-2">
+  <div class="flex gap-3 mt-4">
+ <!-- REPLACE the form/button: -->
+<form action="/cart/add" method="POST" class="flex-1">
+  <input type="hidden" name="productId" value="<%= product._id %>">
+  <input type="hidden" name="variantId" id="variantId" value="<%= product.variants[0]._id %>">
+  <input type="hidden" name="quantity" id="finalQty" value="1">
+  <button
+    type="submit"
+    id="addToCartBtn"
+    class="w-full h-12 rounded-lg font-bold transition-colors
+           <%= product.variants[0]?.stock === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300' %>"
+    <%= product.variants[0]?.stock === 0 ? 'disabled' : '' %>>
+    <%= product.variants[0]?.stock === 0 ? 'Out of Stock' : 'Add to Cart' %>
+  </button>
+</form>
+
+    <!-- WISHLIST BUTTON -->
+   <% const isWishlisted = (typeof wishlist !== 'undefined' && wishlist); %>
+
+<button
+  class="wishlist-btn h-12 w-14 flex items-center justify-center rounded-lg border transition-colors shrink-0
+         <%= isWishlisted ? 'border-red-200 bg-red-50' : 'border-[#E6E0DC] hover:bg-red-50' %>"
+  data-id="<%= product._id %>"
+  data-wishlisted="<%= isWishlisted %>"
+  data-variant-id="<%= product.variants[0]._id %>"
+  data-variant-name="<%= product.variants[0].name %>"
+  data-variant-price="<%= product.variants[0].price %>"
+  data-variant-stock="<%= product.variants[0].stock %>"
+  title="<%= isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist' %>">
+
+  <span
+    class="material-symbols-outlined text-[22px] pointer-events-none"
+    style="font-variation-settings: 'FILL' <%= isWishlisted ? 1 : 0 %>; color: <%= isWishlisted ? '#E24B4A' : '#886e63' %>;">
+    favorite
+  </span>
+
+</button>
+  </div>
+</div>
+
+      <div class="border-t pt-6">
+        <h2 class="text-2xl font-bold">Product Description</h2>
+        <p class="mt-2 text-gray-600"><%= product.description %></p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Reviews -->
+  <div class="flex flex-col gap-10 p-4 mt-8 border-t border-[#f4f1f0] pt-10">
+    <h2 class="text-[#181311] text-2xl font-bold leading-tight">Customer Reviews</h2>
+    <div class="grid grid-cols-1 gap-8">
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+        </div>
+        <p class="text-[#181311] text-base font-medium leading-normal">"The quality of this saffron is unmatched. My risotto has never tasted better!"</p>
+        <div class="flex items-center gap-2 text-sm text-[#886e63]">
+          <span class="font-bold text-[#181311]">Maria Gonzales</span><span>•</span><span>Oct 24, 2023</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star_half</span>
+        </div>
+        <p class="text-[#181311] text-base font-medium leading-normal">"Fast shipping and great packaging. The threads are a deep red, exactly what you look for."</p>
+        <div class="flex items-center gap-2 text-sm text-[#886e63]">
+          <span class="font-bold text-[#181311]">David Chen</span><span>•</span><span>Nov 02, 2023</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+          <span class="material-symbols-outlined text-[#181311] text-sm" style="font-variation-settings: 'FILL' 0;">star</span>
+        </div>
+        <p class="text-[#181311] text-base font-medium leading-normal">"A bit pricey, but you get what you pay for. Will buy again."</p>
+        <div class="flex items-center gap-2 text-sm text-[#886e63]">
+          <span class="font-bold text-[#181311]">Sarah J.</span><span>•</span><span>Nov 15, 2023</span>
+        </div>
+      </div>
+    </div>
+    <button class="w-full md:w-auto h-10 px-6 rounded-lg border border-[#e6e2e0] bg-white text-[#181311] text-sm font-bold hover:bg-[#f4f1f0] transition-colors self-start">See all reviews</button>
+  </div>
+
+  <!-- Related Products -->
+  <% if (relatedProducts.length > 0) { %>
+  <div class="mt-10">
+    <h2 class="text-2xl font-bold mb-4">Related Products</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <% relatedProducts.forEach(p => { %>
+        <a href="/productdetails/<%= p._id %>">
+          <img src="/uploads/product/<%= p.images[0] %>" class="w-full h-40 object-cover rounded"/>
+          <p class="font-semibold mt-2"><%= p.name %></p>
+          <p class="text-sm text-gray-500">₹<%= p.variants[0]?.price || "N/A" %></p>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+
+</div>
+</div>
+
+<%- include("../partials/footer") %>
+</body>
+
+<!-- SINGLE SCRIPT BLOCK — no duplicates -->
+<script>
+  const wrapper    = document.getElementById('zoomWrapper');
+  const mainImage  = document.getElementById('mainImage');
+  const lens       = document.getElementById('lens');
+  const zoomResult = document.getElementById('zoomResult');
+  const ZOOM = 2.5;
+
+  function initZoom() {
+    const iw = mainImage.offsetWidth;
+    const ih = mainImage.offsetHeight;
+    lens.style.width  = (iw / ZOOM) + 'px';
+    lens.style.height = (ih / ZOOM) + 'px';
+    zoomResult.style.backgroundImage = mainImage.style.backgroundImage;
+    zoomResult.style.backgroundSize  = `${iw * ZOOM}px ${ih * ZOOM}px`;
+    zoomResult.style.height = ih + 'px';
+  }
+
+  wrapper.addEventListener('mouseenter', () => {
+    initZoom();
+    lens.style.display       = 'block';
+    zoomResult.style.display = 'block';
+  });
+
+  wrapper.addEventListener('mouseleave', () => {
+    lens.style.display       = 'none';
+    zoomResult.style.display = 'none';
+  });
+
+  wrapper.addEventListener('mousemove', (e) => {
+    const rect = mainImage.getBoundingClientRect();
+    const iw = mainImage.offsetWidth;
+    const ih = mainImage.offsetHeight;
+    const lw = parseFloat(lens.style.width)  || iw / ZOOM;
+    const lh = parseFloat(lens.style.height) || ih / ZOOM;
+
+    let x = e.clientX - rect.left - lw / 2;
+    let y = e.clientY - rect.top  - lh / 2;
+
+    x = Math.max(0, Math.min(x, iw - lw));
+    y = Math.max(0, Math.min(y, ih - lh));
+
+    lens.style.left = x + 'px';
+    lens.style.top  = y + 'px';
+
+    zoomResult.style.backgroundPosition = `-${x * ZOOM}px -${y * ZOOM}px`;
+  });
+
+function changeImage(imgName, el) {
+  mainImage.style.backgroundImage    = `url('/uploads/product/${imgName}')`;
+  mainImage.style.backgroundPosition = 'center';
+  initZoom();
+
+  // update thumbnail active state
+  document.querySelectorAll('.thumbnail').forEach(thumb => {
+    thumb.classList.remove('border-2', 'border-black');
+    thumb.classList.add('opacity-60');
+  });
+  el.classList.remove('opacity-60');
+  el.classList.add('border-2', 'border-black');
+}
+
+// REPLACE selectVariant with this:
+function selectVariant(variantId, price, stock, el) {
+  document.getElementById('price').innerText = price;
+  document.getElementById('variantId').value = variantId;
+
+  // Update wishlist button
+  const wishBtn = document.querySelector('.wishlist-btn');
+  if (wishBtn) wishBtn.dataset.variantId = variantId;
+
+  // Update variant button styles
+  document.querySelectorAll('.variant-btn').forEach(btn => {
+    btn.classList.remove('bg-black', 'text-white');
+    btn.classList.add('bg-white');
+  });
+  el.classList.add('bg-black', 'text-white');
+
+  // ✅ Update stock badge
+  const stockBadge = document.getElementById('stockBadge');
+  if (stock > 0) {
+    stockBadge.innerHTML = `<span class="text-green-600 text-sm font-medium">In Stock (${stock} available)</span>`;
+  } else {
+    stockBadge.innerHTML = `<span class="text-red-500 text-sm font-medium">Out of Stock</span>`;
+  }
+
+  // ✅ Update Add to Cart button
+  const addToCartBtn = document.getElementById('addToCartBtn');
+  if (stock === 0) {
+    addToCartBtn.disabled = true;
+    addToCartBtn.textContent = 'Out of Stock';
+    addToCartBtn.className = 'w-full h-12 rounded-lg font-bold bg-gray-100 text-gray-400 cursor-not-allowed';
+  } else {
+    addToCartBtn.disabled = false;
+    addToCartBtn.textContent = 'Add to Cart';
+    addToCartBtn.className = 'w-full h-12 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 transition-colors';
+  }
+
+  // Update max quantity allowed
+  const qtyInput = document.getElementById('qty');
+  qtyInput.max = stock;
+}
+
+// UPDATE changeQty to respect stock:
+function changeQty(val) {
+  const qty = document.getElementById('qty');
+  const current = parseInt(qty.value) || 1;
+  const max = parseInt(qty.max) || Infinity;
+  const newVal = current + val;
+  if (newVal >= 1 && newVal <= max) {
+    qty.value = newVal;
+    document.getElementById('finalQty').value = newVal;
+  }
+}
+
+  document.getElementById('qty').addEventListener('input', function () {
+    const val = Math.max(1, parseInt(this.value) || 1);
+    this.value = val;
+    document.getElementById('finalQty').value = val;
+  });
+</script>
+<script>
+  document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const productId = btn.dataset.id;
+      const isWishlisted = btn.dataset.wishlisted === 'true';
+      const icon = btn.querySelector('.material-symbols-outlined');
+
+      try {
+        const res = await fetch('/wishlist/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+       body: JSON.stringify({ productId, variantId: btn.dataset.variantId }) // ✅ backend fetches variant from DB anyway
+        });
+
+        if (res.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
+
+        if (res.status === 400) {
+          const data = await res.json();
+          alert(data.message); // "already in cart"
+          return;
+        }
+
+        if (res.ok) {
+          const nowWishlisted = !isWishlisted;
+          btn.dataset.wishlisted = String(nowWishlisted);
+
+          // ✅ update icon fill
+          icon.style.fontVariationSettings = `'FILL' ${nowWishlisted ? 1 : 0}`;
+          icon.style.color = nowWishlisted ? '#E24B4A' : '#886e63';
+
+          // ✅ update button style
+          btn.classList.toggle('border-red-200', nowWishlisted);
+          btn.classList.toggle('bg-red-50', nowWishlisted);
+          btn.classList.toggle('border-[#E6E0DC]', !nowWishlisted);
+
+          // ✅ animation
+          btn.style.transform = 'scale(1.2)';
+          setTimeout(() => btn.style.transform = '', 200);
+        }
+
+      } catch (err) {
+        console.error('Wishlist error:', err);
+      }
+    });
+  });
+</script>
+</html>

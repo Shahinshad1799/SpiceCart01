@@ -73,13 +73,29 @@
 </div>
 <div class="space-y-1">
 <label class="block text-sm font-bold text-[#181311] dark:text-white" for="password">Password</label>
-<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="password" id="password" placeholder="Min. 8 characters" type="password" minlength="8"/>
+<div class="relative">
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 pr-12 placeholder-[#886e63]/50" name="password" id="password" placeholder="Min. 8 characters" type="password" minlength="8"/>
+<button type="button" onclick="togglePassword('password', 'toggleIcon')" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#886e63] dark:text-[#9CA3AF] hover:text-primary transition-colors" tabindex="-1" aria-label="Show password">
+<span class="material-symbols-outlined text-[20px]" id="toggleIcon">visibility</span>
+</button>
+</div>
+
 <p class="error-msg text-red-500 text-sm mt-1 hidden" id="passwordError"></p>
 </div>
 <div class="space-y-1">
 <label class="block text-sm font-bold text-[#181311] dark:text-white" for="confirm_password">Confirm Password</label>
-<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="confirmpassword" id="confirm_password" placeholder="Re-enter password" type="password"/>
+<div class="relative">
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 pr-12 placeholder-[#886e63]/50" name="confirmpassword" id="confirm_password" placeholder="Re-enter password" type="password"/>
+<button type="button" onclick="togglePassword('confirm_password', 'toggleConfirmIcon')" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#886e63] dark:text-[#9CA3AF] hover:text-primary transition-colors" tabindex="-1" aria-label="Show password">
+<span class="material-symbols-outlined text-[20px]" id="toggleConfirmIcon">visibility</span>
+</button>
+</div>
+
 <p class="error-msg text-red-500 text-sm mt-1 hidden" id="confirmPasswordError"></p>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-bold text-[#181311] dark:text-white" for="referral_code">Referral Code <span class="font-normal text-[#886e63] dark:text-[#9CA3AF]">(optional)</span></label>
+<input class="w-full h-12 rounded-lg bg-[#f4f1f0] dark:bg-[#1A120E] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#211611] focus:ring-0 transition-colors text-[#181311] dark:text-white px-4 placeholder-[#886e63]/50" name="referralCode" id="referral_code" placeholder="Enter a friend's code" type="text" value="<%= typeof referralCode !== 'undefined' ? referralCode : '' %>"/>
 </div>
 <div class="flex items-start gap-3 mt-2">
 <input class="mt-1 h-4 w-4 rounded border-[#D6CFC7] bg-white text-primary focus:ring-primary focus:ring-offset-0 dark:border-[#3E302A] dark:bg-[#1A120E]" id="terms" type="checkbox"/>
@@ -191,6 +207,19 @@
 </div>
 </footer>
 </div>
+<script>
+  function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === "password") {
+      input.type = "text";
+      icon.textContent = "visibility_off";
+    } else {
+      input.type = "password";
+      icon.textContent = "visibility";
+    }
+  }
+</script>
 <script>
 const form = document.getElementById("signupForm");
 

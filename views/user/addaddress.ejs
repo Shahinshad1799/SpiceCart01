@@ -12,54 +12,13 @@
   
 <div class="relative flex h-auto min-h-screen w-full flex-col bg-white group/design-root overflow-x-hidden" style='font-family: Epilogue, "Noto Sans", sans-serif;'>
 <div class="layout-container flex h-full grow flex-col">
-<header class="sticky top-0 z-50 w-full border-b border-[#E6E0DC] dark:border-[#3E302A] bg-white/90 dark:bg-[#211611]/90 backdrop-blur-md transition-all duration-300">
-<div class="layout-container flex h-full flex-col">
-<div class="flex items-center justify-between px-6 py-4 lg:px-20 xl:px-40">
-<div class="flex items-center gap-4 lg:gap-12 flex-1">
-<div class="flex items-center gap-2 cursor-pointer">
-<span class="material-symbols-outlined text-primary" style="font-size: 32px;">local_fire_department</span>
-<h2 class="text-xl lg:text-2xl font-bold tracking-tight text-[#181311] dark:text-white">Spice Cart</h2>
-</div>
-<div class="hidden md:flex flex-1 max-w-md">
-<label class="flex w-full items-center h-12 rounded-full bg-[#f4f1f0] dark:bg-[#2C201A] border border-transparent focus-within:border-primary/50 transition-colors overflow-hidden px-4">
-<span class="material-symbols-outlined text-[#886e63] dark:text-[#9CA3AF]">search</span>
-<input class="flex-1 bg-transparent border-none focus:ring-0 text-base ml-2 placeholder-[#886e63] dark:placeholder-[#9CA3AF] text-[#181311] dark:text-white h-full" placeholder="Search for saffron, curry..."/>
-</label>
-</div>
-</div>
-<div class="flex items-center justify-end gap-6 lg:gap-8">
-<nav class="hidden lg:flex items-center gap-8 font-body font-medium text-sm">
-<a class="hover:text-primary transition-colors" href="#">Shop</a>
-<a class="hover:text-primary transition-colors" href="#">About</a>
-<a class="hover:text-primary transition-colors" href="#">Recipes</a>
-<a class="hover:text-primary transition-colors" href="#">Blog</a>
-</nav>
-<div class="flex items-center gap-3">
-<div class="hidden sm:flex items-center gap-4">
-<button class="text-[#5C4D46] dark:text-[#A8A29E] hover:text-primary transition-colors">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<div class="h-6 w-px bg-[#E6E0DC] dark:bg-[#3E302A]"></div>
-<div class="flex items-center gap-3 cursor-pointer group">
-<div class="size-9 rounded-full overflow-hidden border border-[#E6E0DC] dark:border-[#3E302A]">
-      <span class="material-symbols-outlined">account_circle</span>
-</div>
-</div>
-</div>
-<button class="lg:hidden flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] dark:hover:bg-[#2C201A]">
-<span class="material-symbols-outlined">menu</span>
-</button>
-</div>
-</div>
-</div>
-</div>
-</header>
+<%- include("../partials/header") %>
 <div class="flex flex-1 justify-center py-10 px-5 md:px-10 lg:px-20 xl:px-40">
 <div class="layout-content-container flex flex-col w-full max-w-[720px] flex-1">
 <div class="flex items-center gap-2 mb-8">
-<a class="text-[#886e63] flex items-center gap-1 text-sm font-medium hover:text-[#ea580c] transition-colors" href="#">
+<a class="text-[#886e63] flex items-center gap-1 text-sm font-medium hover:text-[#ea580c] transition-colors" href="/address">
 <span class="material-symbols-outlined text-base">arrow_back</span>
-        Back to Checkout
+        Back to address
       </a>
 </div>
 <h1 class="text-[#181311] text-3xl md:text-4xl font-bold leading-tight mb-8">Add New Address</h1>
@@ -168,7 +127,9 @@
 <span class="text-sm font-medium text-[#181311] group-hover:text-[#ea580c] transition-colors">Set as default address</span>
 </label>
 <div class="flex flex-col-reverse sm:flex-row items-center gap-4 mt-8">
-<button class="w-full sm:w-auto text-[#181311] font-bold py-3 px-8 rounded-xl hover:bg-[#f4f1f0] transition-colors" type="button">Cancel</button>
+  <a href="/address">
+    <button class="w-full sm:w-auto text-[#181311] font-bold py-3 px-8 rounded-xl hover:bg-[#f4f1f0] transition-colors" type="button">Cancel</button>
+  </a>
 <button class="w-full sm:w-auto bg-[#ea580c] hover:bg-[#c2410c] text-white font-bold py-3 px-12 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2" type="submit">
           Save Address
         </button>
@@ -195,70 +156,93 @@ const zipcode = document.querySelector("input[name='zipcode']");
 // ===== Helper Functions =====
 function showError(input, id, message) {
   const error = document.getElementById(id);
+
   error.textContent = message;
   error.classList.remove("hidden");
+
+  input.classList.remove("border-[#d1d5db]");
   input.classList.add("border-red-500");
 }
 
 function clearError(input, id) {
   const error = document.getElementById(id);
+
   error.textContent = "";
   error.classList.add("hidden");
+
   input.classList.remove("border-red-500");
 }
-
 // ===== Individual Field Validation =====
-
 function validateFullname() {
-  if (!/^[A-Za-z ]{3,}$/.test(fullname.value.trim())) {
-    showError(fullname, "fullnameError", "Enter valid full name (min 3 letters)");
+  const value = fullname.value.trim();
+
+  if (!/^[A-Za-z\s]{3,50}$/.test(value)) {
+    showError(
+      fullname,
+      "fullnameError",
+      "Name should contain only letters and spaces (3–50 characters)"
+    );
     return false;
   }
+
   clearError(fullname, "fullnameError");
   return true;
 }
 
 function validatePhone() {
-  if (!/^[0-9]{10}$/.test(phone.value.trim())) {
-    showError(phone, "phoneError", "Phone must be 10 digits");
+  const value = phone.value.trim();
+
+  // Indian mobile numbers
+  if (!/^[6-9]\d{9}$/.test(value)) {
+    showError(
+      phone,
+      "phoneError",
+      "Enter a valid 10-digit mobile number"
+    );
     return false;
   }
+
   clearError(phone, "phoneError");
   return true;
 }
 
 function validateAddress() {
-  if (address.value.trim().length < 5) {
-    showError(address, "addressError", "Enter valid street address");
+  const value = address.value.trim();
+
+  if (value.length < 10 || value.length > 150) {
+    showError(
+      address,
+      "addressError",
+      "Address must be between 10 and 150 characters"
+    );
     return false;
   }
+
   clearError(address, "addressError");
   return true;
 }
 
 function validateCity() {
-  if (!/^[A-Za-z ]{2,}$/.test(city.value.trim())) {
-    showError(city, "cityError", "Enter valid city");
+  const value = city.value.trim();
+
+  if (!/^[A-Za-z\s]{2,50}$/.test(value)) {
+    showError(city, "cityError", "Enter a valid city name");
     return false;
   }
+
   clearError(city, "cityError");
   return true;
 }
 
-function validateState() {
-  if (!state.value) {
-    showError(state, "stateError", "Select a state");
-    return false;
-  }
-  clearError(state, "stateError");
-  return true;
-}
-
 function validateZip() {
-  if (!/^[0-9]{5,6}$/.test(zipcode.value.trim())) {
-    showError(zipcode, "zipError", "Enter valid zip code");
+  const value = zipcode.value.trim();
+
+  // Indian PIN code
+  if (!/^[1-9][0-9]{5}$/.test(value)) {
+    showError(zipcode, "zipError", "Enter a valid 6-digit PIN code");
     return false;
   }
+
   clearError(zipcode, "zipError");
   return true;
 }
@@ -273,13 +257,20 @@ zipcode.addEventListener("input", validateZip);
 
 // ===== Final Submit Check =====
 form.addEventListener("submit", (e) => {
+  const fullnameValid = validateFullname();
+  const phoneValid = validatePhone();
+  const addressValid = validateAddress();
+  const cityValid = validateCity();
+  const stateValid = validateState();
+  const zipValid = validateZip();
+
   const isValid =
-    validateFullname() &&
-    validatePhone() &&
-    validateAddress() &&
-    validateCity() &&
-    validateState() &&
-    validateZip();
+    fullnameValid &&
+    phoneValid &&
+    addressValid &&
+    cityValid &&
+    stateValid &&
+    zipValid;
 
   if (!isValid) {
     e.preventDefault();

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SpiceCart Admin - Add New Product</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css">
+<script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#F97316", // Vibrant Orange
+                        "primary-dark": "#EA580C",
+                        "saffron": "#FF9933",
+                        "background-light": "#FDFCFB",
+                        "background-dark": "#131f1b",
+                        "sidebar-orange": "#F97316",
+                        "active-green": "#16a34a",
+                        "inactive-red": "#dc2626",
+                        "block-red": "#dc2626",
+                        "unblock-green": "#16a34a"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+body {
+    font-family: 'Manrope', sans-serif;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+}
+
+.nav-active {
+    background-color: #f97316;
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(124,45,18,0.2);
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.form-input {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+.form-input.input-error {
+    border-color: #dc2626;
+}
+#cropImage {
+  max-width: 100%;
+  display: block;
+}
+
+.cropper-container {
+  width: 100% !important;
+  height: 400px !important;
+}
+</style>
+<style>
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.header h2 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.upload-container {
+  border: 2px dashed #e2e8f0;
+  border-radius: 20px;
+  padding: 30px;
+  background: #f8fafc;
+  transition: 0.3s;
+}
+
+.upload-container:hover {
+  border-color: orange;
+  background: #f1f5f9;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.slot {
+  aspect-ratio: 1/1;
+  border: 2px dashed #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: 0.3s;
+  text-align: center;
+}
+
+.slot:hover {
+  border-color: orange;
+  background: #f1f5f9;
+}
+
+.slot span {
+  font-size: 24px;
+  color: #94a3b8;
+  margin-bottom: 5px;
+}
+
+.slot p {
+  font-size: 10px;
+  font-weight: bold;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.add-more {
+  border-color: #bbf7d0;
+  background: #ecfdf5;
+}
+
+.add-more span {
+  color: #10b981;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  color: #64748b;
+  font-size: 12px;
+}
+</style>
+</head>
+<body class="bg-main-bg min-h-screen flex text-slate-800">
+<%- include("../partials/sidebar") %>
+<main class="flex-1 ml-64 p-8">
+<header class="mb-8">
+<div class="flex items-center gap-2 text-sm text-slate-500 mb-2">
+<a class="hover:text-saffron transition-colors" href="#">Dashboard</a>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<a class="hover:text-saffron transition-colors" href="/admin/product">Products</a>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-slate-900 font-medium">Add New Product</span>
+</div>
+<h1 class="text-2xl font-extrabold text-slate-900">Add New Product</h1>
+<p class="text-slate-500 text-sm">Fill in the details below to add a new spice or product to your inventory.</p>
+</header>
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+<form id="addProductForm" class="p-8" method="post" action="/admin/addproduct" enctype="multipart/form-data">
+<div class="space-y-10">
+<section>
+<div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+<span class="material-symbols-outlined text-saffron">info</span>
+<h2 class="text-lg font-bold text-slate-900">Basic Information</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="md:col-span-2">
+<label class="form-label" for="product_name">Product Name</label>
+<input class="form-input" id="product_name" placeholder="e.g. Organic Kashmiri Saffron Threads" type="text" name="name" />
+<p id="nameError" class="text-red-500 text-xs mt-1"></p>
+</div>
+<div>
+<label class="form-label" for="catagory">Category</label>
+<select class="form-input" name="catagory">
+ <option value="">Select a category</option>
+
+<% catagory.forEach(cat => { %>
+  <option value="<%= cat._id %>">
+    <%= cat.name %>
+  </option>
+<% }) %>
+
+</select>
+<p id="categoryError" class="text-red-500 text-xs mt-1"></p>
+</div>
+<div class="md:col-span-2">
+<label class="form-label" for="description">Description</label>
+<textarea class="form-input min-h-[120px]" id="description" name="description" placeholder="Provide a detailed description of the product, including its origin, flavor profile, and culinary uses..."></textarea>
+
+<p id="descError" class="text-red-500 text-xs mt-1"></p>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-saffron">layers</span>
+<h2 class="text-lg font-bold text-slate-900">Product Variants &amp; Inventory</h2>
+</div>
+</div>
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+<div class="lg:col-span-1">
+<label class="form-label text-xs uppercase tracking-wider" for="variant_name">Variant Name</label>
+<input class="form-input text-sm" id="variant_name" placeholder="e.g. 500g Pack" type="text"/>
+<p id="variantNameError" class="text-red-500 text-xs mt-2"></p>
+</div>
+<div>
+<label class="form-label text-xs uppercase tracking-wider" for="variant_price">Price (₹)</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">₹</span>
+<input class="form-input pl-6 text-sm" id="variant_price" placeholder="0.00" step="0.01" type="number"/>
+</div>
+<p id="variantPriceError" class="text-red-500 text-xs mt-2"></p>
+</div>
+<div>
+<label class="form-label text-xs uppercase tracking-wider" for="variant_stock">Stock Quantity</label>
+<input class="form-input text-sm" id="variant_stock" placeholder="0" type="number"/>
+<p id="variantStockError" class="text-red-500 text-xs mt-2"></p>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-white border border-slate-200 text-slate-600 text-sm font-bold py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors" type="button" onclick="clearInputs()">Cancel</button>
+<button 
+  id="addBtn"
+  type="button"
+  onclick="addVariant()"
+  class="flex-1 bg-saffron text-white text-sm font-bold py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors">
+  Add
+</button>
+</div>
+</div>
+</div>
+<p id="variantListError" class="text-red-500 text-xs mt-2"></p>
+<div class="space-y-4">
+<div class="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:border-saffron/30 transition-all">
+
+
+<div id="variantList" class="space-y-4"></div>
+
+</div>
+</section>
+<section>
+  <div class="header">
+    <span class="material-symbols-outlined">image</span>
+    <h2>Product Images</h2>
+  </div>
+
+  <!-- Hidden Input -->
+  <input type="file" id="imageInput" name="images" multiple hidden>
+
+  <div class="upload-container">
+
+    <div id="imagePreview" class="grid">
+
+
+      <!-- Add More -->
+      <div class="slot add-more" onclick="openFilePicker()">
+        <span class="material-symbols-outlined">add</span>
+        <p>Add Images</p>
+      </div>
+
+    </div>
+
+    <div class="info">
+      <span class="material-symbols-outlined">info</span>
+      <p>PNG, JPG, WEBP (Max 800x800px). Minimum 3 images recommended.</p>
+    </div>
+
+  </div>
+
+<p id="imageError" class="text-red-500 text-xs mt-2"></p>
+</section>
+</div>
+<div class="mt-12 pt-8 border-t border-slate-100 flex items-center justify-end gap-4">
+<button class="px-6 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-colors border border-slate-200" type="button">
+                    Cancel
+                </button>
+<button class="px-8 py-2.5 text-sm font-bold text-white bg-saffron hover:bg-orange-600 rounded-lg transition-all shadow-md shadow-orange-500/20 flex items-center gap-2" type="submit">
+<span class="material-symbols-outlined text-[20px]">check</span>
+                    Save Product
+                </button>
+</div>
+</form>
+</div>
+</main>
+<% if (typeof error !== "undefined" || typeof success !== "undefined") { %>
+
+<div id="toast"
+     class="fixed bottom-6 right-6 
+     <%= error ? 'bg-red-600' : 'bg-green-600' %> 
+     text-white px-8 py-4 rounded-xl shadow-2xl text-base font-medium
+     transform translate-y-20 opacity-0 transition-all duration-500">
+
+  <%= error || success %>
+
+</div>
+
+<script>
+  const toast = document.getElementById("toast");
+
+  // Show animation
+  setTimeout(() => {
+    toast.classList.remove("translate-y-20", "opacity-0");
+  }, 100);
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    toast.classList.add("translate-y-20", "opacity-0");
+  }, 3000);
+</script>
+
+<% } %>  
+<script>
+let selectedFiles = [];
+let cropper;
+let currentFileIndex = null;
+
+const input = document.getElementById("imageInput");
+const preview = document.getElementById("imagePreview");
+
+function openFilePicker() {
+  input.click();
+}
+
+input.addEventListener("change", function () {
+  const files = Array.from(input.files);
+
+  files.forEach((file) => {
+    const index = selectedFiles.length;
+    selectedFiles.push(file);
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      const div = document.createElement("div");
+      div.className = "slot relative";
+      div.id = `slot-${index}`;
+
+      div.innerHTML = `
+        <img src="${e.target.result}" 
+             onclick="openCrop(${index})"
+             style="width:100%;height:100%;object-fit:cover;border-radius:10px;cursor:pointer;">
+        <button type="button" onclick="removeImage(${index})"
+          style="position:absolute;top:5px;right:5px;background:rgba(220,38,38,0.9);
+                 color:white;border:none;border-radius:50%;width:24px;height:24px;
+                 cursor:pointer;font-size:14px;line-height:1;display:flex;
+                 align-items:center;justify-content:center;">✕</button>
+        <div style="position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,0.5);
+                    color:white;font-size:9px;padding:2px 5px;border-radius:4px;">tap to crop</div>
+      `;
+
+      const addMoreBtn = document.querySelector(".add-more");
+      preview.insertBefore(div, addMoreBtn);
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+  updateFileInput();
+  validateImages();
+});
+function removeImage(index) {
+  selectedFiles.splice(index, 1);
+
+  // remove slot from DOM
+  const slot = document.getElementById(`slot-${index}`);
+  if (slot) slot.remove();
+
+  // re-index remaining slots
+  const slots = preview.querySelectorAll(".slot:not(.add-more)");
+  slots.forEach((slot, i) => {
+    const img = slot.querySelector("img");
+    const btn = slot.querySelector("button");
+    slot.id = `slot-${i}`;
+    if (img) img.setAttribute("onclick", `openCrop(${i})`);
+    if (btn) btn.setAttribute("onclick", `removeImage(${i})`);
+  });
+
+  updateFileInput();
+  validateImages();
+}
+// OPEN CROP
+function openCrop(index) {
+  currentFileIndex = index;
+
+  const file = selectedFiles[index];
+  const url = URL.createObjectURL(file);
+
+  const img = document.getElementById("cropImage");
+  img.src = url;
+
+  const modal = document.getElementById("cropModal");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+
+  setTimeout(() => {  //  VERY IMPORTANT
+    if (cropper) cropper.destroy();
+
+    cropper = new Cropper(img, {
+      aspectRatio: 1,
+      viewMode: 1,
+      autoCropArea: 1,
+      responsive: true,
+      background: false,
+      zoomable: true
+    });
+  }, 100);
+}
+
+// APPLY CROP
+function applyCrop() {
+  const canvas = cropper.getCroppedCanvas({
+    width: 500,
+    height: 500
+  });
+
+  canvas.toBlob((blob) => {
+    const file = new File([blob], Date.now() + ".jpg", {
+      type: "image/jpeg"
+    });
+
+    selectedFiles[currentFileIndex] = file;
+
+    updatePreview();
+    updateFileInput();
+
+    closeCrop();
+  });
+}
+
+// CLOSE
+function closeCrop() {
+  document.getElementById("cropModal").classList.add("hidden");
+  document.getElementById("cropModal").classList.remove("flex");
+
+  if (cropper) {
+    cropper.destroy();
+    cropper = null;
+  }
+}
+
+// UPDATE PREVIEW
+function updatePreview() {
+  const slots = preview.querySelectorAll(".slot img");
+
+  selectedFiles.forEach((file, i) => {
+    const url = URL.createObjectURL(file);
+    if (slots[i]) slots[i].src = url;
+  });
+}
+
+// UPDATE INPUT FILES
+function updateFileInput() {
+  const dt = new DataTransfer();
+
+  selectedFiles.forEach(file => {
+    dt.items.add(file);
+  });
+
+  input.files = dt.files;
+}
+
+// IMAGE VALIDATION (real-time, fires whenever images are added/removed)
+function validateImages(showError = true) {
+  const err = document.getElementById("imageError");
+  const valid = selectedFiles.length >= 3;
+
+  if (!valid && showError) {
+    const remaining = 3 - selectedFiles.length;
+    err.innerText = `Please upload at least 3 product images (${remaining} more needed)`;
+  } else {
+    err.innerText = "";
+  }
+  return valid;
+}
+</script>
+<script>
+let variants = [];
+let editIndex = -1;
+
+function addVariant() {
+  const nameInput = document.getElementById("variant_name");
+  const priceInput = document.getElementById("variant_price");
+  const stockInput = document.getElementById("variant_stock");
+
+  const name = nameInput.value.trim();
+  const price = priceInput.value;
+  const stock = stockInput.value;
+
+  const nameErr = document.getElementById("variantNameError");
+  const priceErr = document.getElementById("variantPriceError");
+  const stockErr = document.getElementById("variantStockError");
+
+  // clear previous errors first
+  nameErr.innerText = "";
+  priceErr.innerText = "";
+  stockErr.innerText = "";
+
+  let valid = true;
+
+  if (!name) {
+    nameErr.innerText = "Variant name is required";
+    valid = false;
+  } else {
+    // DUPLICATE CHECK — case-insensitive, ignores the variant currently being edited
+    const isDuplicate = variants.some((v, i) =>
+      v.name.trim().toLowerCase() === name.toLowerCase() && i !== editIndex
+    );
+    if (isDuplicate) {
+      nameErr.innerText = "A variant with this name already exists";
+      valid = false;
+    }
+  }
+
+  if (price === "" || Number(price) <= 0) {
+    priceErr.innerText = "Enter a valid price";
+    valid = false;
+  }
+
+  if (stock === "" || Number(stock) < 0) {
+    stockErr.innerText = "Enter a valid stock quantity";
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  const variant = {
+    name,
+    price: Number(price),
+    stock: Number(stock)
+  };
+
+  if (editIndex === -1) {
+    //  ADD
+    variants.push(variant);
+  } else {
+    //  UPDATE
+    variants[editIndex] = variant;
+    editIndex = -1;
+    document.getElementById("addBtn").innerText = "Add";
+  }
+
+  document.getElementById("variantListError").innerText = "";
+  renderVariants();
+  clearInputs();
+}
+
+// REAL-TIME VARIANT FIELD VALIDATION (clears errors as the user fixes them)
+document.getElementById("variant_name").addEventListener("input", function () {
+  const err = document.getElementById("variantNameError");
+  const name = this.value.trim();
+
+  if (!name) {
+    err.innerText = "";
+    return;
+  }
+  const isDuplicate = variants.some((v, i) =>
+    v.name.trim().toLowerCase() === name.toLowerCase() && i !== editIndex
+  );
+  err.innerText = isDuplicate ? "A variant with this name already exists" : "";
+});
+
+document.getElementById("variant_price").addEventListener("input", function () {
+  const err = document.getElementById("variantPriceError");
+  err.innerText = (this.value !== "" && Number(this.value) <= 0) ? "Enter a valid price" : "";
+});
+
+document.getElementById("variant_stock").addEventListener("input", function () {
+  const err = document.getElementById("variantStockError");
+  err.innerText = (this.value !== "" && Number(this.value) < 0) ? "Enter a valid stock quantity" : "";
+});
+
+function renderVariants() {
+  const container = document.getElementById("variantList");
+  container.innerHTML = "";
+
+  variants.forEach((v, index) => {
+    const div = document.createElement("div");
+    div.className = "flex items-center justify-between bg-white border p-4 rounded-xl";
+
+    div.innerHTML = `
+      <div class="grid grid-cols-3 flex-1 gap-8">
+        <div>
+          <span class="text-xs text-gray-400">Variant</span>
+          <p>${v.name}</p>
+        </div>
+
+        <div>
+          <span class="text-xs text-gray-400">Price</span>
+          <p>₹${v.price}</p>
+        </div>
+
+        <div>
+          <span class="text-xs text-gray-400">Stock</span>
+          <p>${v.stock}</p>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button type="button" onclick="editVariant(${index})">Edit</button>
+        <button type="button" onclick="deleteVariant(${index})">Delete</button>
+      </div>
+    `;
+
+    // hidden inputs (append separately)
+    const nameInput = document.createElement("input");
+    nameInput.type = "hidden";
+    nameInput.name = `variants[${index}][name]`;
+    nameInput.value = v.name;
+
+    const priceInput = document.createElement("input");
+    priceInput.type = "hidden";
+    priceInput.name = `variants[${index}][price]`;
+    priceInput.value = v.price;
+
+    const stockInput = document.createElement("input");
+    stockInput.type = "hidden";
+    stockInput.name = `variants[${index}][stock]`;
+    stockInput.value = v.stock;
+
+    div.appendChild(nameInput);
+    div.appendChild(priceInput);
+    div.appendChild(stockInput);
+
+    container.appendChild(div);
+  });
+}
+function editVariant(index) {
+  const v = variants[index];
+
+  document.getElementById("variant_name").value = v.name;
+  document.getElementById("variant_price").value = v.price;
+  document.getElementById("variant_stock").value = v.stock;
+
+  editIndex = index;
+  document.getElementById("addBtn").innerText = "Update";
+}
+
+function deleteVariant(index) {
+  variants.splice(index, 1);
+  renderVariants();
+}
+
+function clearInputs() {
+  document.getElementById("variant_name").value = "";
+  document.getElementById("variant_price").value = "";
+  document.getElementById("variant_stock").value = "";
+  document.getElementById("variantNameError").innerText = "";
+  document.getElementById("variantPriceError").innerText = "";
+  document.getElementById("variantStockError").innerText = "";
+  editIndex = -1;
+  document.getElementById("addBtn").innerText = "Add";
+}
+
+// VARIANT LIST VALIDATION (called on submit)
+function validateVariantList(showError = true) {
+  const err = document.getElementById("variantListError");
+  const valid = variants.length >= 1;
+
+  if (!valid && showError) {
+    err.innerText = "Add at least one variant before saving";
+  } else {
+    err.innerText = "";
+  }
+  return valid;
+}
+</script>
+<script>
+// ================= BASIC FIELD VALIDATION (real-time) =================
+const nameInput = document.getElementById("product_name");
+const categoryInput = document.querySelector("select[name='catagory']");
+const descInput = document.getElementById("description");
+
+function validateProductName(showError = true) {
+  const valid = nameInput.value.trim().length >= 2;
+  const err = document.getElementById("nameError");
+  if (!valid && showError) {
+    err.innerText = "Minimum 2 characters required";
+  } else {
+    err.innerText = "";
+  }
+  return valid;
+}
+
+function validateCategory(showError = true) {
+  const valid = !!categoryInput.value;
+  const err = document.getElementById("categoryError");
+  if (!valid && showError) {
+    err.innerText = "Please select a category";
+  } else {
+    err.innerText = "";
+  }
+  return valid;
+}
+
+function validateDescription(showError = true) {
+  const valid = descInput.value.trim().length >= 5;
+  const err = document.getElementById("descError");
+  if (!valid && showError) {
+    err.innerText = "Minimum 5 characters required";
+  } else {
+    err.innerText = "";
+  }
+  return valid;
+}
+
+nameInput.addEventListener("input", () => validateProductName());
+categoryInput.addEventListener("change", () => validateCategory());
+descInput.addEventListener("input", () => validateDescription());
+
+// ================= SUBMIT GATE =================
+// If anything is invalid, we preventDefault so the browser never navigates away —
+// that means the form is never reset and everything the user already typed stays put,
+// they just see the relevant inline errors.
+document.getElementById("addProductForm").addEventListener("submit", function (e) {
+  const nameValid = validateProductName();
+  const categoryValid = validateCategory();
+  const descValid = validateDescription();
+  const imagesValid = validateImages();
+  const variantsValid = validateVariantList();
+
+  const allValid = nameValid && categoryValid && descValid && imagesValid && variantsValid;
+
+  if (!allValid) {
+    e.preventDefault();
+
+    // scroll to the first visible error so the user sees what needs fixing
+    const firstError = document.querySelector("p.text-red-500:not(:empty)");
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+});
+</script>
+<div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white p-5 rounded-xl w-[90vw] max-w-[600px]">
+    
+<img id="cropImage" class="w-full h-[400px] object-contain">
+
+    <div class="flex justify-end gap-3 mt-4">
+      <button onclick="closeCrop()" class="px-4 py-2 border rounded">Cancel</button>
+      <button onclick="applyCrop()" class="px-4 py-2 bg-orange-500 text-white rounded">
+        Crop
+      </button>
+    </div>
+
+  </div>
+</div>
+</body></html>

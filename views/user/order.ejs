@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spice Market - My Orders</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#cd4e18",
+          "background-light": "#f8f6f6",
+          "background-dark": "#211611",
+          "secondary": "#B89F73",
+          "forest": "#4C5E4E",
+          "muted-green": "#F0F3F1",
+        },
+        fontFamily: {
+          "display": ["Epilogue", "sans-serif"],
+          "body": ["Manrope", "sans-serif"],
+        },
+        borderRadius: {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "2xl": "1rem",
+          "full": "9999px"
+        },
+      },
+    },
+  }
+</script>
+<style>
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+
+  <%- include("../partials/header") %>
+
+  <main class="flex-1 bg-muted-green dark:bg-[#1A120E]">
+    <section class="px-6 py-10 lg:px-20 xl:px-40 min-h-[calc(100vh-80px)]">
+      <div class="mx-auto max-w-[1280px]">
+
+        <!-- Breadcrumb -->
+        <div class="mb-8 flex items-center gap-2 text-sm text-[#886e63] dark:text-[#9CA3AF]">
+          <a class="hover:text-primary" href="/">Home</a>
+          <span class="material-symbols-outlined text-xs">chevron_right</span>
+          <span class="text-[#181311] dark:text-white font-medium">My Orders</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+          <!-- ── SIDEBAR ── -->
+        <%- include("../partials/profilecard") %>
+
+          <!-- ── MAIN CONTENT ── -->
+          <div class="lg:col-span-8 xl:col-span-9">
+            <div class="bg-white dark:bg-[#2C201A] rounded-2xl shadow-sm border border-[#E6E0DC] dark:border-[#3E302A] overflow-hidden min-h-[600px]">
+
+              <!-- Tabs -->
+              <div class="px-6 py-6 lg:px-8 border-b border-[#f4f1f0] dark:border-[#3E302A]">
+                <h1 class="text-2xl font-bold text-[#181311] dark:text-white mb-6">My Orders</h1>
+               <%- include("../partials/topbar") %>
+              </div>
+
+              <!-- Orders Table -->
+              <div class="p-0">
+                <!-- Search Bar -->
+<!-- <div class="px-6 py-4 border-b border-[#f4f1f0] dark:border-[#3E302A]">
+  <form action="/order" method="GET">
+    <div class="flex gap-2">
+      <div class="relative flex-1">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#886e63] text-sm">search</span>
+        <input 
+          type="text" 
+          name="q" 
+          value="<%= search %>"
+          placeholder="Search by order ID..."
+          class="w-full pl-9 pr-4 py-2.5 text-sm border border-[#E6E0DC] dark:border-[#3E302A] rounded-xl bg-[#f8f6f6] dark:bg-[#261C16] text-[#181311] dark:text-white placeholder-[#886e63] focus:outline-none focus:border-primary transition-colors"
+        />
+      </div>
+      <button 
+        type="submit"
+        class="px-5 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl transition-colors">
+        Search
+      </button>
+      <% if (search) { %>
+        <a href="/order">
+          <button type="button" class="px-4 py-2.5 border border-[#E6E0DC] dark:border-[#3E302A] text-sm font-medium rounded-xl hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] transition-colors text-[#5C4D46] dark:text-[#A8A29E]">
+            Clear
+          </button>
+        </a>
+      <% } %>
+    </div>
+  </form> -->
+</div>
+                <% if (orders && orders.length > 0) { %>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-[#f8f6f6] dark:bg-[#261C16] border-b border-[#E6E0DC] dark:border-[#3E302A]">
+
+                        <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-[#886e63]">Order ID</th>
+                        <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-[#886e63]">Date</th>
+                        <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-[#886e63]">Status</th>
+                        <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-[#886e63]">Total</th>
+                        <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-[#886e63] text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#f4f1f0] dark:divide-[#3E302A]">
+                      <% orders.forEach(order => { %>
+                        <%
+                          // Pick the first item's image to represent the order
+                          const firstItem = order.items[0];
+                          const statusMap = {
+                            pending:    { bg: 'bg-amber-100',  text: 'text-amber-700',  label: 'Pending' },
+                            processing: { bg: 'bg-amber-100',  text: 'text-amber-700',  label: 'Processing' },
+                            shipped:    { bg: 'bg-blue-100',   text: 'text-blue-700',   label: 'Shipped' },
+                            delivered:  { bg: 'bg-green-100',  text: 'text-green-700',  label: 'Delivered' },
+                            cancelled:  { bg: 'bg-red-100',    text: 'text-red-700',    label: 'Cancelled' },
+                            returned:  { bg: 'bg-red-100',    text: 'text-red-700',    label: 'returened' },
+                          };
+                          const badge = statusMap[order.status] || statusMap['pending'];
+                        %>
+                        <tr class="group hover:bg-[#fcfbfb] dark:hover:bg-[#32241E] transition-colors">
+
+                          <!-- First item image -->
+                          <!-- <td class="py-4 px-6 whitespace-nowrap">
+                            <div class="size-12 rounded-lg overflow-hidden bg-white border border-[#E6E0DC]">
+                              <% if (firstItem && firstItem.productImage) { %>
+                                <img alt="<%= firstItem.productName %>" class="w-full h-full object-cover"
+                                  src="/uploads/product/<%= firstItem.productImage %>"/>
+                              <% } else { %>
+                                <div class="w-full h-full bg-[#f4f1f0] flex items-center justify-center">
+                                  <span class="material-symbols-outlined text-[#886e63]">inventory_2</span>
+                                </div>
+                              <% } %>
+                            </div>
+                          </td> -->
+
+                          <!-- Order ID -->
+                          <td class="py-4 px-6 whitespace-nowrap">
+                            <span class="font-bold text-[#181311] dark:text-white">
+                              #<%= order._id.toString().slice(-6).toUpperCase() %>
+                            </span>
+                          </td>
+
+                          <!-- Date -->
+                          <td class="py-4 px-6 whitespace-nowrap">
+                            <span class="text-sm text-[#5C4D46] dark:text-[#A8A29E]">
+                              <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                            </span>
+                          </td>
+
+                          <!-- Status badge -->
+                          <td class="py-4 px-6 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold <%= badge.bg %> <%= badge.text %>">
+                              <%= badge.label %>
+                            </span>
+                          </td>
+
+                          <!-- Total -->
+                          <td class="py-4 px-6 whitespace-nowrap">
+                            <span class="font-bold text-[#181311] dark:text-white">₹ <%= order.total.toFixed(2) %></span>
+                          </td>
+
+                          <!-- Action -->
+                          <td class="py-4 px-6 whitespace-nowrap text-right">
+                            <a href="/orders/<%= order._id %>">
+                              <button class="text-xs font-bold text-primary hover:text-primary/80 transition-colors border border-primary/30 rounded-lg px-3 py-1.5 hover:bg-primary/5">
+                                View Details
+                              </button>
+                            </a>
+                          </td>
+
+                        </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Pagination -->
+                <% if (totalOrders > orders.length) { %>
+                <div class="px-6 py-6 border-t border-[#f4f1f0] dark:border-[#3E302A] flex justify-center">
+                  <a href="/orders?page=<%= currentPage + 1 %>">
+                    <button class="text-sm font-bold text-[#5C4D46] dark:text-[#A8A29E] hover:text-primary transition-colors flex items-center gap-1">
+                      Load More Orders
+                      <span class="material-symbols-outlined text-sm">expand_more</span>
+                    </button>
+                  </a>
+                </div>
+                <% } %>
+
+                <% } else { %>
+                <!-- Empty state -->
+                <div class="flex flex-col items-center justify-center py-24 text-center px-6">
+                  <span class="material-symbols-outlined text-6xl text-[#d1cac7] mb-4">shopping_bag</span>
+                  <h3 class="text-lg font-bold text-[#181311] dark:text-white mb-2">No orders yet</h3>
+                  <p class="text-sm text-[#886e63] mb-6">Looks like you haven't placed any orders yet.</p>
+                  <a href="/products">
+                    <button class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl transition-colors text-sm">
+                      Start Shopping
+                    </button>
+                  </a>
+                </div>
+                <% } %>
+              </div>
+                              <div class="flex justify-center mt-6 gap-2">
+  <% if (currentPage > 1) { %>
+    <a href="?q=<%= search %>&page=<%= currentPage - 1 %>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Prev</a>
+  <% } %>
+
+  <% for (let i = 1; i <= totalPages; i++) { %>
+    <a href="?q=<%= search %>&page=<%= i %>" class="px-3 py-1 rounded 
+      <%= i === currentPage ? 'bg-primary text-white' : 'bg-gray-200 hover:bg-gray-300' %>">
+      <%= i %>
+    </a>
+  <% } %>
+
+  <% if (currentPage < totalPages) { %>
+    <a href="?q=<%= search %>&page=<%= currentPage + 1 %>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>
+  <% } %>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <%- include("../partials/footer") %>
+</div>
+</body>
+</html>
