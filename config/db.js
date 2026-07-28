@@ -2,7 +2,7 @@ const mongoose=require("mongoose")
 
 const connectdb=async()=>{
    try{
-    await mongoose.connect("mongodb://127.0.0.1:27017/spicecart")
+    await mongoose.connect(process.env.MONGODB_URI)
     console.log("db connected successfully")
    }catch(error){
     console.log("connection failed")
