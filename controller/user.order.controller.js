@@ -9,7 +9,7 @@ const mongoose = require("mongoose");
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const { getOrCreateWallet, creditWallet, debitWallet } = require('../utils/walletHelper');
-const { calculateOrderTotals } = require('../utils/orderPricing');
+const { calculateOrderTotals } = require('../utils/Orderpricing');
 
 const razorpay = new Razorpay({
   key_id:     process.env.RAZORPAY_KEY_ID,
