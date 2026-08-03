@@ -66,7 +66,7 @@ const loadshop = async (req, res) => {
     const { category, maxPrice, error, sort } = req.query;
     const search = req.query.q || "";
     const page = parseInt(req.query.page) || 1;
-    const limit = 2;
+    const limit = 5;
     const skip = (page - 1) * limit;
 
 
