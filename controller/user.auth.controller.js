@@ -83,7 +83,7 @@ const registeruser = async (req, res) => {
       return res.render("user/signup", { error: "Passwords do not match" });
     }
 
-    const user = await usermodel.findone({ email });
+    const user = await usermodel.findOne({ email });
     if (user) {
       return res.render("user/signup", { error: "User already exists" });
     }
