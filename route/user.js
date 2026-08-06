@@ -98,7 +98,7 @@ route.patch('/orders/:id/cancel-item', orderController.cancelOrderItem);
 route.patch("/orders/:id/return", orderController.returnorder);
 
 route.get("/wallet", walletController.loadWallet)
-route.get("/referrals", referralController.loadreferrals)
+route.get("/referrals", userauth.isLogin,referralController.loadreferrals)
 route.get("/r/:code", referralController.referralLanding);
 
 route.get("/auth/google", authController.googleAuth);
