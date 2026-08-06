@@ -1,8 +1,15 @@
-// controller/user/referralcontroller.js
 const usermodel = require("../model/usermodel");
+const { generateReferralCode } = require("../utils/referralHelper");
 
-const referralLanding = (req, res) => {
-  req.session.referralCode = req.params.code;
+const referralLanding = async (req, res) => {
+  const code = req.params.code;
+
+  // validate the code actually exists before trusting it
+  const referrer = await usermodel.findOne({ referralCode: code });
+  if (referrer) {
+    req.session.referralCode = code;
+  }
+
   res.redirect("/signup");
 };
 
