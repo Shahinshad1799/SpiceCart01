@@ -9,7 +9,14 @@ const loadprofile = async (req, res) => {
   try {
     const userId = req.user?._id || req.session.userId;
     if (!userId) return res.redirect("/login");
-
+    const favoriteCCategory = await orderModel.aggregate([
+      { $match: { userId: userId } },
+      { $unwind: "$items" },
+      { $group: { _id: "$items.category", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 1 }
+    ]);
+    res.locals.favoriteCategory = favoriteCCategory[0]?._id || "N/A";
     const user = await usermodel.findById(userId);
     res.render("user/profile", { user, currentPage: 'profile' });
   } catch (error) {

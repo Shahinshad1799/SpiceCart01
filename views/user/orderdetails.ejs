@@ -310,87 +310,239 @@
 
               <!-- Details Grid -->
               <div class="p-8 lg:p-12">
-                <div class="grid grid-cols-1 xl:grid-cols-12 gap-12">
+             ```html
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
 
-                  <!-- ── ITEMS LIST ── -->
-                <div class="flex items-center justify-between mb-2">
-  <h3 class="text-xl font-bold text-text-main dark:text-white">Order Items</h3>
-  <% if (order.status !== 'cancelled') { %>
-  <button
-    onclick="downloadInvoice()"
-    class="text-sm font-bold text-primary flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-    <span class="material-symbols-outlined text-lg">receipt_long</span>
-    <span>Invoice</span>
-  </button>
-  <% } %>
+  <!-- ── ITEMS LIST ── -->
+  <div class="xl:col-span-8 min-w-0">
+
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <h3 class="text-xl font-bold text-text-main dark:text-white">
+        Order Items
+      </h3>
+
+      <% if (order.status !== 'cancelled') { %>
+        <button
+          type="button"
+          onclick="downloadInvoice()"
+          class="shrink-0 text-sm font-bold text-primary flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+          <span class="material-symbols-outlined text-lg">receipt_long</span>
+          <span>Invoice</span>
+        </button>
+      <% } %>
+    </div>
+
+    <!-- Items -->
+    <div class="space-y-4">
+
+      <% order.items.forEach(item => {
+        const itemCancelled = item.itemStatus === 'cancelled';
+        const canCancelItem =
+          ['pending', 'processing'].includes(order.status) && !itemCancelled;
+      %>
+
+        <div class="
+          flex flex-col sm:flex-row
+          items-start
+          gap-4 sm:gap-5
+          p-4 sm:p-5
+          rounded-2xl
+          transition-all
+          border
+          <%= itemCancelled
+            ? 'opacity-50 bg-red-50/40 dark:bg-red-950/10 border-red-100 dark:border-red-900/30'
+            : 'hover:bg-[#fcfbfb] dark:hover:bg-[#32241E] border-border-subtle/50 dark:border-[#3E302A]/50'
+          %>
+        ">
+
+          <!-- Product Image -->
+          <div class="relative size-20 sm:size-24 rounded-xl overflow-hidden bg-white border border-border-subtle dark:border-[#3E302A] flex-shrink-0 shadow-sm">
+
+            <% if (item.productImage) { %>
+
+              <img
+                src="/uploads/product/<%= item.productImage %>"
+                alt="<%= item.productName %>"
+                class="w-full h-full object-cover <%= itemCancelled ? 'grayscale' : '' %>"
+              />
+
+            <% } else { %>
+
+              <div class="w-full h-full bg-surface-muted flex items-center justify-center">
+                <span class="material-symbols-outlined text-text-muted text-3xl">
+                  inventory_2
+                </span>
+              </div>
+
+            <% } %>
+
+            <% if (itemCancelled) { %>
+              <div class="absolute inset-0 bg-red-500/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-red-400 text-3xl">
+                  cancel
+                </span>
+              </div>
+            <% } %>
+
+          </div>
+
+          <!-- Product Details -->
+          <div class="flex-1 min-w-0 w-full">
+
+            <!-- Name + Price -->
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+
+              <p class="
+                font-bold text-base sm:text-lg
+                text-text-main dark:text-white
+                leading-tight
+                break-words
+                min-w-0
+              ">
+                <%= item.productName %>
+              </p>
+
+              <p class="
+                font-bold text-base sm:text-lg
+                flex-shrink-0
+                <%= itemCancelled
+                  ? 'line-through text-text-muted'
+                  : 'text-text-main dark:text-white'
+                %>
+              ">
+                ₹<%= item.lineTotal.toFixed(2) %>
+              </p>
+
+            </div>
+
+            <!-- Quantity / Unit Price -->
+            <div class="
+              mt-3
+              flex flex-wrap
+              items-center
+              gap-2 sm:gap-4
+              text-xs
+              font-semibold
+              text-text-muted
+            ">
+
+              <span class="bg-surface-muted dark:bg-[#3E302A] px-2 py-1 rounded">
+                Qty:
+                <span class="text-text-main dark:text-white">
+                  <%= item.quantity %>
+                </span>
+              </span>
+
+              <span class="hidden sm:block size-1 rounded-full bg-border-subtle"></span>
+
+              <span>
+                ₹<%= item.unitPrice.toFixed(2) %> per unit
+              </span>
+
+            </div>
+
+            <!-- Status + Cancel -->
+            <div class="
+              mt-4
+              flex flex-wrap
+              items-center
+              justify-between
+              gap-3
+            ">
+
+              <!-- Cancelled Status -->
+              <% if (itemCancelled) { %>
+
+                <span class="
+                  inline-flex
+                  items-center
+                  gap-1
+                  text-[11px]
+                  font-bold
+                  text-red-500
+                  bg-red-50
+                  dark:bg-red-950/30
+                  px-2.5 py-1
+                  rounded-lg
+                  border
+                  border-red-100
+                  dark:border-red-900/40
+                  max-w-full
+                ">
+
+                  <span class="material-symbols-outlined text-sm">
+                    cancel
+                  </span>
+
+                  <span>
+                    Item Cancelled
+                    <% if (isOnlinePaid) { %>
+                      · Refunded to Wallet
+                    <% } %>
+                  </span>
+
+                </span>
+
+              <% } %>
+
+              <!-- Cancel Button -->
+              <% if (canCancelItem) { %>
+
+                <button
+                  type="button"
+                  onclick="cancelItem(
+                    '<%= order._id %>',
+                    '<%= item.productId %>',
+                    '<%= item.productName.replace(/'/g, "\\'") %>',
+                    <%= isOnlinePaid %>,
+                    <%= item.lineTotal %>
+                  )"
+                  class="
+                    sm:ml-auto
+                    shrink-0
+                    text-xs
+                    font-bold
+                    text-red-400
+                    hover:text-red-600
+                    dark:hover:text-red-400
+                    flex items-center
+                    gap-1
+                    transition-colors
+                    group
+                  "
+                >
+
+                  <span class="
+                    material-symbols-outlined
+                    text-base
+                    group-hover:scale-110
+                    transition-transform
+                  ">
+                    remove_shopping_cart
+                  </span>
+
+                  Cancel Item
+
+                </button>
+
+              <% } %>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      <% }) %>
+
+    </div>
+
+  </div>
+
 </div>
+```
 
-                    <div class="space-y-5">
-                      <% order.items.forEach(item => {
-                           const itemCancelled = item.itemStatus === 'cancelled';
-                           const canCancelItem = ['pending', 'processing'].includes(order.status) && !itemCancelled;
-                      %>
-                      <div class="flex items-start gap-6 p-5 rounded-2xl transition-all border <%= itemCancelled ? 'opacity-50 bg-red-50/40 dark:bg-red-950/10 border-red-100 dark:border-red-900/30' : 'hover:bg-[#fcfbfb] dark:hover:bg-[#32241E] border-border-subtle/50 dark:border-[#3E302A]/50' %>">
-
-                        <!-- Product image with cancelled overlay -->
-                        <div class="relative size-24 rounded-xl overflow-hidden bg-white border border-border-subtle dark:border-[#3E302A] flex-shrink-0 shadow-sm">
-                          <% if (item.productImage) { %>
-                            <img alt="<%= item.productName %>" class="w-full h-full object-cover <%= itemCancelled ? 'grayscale' : '' %>" src="/uploads/product/<%= item.productImage %>"/>
-                          <% } else { %>
-                            <div class="w-full h-full bg-surface-muted flex items-center justify-center">
-                              <span class="material-symbols-outlined text-text-muted text-3xl">inventory_2</span>
-                            </div>
-                          <% } %>
-                          <% if (itemCancelled) { %>
-                          <div class="absolute inset-0 bg-red-500/10 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-red-400 text-3xl">cancel</span>
-                          </div>
-                          <% } %>
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                          <div class="flex justify-between items-start gap-2">
-                            <p class="font-bold text-lg text-text-main dark:text-white leading-tight"><%= item.productName %></p>
-                            <p class="font-bold text-lg text-text-main dark:text-white flex-shrink-0 <%= itemCancelled ? 'line-through text-text-muted' : '' %>">
-                              ₹<%= item.lineTotal.toFixed(2) %>
-                            </p>
-                          </div>
-
-                          <div class="mt-3 flex items-center gap-4 text-xs font-semibold text-text-muted">
-                            <span class="bg-surface-muted dark:bg-[#3E302A] px-2 py-1 rounded">
-                              Qty: <span class="text-text-main dark:text-white"><%= item.quantity %></span>
-                            </span>
-                            <span class="size-1 rounded-full bg-border-subtle"></span>
-                            <span>₹<%= item.unitPrice.toFixed(2) %> per unit</span>
-                          </div>
-
-                          <div class="mt-4 flex items-center justify-between">
-                            <!-- Item status badge -->
-                            <% if (itemCancelled) { %>
-                            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-red-500 bg-red-50 dark:bg-red-950/30 px-2.5 py-1 rounded-lg border border-red-100 dark:border-red-900/40">
-                              <span class="material-symbols-outlined text-sm">cancel</span>
-                              Item Cancelled
-                              <% if (isOnlinePaid) { %>
-                              · Refunded to Wallet
-                              <% } %>
-                            </span>
-                            <% } %>
-
-                            <!-- Per-item cancel button -->
-                            <% if (canCancelItem) { %>
-                            <button
-                              onclick="cancelItem('<%= order._id %>', '<%= item.productId %>', '<%= item.productName.replace(/'/g, "\\'") %>', <%= isOnlinePaid %>, <%= item.lineTotal %>)"
-                              class="ml-auto text-xs font-bold text-red-400 hover:text-red-600 dark:hover:text-red-400 flex items-center gap-1 transition-colors group">
-                              <span class="material-symbols-outlined text-base group-hover:scale-110 transition-transform">remove_shopping_cart</span>
-                              Cancel Item
-                            </button>
-                            <% } %>
-                          </div>
-                        </div>
-                      </div>
-                      <% }) %>
-                    </div>
-                  </div>
 
                   <!-- ── RIGHT COLUMN ── -->
                   <div class="xl:col-span-5 space-y-8">

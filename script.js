@@ -37,6 +37,7 @@ app.use((req, res, next) => {
   next();
 });
 
+
 // 6. CART COUNT MIDDLEWARE — now session is ready
 app.use(async (req, res, next) => {
   if (req.session && req.session.userId) {
@@ -67,6 +68,7 @@ app.use(async (req, res, next) => {
   }
   next();
 });
+
 // 7. USER LOCALS
 app.use((req, res, next) => {
   res.locals.user = req.session.user;

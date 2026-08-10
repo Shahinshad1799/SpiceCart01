@@ -70,21 +70,21 @@
 <label class="block text-sm font-bold text-[#181311] dark:text-white mb-2">Fullname</label>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#886e63] transition-colors group-focus-within:text-primary">person</span>
-<input class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0 transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium" type="text" name="fullname" value=<%=user.fullname %> />
+<input class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0 transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium" type="text" name="fullname" value=<%=user.fullname %>  readonly />
 </div>
 </div>
 <div class="col-span-1">
 <label class="block text-sm font-bold text-[#181311] dark:text-white mb-2">Email Address</label>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#886e63] transition-colors group-focus-within:text-primary">mail</span>
-<input class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0 transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium" type="email" name="email" value=<%=user.email %> />
+<input class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0 transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium" type="email" name="email" value=<%=user.email %>  readonly/>
 </div>
 </div>
 <div class="col-span-1">
 <label class="block text-sm font-bold text-[#181311] dark:text-white mb-2">Phone Number</label>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#886e63] transition-colors group-focus-within:text-primary">call</span>
-<input class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0 transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium" type="tel" name="phonenumber" value=<%= user.phonenumber || "Notaddedd" %>/>
+<input class="w-full h-12 pl-12 pr-4 rounded-lg bg-[#f8f6f6] dark:bg-[#211611] border-transparent focus:border-primary focus:bg-white dark:focus:bg-[#2C201A] focus:ring-0 transition-all text-[#181311] dark:text-white placeholder-[#886e63] font-medium" type="tel" name="phonenumber" value=<%= user.phonenumber || "Notaddedd" %> readonly/>
 </div>
 </div>
 <div class="col-span-1">
@@ -99,6 +99,7 @@
   type="date"
   name="dateofbirth"
   value="<%= user.dateofbirth ? user.dateofbirth.toISOString().split('T')[0] : '' %>"
+  readonly
 />
 </div>
 </div>
