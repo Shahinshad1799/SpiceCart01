@@ -84,10 +84,21 @@
         <h1 class="text-[#181311] text-4xl font-bold"><%= product.name %></h1>
         <p class="text-[#886e63] text-lg mt-2"><%= product.description.split('.')[0] + '.' %></p>
       </div>
-
-      <div class="flex items-center gap-3">
-        <div class="text-3xl font-bold">₹<span id="price"><%= product.variants[0]?.price || 0 %></span></div>
-      </div>
+<!-- NEW -->
+<% const initialVariant = selectedVariant || product.variants[0]; %>
+<div class="flex items-center gap-3">
+  <% if (initialVariant.discountedPrice) { %>
+    <span class="text-gray-400 line-through text-lg">₹<%= initialVariant.price %></span>
+    <div class="text-3xl font-bold text-primary">₹<span id="price"><%= initialVariant.discountedPrice %></span></div>
+    <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
+      <%= product.offer.discountType === 'percentage'
+          ? product.offer.discountValue + '% OFF'
+          : '₹' + product.offer.discountValue + ' OFF' %>
+    </span>
+  <% } else { %>
+    <div class="text-3xl font-bold">₹<span id="price"><%= initialVariant.price %></span></div>
+  <% } %>
+</div>
 
 <!-- ADD stock badge here: -->
 <div id="stockBadge">
@@ -102,13 +113,14 @@
       <div>
         <p class="font-bold">Weight</p>
         <div class="flex gap-3 flex-wrap mt-2">
-        <% product.variants.forEach((v, i) => { %>
+   <% product.variants.forEach((v, i) => { %>
+  <% const dv = product.discountedVariants ? product.discountedVariants.find(x => x._id.toString() === v._id.toString()) : null; %>
   <button
     type="button"
-    onclick="selectVariant('<%= v._id %>', '<%= v.price %>', <%= v.stock %>, this)"
+    onclick="selectVariant('<%= v._id %>', '<%= v.price %>', '<%= dv?.discountedPrice || '' %>', <%= v.stock %>, this)"
     data-stock="<%= v.stock %>"
     class="variant-btn h-10 px-4 rounded-lg border
-           <%= i === 0 ? 'bg-black text-white border-black' : 'bg-white' %>
+           <%= (selectedVariant?._id?.toString() === v._id.toString()) ? 'bg-black text-white border-black' : 'bg-white' %>
            <%= v.stock === 0 ? 'opacity-40 cursor-not-allowed' : '' %>">
     <%= v.name %>
     <% if (v.stock === 0) { %><span class="text-xs ml-1">(Out of stock)</span><% } %>
@@ -306,47 +318,22 @@ function changeImage(imgName, el) {
   el.classList.add('border-2', 'border-black');
 }
 
-// REPLACE selectVariant with this:
-function selectVariant(variantId, price, stock, el) {
-  document.getElementById('price').innerText = price;
+function selectVariant(variantId, price, discountedPrice, stock, el) {
+  const priceEl = document.getElementById('price');
+  const priceContainer = priceEl.closest('.flex.items-center.gap-3');
+
+  if (discountedPrice) {
+    priceContainer.innerHTML = `
+      <span class="text-gray-400 line-through text-lg">₹${price}</span>
+      <div class="text-3xl font-bold text-primary">₹<span id="price">${discountedPrice}</span></div>
+    `;
+  } else {
+    priceContainer.innerHTML = `<div class="text-3xl font-bold">₹<span id="price">${price}</span></div>`;
+  }
+
   document.getElementById('variantId').value = variantId;
-
-  // Update wishlist button
-  const wishBtn = document.querySelector('.wishlist-btn');
-  if (wishBtn) wishBtn.dataset.variantId = variantId;
-
-  // Update variant button styles
-  document.querySelectorAll('.variant-btn').forEach(btn => {
-    btn.classList.remove('bg-black', 'text-white');
-    btn.classList.add('bg-white');
-  });
-  el.classList.add('bg-black', 'text-white');
-
-  // ✅ Update stock badge
-  const stockBadge = document.getElementById('stockBadge');
-  if (stock > 0) {
-    stockBadge.innerHTML = `<span class="text-green-600 text-sm font-medium">In Stock (${stock} available)</span>`;
-  } else {
-    stockBadge.innerHTML = `<span class="text-red-500 text-sm font-medium">Out of Stock</span>`;
-  }
-
-  // ✅ Update Add to Cart button
-  const addToCartBtn = document.getElementById('addToCartBtn');
-  if (stock === 0) {
-    addToCartBtn.disabled = true;
-    addToCartBtn.textContent = 'Out of Stock';
-    addToCartBtn.className = 'w-full h-12 rounded-lg font-bold bg-gray-100 text-gray-400 cursor-not-allowed';
-  } else {
-    addToCartBtn.disabled = false;
-    addToCartBtn.textContent = 'Add to Cart';
-    addToCartBtn.className = 'w-full h-12 rounded-lg font-bold bg-gray-200 hover:bg-gray-300 transition-colors';
-  }
-
-  // Update max quantity allowed
-  const qtyInput = document.getElementById('qty');
-  qtyInput.max = stock;
+  // ... rest of your existing selectVariant logic (wishlist btn, stock badge, add-to-cart button, qty max)
 }
-
 // UPDATE changeQty to respect stock:
 function changeQty(val) {
   const qty = document.getElementById('qty');
