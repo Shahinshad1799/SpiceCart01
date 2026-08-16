@@ -25,7 +25,7 @@ async function getProductWithOffer(product) {
             targetId: product.catagory
         }).lean()
     ]);
-
+        console.log(`Product: ${product.name} | catagory: ${product.catagory} | productOffer:`, productOffer, '| categoryOffer:', categoryOffer);
     // Pick better offer based on actual savings on first variant
     const basePrice = product.variants?.[0]?.price || 0;
 

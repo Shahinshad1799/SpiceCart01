@@ -388,27 +388,24 @@
           <h3 class="text-[#181311] text-lg font-bold mb-6">Order Summary</h3>
 
           <div class="flex flex-col gap-4 mb-6 max-h-[300px] overflow-y-auto pr-2">
-            <% if (cartItems && cartItems.length > 0) { %>
-              <% cartItems.forEach(item => {
-                const variant = item.productId.variants.find(v =>
-                  v._id.toString() === item.variantId?.toString()
-                );
-                const price = variant ? variant.price : 0;
-              %>
-              <div class="flex gap-3 items-center">
-                <div class="w-16 h-16 rounded-lg bg-cover bg-center shrink-0 border border-[#f4f1f0]"
-                  style='background-image: url("/uploads/product/<%= item.productId.images[0] %>");'>
-                </div>
-                <div class="flex-1">
-                  <p class="text-[#181311] font-medium text-sm"><%= item.productId.name %></p>
-                  <p class="text-[#886e63] text-xs">Qty: <%= item.quantity %></p>
-                </div>
-                <p class="text-[#181311] font-bold text-sm">₹ <%= (price * item.quantity).toFixed(2) %></p>
-              </div>
-              <% }) %>
-            <% } else { %>
-              <p class="text-center text-sm text-[#886e63]">No items in cart</p>
-            <% } %>
+     <% if (cartItems && cartItems.length > 0) { %>
+  <% cartItems.forEach(item => {
+    const price = item.price || 0;
+  %>
+  <div class="flex gap-3 items-center">
+    <div class="w-16 h-16 rounded-lg bg-cover bg-center shrink-0 border border-[#f4f1f0]"
+      style='background-image: url("/uploads/product/<%= item.productId.images[0] %>");'>
+    </div>
+    <div class="flex-1">
+      <p class="text-[#181311] font-medium text-sm"><%= item.productId.name %></p>
+      <p class="text-[#886e63] text-xs">Qty: <%= item.quantity %></p>
+    </div>
+    <p class="text-[#181311] font-bold text-sm">₹ <%= (price * item.quantity).toFixed(2) %></p>
+  </div>
+  <% }) %>
+<% } else { %>
+  <p class="text-center text-sm text-[#886e63]">No items in cart</p>
+<% } %>
           </div>
 
           <!-- ══════════ COUPON ══════════ -->
