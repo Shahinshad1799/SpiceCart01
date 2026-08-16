@@ -54,7 +54,7 @@ const loadcheckout = async (req, res) => {
     const appliedCoupon = req.session.appliedCoupon || null;
 
     // ── Totals — same helper used at order creation / payment verification ──
-    const { subtotal, shipping, tax, discount, total } = calculateOrderTotals(activeItems, appliedCoupon);
+    const { subtotal, shipping, tax, discount, total } =await calculateOrderTotals(activeItems, appliedCoupon);
 
     // ── AVAILABLE COUPONS — active, not expired, sorted so the ones the
     // customer can actually use right now (subtotal already meets minPurchase)

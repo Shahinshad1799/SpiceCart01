@@ -64,7 +64,7 @@ const offerSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["draft", "active", "expired"],
-      default: "draft",
+      default: "active",
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
