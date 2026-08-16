@@ -1,6 +1,7 @@
 const usermodel = require("../model/usermodel");
 const { editProfileSchema } = require("../validators/uservalidator");
 const { sendotp } = require("./user.auth.controller");
+const orderModel = require("../model/ordermodel");
 
 // =======================
 // User Profile
