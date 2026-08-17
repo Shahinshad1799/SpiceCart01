@@ -100,10 +100,10 @@ const registeruser = async (req, res) => {
     const otpExpiry = await sendotp(email);
 
     return res.render("user/otpverification", {
-      otpExpiry,
-      purpose: "signup",
-      success: "OTP sent to the mail",
-    });
+    otpExpiry,
+    purpose: "signup",
+    success: "OTP has been sent to your email. Please check your inbox and enter the OTP before it expires.",
+});
 
   } catch (error) {
     console.log(error);

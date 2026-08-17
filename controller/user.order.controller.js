@@ -425,31 +425,56 @@ const loadordersuccess = async (req, res) => {
 
 const loadorder = async (req, res) => {
   try {
-    const userId = req.session.userId
-    const page   = parseInt(req.query.page) || 1
-    const limit  = 10
-    const skip   = (page - 1) * limit
-    const search = req.query.q || ""
+    const userId = req.session.userId;
+    const page   = parseInt(req.query.page) || 1;
+    const limit  = 10;
+    const skip   = (page - 1) * limit;
+    const search = req.query.q || "";
 
-    const user = await usermodel.findById(userId).select("name email profileImage createdAt")
-    if (!user) return res.redirect("/login")
+    const user = await usermodel
+      .findById(userId)
+      .select("name email profileImage createdAt");
+
+    if (!user) return res.redirect("/login");
 
     const searchQuery = {
       userId,
       ...(search && {
         orderId: { $regex: search, $options: "i" }
       })
-    }
+    };
 
     const [orders, totalOrders] = await Promise.all([
       Order.find(searchQuery)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
-      Order.countDocuments(searchQuery)
-    ])
 
-    const totalPages = Math.ceil(totalOrders / limit)
+      Order.countDocuments(searchQuery)
+    ]);
+
+    // Fix old orders that don't have subtotal/total
+    orders.forEach(order => {
+
+      // Calculate subtotal from order items
+      if (order.subtotal == null) {
+        order.subtotal = order.items.reduce((sum, item) => {
+          return sum + Number(item.lineTotal || 0);
+        }, 0);
+      }
+
+      // Calculate total
+      if (order.total == null) {
+        order.total =
+          Number(order.subtotal || 0) +
+          Number(order.shipping || 0) +
+          Number(order.tax || 0) -
+          Number(order.discount || 0);
+      }
+
+    });
+
+    const totalPages = Math.ceil(totalOrders / limit);
 
     res.render("user/order", {
       user,
@@ -458,35 +483,58 @@ const loadorder = async (req, res) => {
       currentPage: page,
       totalPages,
       search,
-    })
+    });
 
   } catch (err) {
-    console.error("Load orders error:", err)
-    res.redirect("/")
+    console.error("Load orders error:", err);
+    res.redirect("/");
   }
-}
+};
 
 const loadorderdetails = async (req, res) => {
     try {
-    const userId  = req.session.userId
-    const orderId = req.params.id
+        const userId = req.session.userId;
+        const orderId = req.params.id;
 
-    const [user, order, totalOrders] = await Promise.all([
-      usermodel.findById(userId).select("name email profileImage createdAt"),
-      Order.findOne({ _id: orderId, userId }),   // userId check prevents accessing other users' orders
-      Order.countDocuments({ userId })
-    ])
+        const [user, order, totalOrders] = await Promise.all([
+            usermodel.findById(userId).select("name email profileImage createdAt"),
+            Order.findOne({ _id: orderId, userId }),
+            Order.countDocuments({ userId })
+        ]);
 
-    if (!user)  return res.redirect("/login")
-    if (!order) return res.redirect("/orders")   // order not found or doesn't belong to user
+        if (!user) return res.redirect("/login");
+        if (!order) return res.redirect("/orders");
 
-    res.render("user/orderdetails", { user, order, totalOrders })
+        // Fix old orders that don't have subtotal/total
+        if (order.subtotal == null) {
+            order.subtotal = order.items.reduce((sum, item) => {
+                return sum + Number(item.lineTotal || 0);
+            }, 0);
+        }
 
-  } catch (err) {
-    console.error("Load order details error:", err)
-    res.redirect("/orders")
-  }
-}
+        if (order.total == null) {
+            order.total =
+                Number(order.subtotal || 0) +
+                Number(order.shipping || 0) +
+                Number(order.tax || 0) -
+                Number(order.discount || 0);
+        }
+
+        console.log("ORDER:", order);
+        console.log("SUBTOTAL:", order.subtotal);
+        console.log("TOTAL:", order.total);
+
+        res.render("user/orderdetails", {
+            user,
+            order,
+            totalOrders
+        });
+
+    } catch (err) {
+        console.error("Load order details error:", err);
+        res.redirect("/orders");
+    }
+};
 
 const cancelOrder = async (req, res) => {
   try {

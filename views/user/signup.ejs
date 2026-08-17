@@ -293,36 +293,80 @@ confirmPasswordInput.addEventListener("input", () => {
 // ===============================
 // Final Submit Validation
 // ===============================
-form.addEventListener("submit", function(e) {
+form.addEventListener("submit", function (e) {
     let isValid = true;
 
+    // Full name
     if (fullnameInput.value.trim().length < 3) {
+        showError(
+            fullnameInput,
+            "fullnameError",
+            "Full name must be at least 3 characters."
+        );
         isValid = false;
+    } else {
+        clearError(fullnameInput, "fullnameError");
     }
 
+    // Email
     const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/;
+
     if (!emailPattern.test(emailInput.value.trim())) {
+        showError(
+            emailInput,
+            "emailError",
+            "Enter a valid email address."
+        );
         isValid = false;
+    } else {
+        clearError(emailInput, "emailError");
     }
 
+    // Password
     const strongPassword = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
+
     if (!strongPassword.test(passwordInput.value)) {
+        showError(
+            passwordInput,
+            "passwordError",
+            "Min 8 chars, 1 uppercase & 1 number."
+        );
         isValid = false;
+    } else {
+        clearError(passwordInput, "passwordError");
     }
 
-    if (passwordInput.value !== confirmPasswordInput.value) {
+    // Confirm password
+    if (
+        passwordInput.value === "" ||
+        passwordInput.value !== confirmPasswordInput.value
+    ) {
+        showError(
+            confirmPasswordInput,
+            "confirmPasswordError",
+            "Passwords do not match."
+        );
         isValid = false;
+    } else {
+        clearError(confirmPasswordInput, "confirmPasswordError");
     }
 
+    // Terms
     if (!termsInput.checked) {
         document.getElementById("termsError").textContent =
             "You must accept the terms.";
         document.getElementById("termsError").classList.remove("hidden");
+
         isValid = false;
+    } else {
+        document.getElementById("termsError").textContent = "";
+        document.getElementById("termsError").classList.add("hidden");
     }
 
+    // STOP FORM SUBMISSION
     if (!isValid) {
         e.preventDefault();
+        return false;
     }
 });
 </script>

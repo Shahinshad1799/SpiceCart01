@@ -216,7 +216,7 @@
                   <%= order.shippingAddress?.fullname|| 'Unknown' %>
                 </td>
                 <td class="px-6 py-4 text-sm font-semibold text-[#181610] dark:text-[#f8f7f5]">
-                  ₹<%= order.total.toFixed(2) %>
+                  ₹<%= Number(order.total || 0).toFixed(2) %>
                 </td>
                 <td class="px-6 py-4 text-sm text-[#8d7f5e] capitalize">
                   <%= order.paymentMethod.replace(/_/g, ' ') %>

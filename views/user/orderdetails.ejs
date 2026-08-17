@@ -237,7 +237,7 @@
                     <!-- Cancel Order button — pending orders only (both COD and online) -->
                     <% if (order.status === 'pending') { %>
                     <button
-                      onclick="openCancelModal('<%= order._id %>', <%= isOnlinePaid %>, <%= order.total %>)"
+                      onclick="openCancelModal('<%= order._id %>', <%= isOnlinePaid %>, <%= order.total ?? 0 %>)"
                       class="px-5 py-2.5 text-xs font-bold text-red-500/80 hover:bg-red-50/50 dark:hover:bg-red-950/20 rounded-xl transition-all flex items-center gap-2">
                       <span class="material-symbols-outlined text-lg">cancel</span>
                       Cancel Order
@@ -310,7 +310,7 @@
 
               <!-- Details Grid -->
               <div class="p-8 lg:p-12">
-             ```html
+            
 <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
 
   <!-- ── ITEMS LIST ── -->
@@ -411,7 +411,7 @@
                   : 'text-text-main dark:text-white'
                 %>
               ">
-                ₹<%= item.lineTotal.toFixed(2) %>
+              ₹<%= (item.lineTotal ?? 0).toFixed(2) %>
               </p>
 
             </div>
@@ -437,7 +437,7 @@
               <span class="hidden sm:block size-1 rounded-full bg-border-subtle"></span>
 
               <span>
-                ₹<%= item.unitPrice.toFixed(2) %> per unit
+               ₹<%= (item.unitPrice ?? 0).toFixed(2) %> per unit
               </span>
 
             </div>
@@ -492,12 +492,12 @@
                 <button
                   type="button"
                   onclick="cancelItem(
-                    '<%= order._id %>',
-                    '<%= item.productId %>',
-                    '<%= item.productName.replace(/'/g, "\\'") %>',
-                    <%= isOnlinePaid %>,
-                    <%= item.lineTotal %>
-                  )"
+  '<%= order._id %>',
+  '<%= item.productId %>',
+  '<%= item.productName.replace(/'/g, "\\'") %>',
+  <%= isOnlinePaid %>,
+  <%= item.lineTotal ?? 0 %>
+)"
                   class="
                     sm:ml-auto
                     shrink-0
@@ -541,7 +541,7 @@
   </div>
 
 </div>
-```
+
 
 
                   <!-- ── RIGHT COLUMN ── -->
@@ -553,27 +553,27 @@
                       <div class="space-y-5">
                         <div class="flex justify-between text-sm">
                           <span class="text-text-muted font-medium">Subtotal</span>
-                          <span class="font-bold text-text-main dark:text-white">₹<%= order.subtotal.toFixed(2) %></span>
+                         <span class="font-bold text-text-main dark:text-white">₹<%= (order.subtotal ?? 0).toFixed(2) %></span>
                         </div>
                         <div class="flex justify-between text-sm">
                           <span class="text-text-muted font-medium">Shipping</span>
                           <span class="font-bold text-text-main dark:text-white">
-                            <%= order.shipping === 0 ? 'Free' : '₹' + order.shipping.toFixed(2) %>
+                            <%= order.shipping === 0 ? 'Free' : '₹' + (order.shipping ?? 0).toFixed(2) %>
                           </span>
                         </div>
                         <div class="flex justify-between text-sm">
                           <span class="text-text-muted font-medium">Tax (5%)</span>
-                          <span class="font-bold text-text-main dark:text-white">₹<%= order.tax.toFixed(2) %></span>
+                          <span class="font-bold text-text-main dark:text-white">₹<%= (order.tax ?? 0).toFixed(2) %></span>
                         </div>
                         <% if (order.discount && order.discount > 0) { %>
                         <div class="flex justify-between text-sm">
                           <span class="text-text-muted font-medium">Discount</span>
-                          <span class="font-bold text-green-600">-₹<%= order.discount.toFixed(2) %></span>
+                          <span class="font-bold text-green-600">-₹<%= (order.discount ?? 0).toFixed(2) %></span>
                         </div>
                         <% } %>
                         <div class="pt-6 border-t border-border-subtle dark:border-[#3E302A] flex justify-between items-end">
                           <span class="text-base font-extrabold text-text-main dark:text-white">Total Amount</span>
-                          <span class="text-3xl font-bold text-primary tracking-tight font-display">₹<%= order.total.toFixed(2) %></span>
+                          <span class="text-3xl font-bold text-primary tracking-tight font-display">₹<%= (order.total ?? 0).toFixed(2) %></span>
                         </div>
                       </div>
                     </div>
@@ -600,15 +600,16 @@
                     <% } %>
 
                     <!-- Shipping Address -->
-                    <div class="p-6 rounded-2xl border border-border-subtle dark:border-[#3E302A] bg-white dark:bg-[#2C201A] shadow-sm">
-                      <p class="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-4">Shipping Destination</p>
-                      <p class="text-sm font-bold text-text-main dark:text-white mb-2"><%= order.shippingAddress.fullname %></p>
-                      <p class="text-xs text-text-muted leading-relaxed">
-                        <%= order.shippingAddress.address %>, <%= order.shippingAddress.appartment %><br/>
-                        <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.zipcode %>
-                      </p>
-                      <p class="text-xs text-text-muted mt-2"><%= order.shippingAddress.phonenumber %></p>
-                    </div>
+                  <% if (order.shippingAddress) { %>
+  <p class="text-sm font-bold text-text-main dark:text-white mb-2"><%= order.shippingAddress.fullname %></p>
+  <p class="text-xs text-text-muted leading-relaxed">
+    <%= order.shippingAddress.address %>, <%= order.shippingAddress.appartment %><br/>
+    <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.zipcode %>
+  </p>
+  <p class="text-xs text-text-muted mt-2"><%= order.shippingAddress.phonenumber %></p>
+<% } else { %>
+  <p class="text-xs text-text-muted">No shipping address on file.</p>
+<% } %>
 
                     <!-- Payment -->
                     <div class="p-6 rounded-2xl border border-border-subtle dark:border-[#3E302A] bg-white dark:bg-[#2C201A] shadow-sm">
@@ -616,14 +617,14 @@
                       <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-text-muted">payments</span>
                         <p class="text-sm font-bold text-text-main dark:text-white capitalize">
-                          <%= order.paymentMethod.replace(/_/g, ' ') %>
-                        </p>
+  <%= (order.paymentMethod || 'unknown').replace(/_/g, ' ') %>
+</p>
                       </div>
                       <div class="mt-3 flex items-center gap-2">
                         <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold
-                          <%= order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' %>">
-                          <%= order.paymentStatus.toUpperCase() %>
-                        </span>
+  <%= order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' %>">
+  <%= (order.paymentStatus || 'pending').toUpperCase() %>
+</span>
                       </div>
                     </div>
 
@@ -680,11 +681,11 @@
     </div>
     <div style="flex:1;">
       <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#886e63; margin-bottom:0.5rem;">Payment</div>
-      <div style="font-weight:700; font-size:0.9rem; text-transform:capitalize;"><%= order.paymentMethod.replace(/_/g, ' ') %></div>
+      <div style="font-weight:700; font-size:0.9rem; text-transform:capitalize;"><%= (order.paymentMethod || 'unknown').replace(/_/g, ' ') %></div>
       <div style="display:inline-block; margin-top:0.4rem; padding:0.15rem 0.5rem; border-radius:0.25rem; font-size:0.65rem; font-weight:700;
-        background:<%= order.paymentStatus === 'paid' ? '#dcfce7' : '#fef3c7' %>;
-        color:<%= order.paymentStatus === 'paid' ? '#15803d' : '#b45309' %>;">
-        <%= order.paymentStatus.toUpperCase() %>
+        background:<%= (order.paymentStatus || 'pending') === 'paid' ? '#dcfce7' : '#fef3c7' %>;
+        color:<%= (order.paymentStatus || 'pending') === 'paid' ? '#15803d' : '#b45309' %>;">
+        <%= (order.paymentStatus || 'pending').toUpperCase() %>
       </div>
     </div>
   </div>
@@ -708,10 +709,10 @@
           <span style="margin-left:0.5rem; font-size:0.65rem; font-weight:700; background:#fee2e2; color:#ef4444; padding:0.1rem 0.4rem; border-radius:0.25rem;">CANCELLED</span>
           <% } %>
         </td>
-        <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:center; color:#886e63;"><%= item.quantity %></td>
-        <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:right; color:#886e63;">₹<%= item.unitPrice.toFixed(2) %></td>
+        <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:center; color:#886e63;"><%= Number(item.quantity || 0).toFixed(2) %></td>
+        <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:right; color:#886e63;">₹<%= Number(item.unitPrice || 0).toFixed(2) %></td>
         <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:right; font-weight:700; color:<%= item.itemStatus === 'cancelled' ? '#886e63' : '#181311' %>; text-decoration:<%= item.itemStatus === 'cancelled' ? 'line-through' : 'none' %>;">
-          ₹<%= item.lineTotal.toFixed(2) %>
+          ₹<%= Number(item.lineTotal || 0).toFixed(2) %>
         </td>
       </tr>
       <% }) %>
@@ -723,19 +724,21 @@
     <div style="width:260px;">
       <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #E6E0DC;">
         <span style="font-size:0.82rem; color:#886e63;">Subtotal</span>
-        <span style="font-size:0.82rem; font-weight:700;">₹<%= order.subtotal.toFixed(2) %></span>
+      <span style="font-size:0.82rem; font-weight:700;">
+  ₹<%= Number(order.subtotal || 0).toFixed(2) %>
+</span>
       </div>
       <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #E6E0DC;">
         <span style="font-size:0.82rem; color:#886e63;">Shipping</span>
-        <span style="font-size:0.82rem; font-weight:700;"><%= order.shipping === 0 ? 'Free' : '₹' + order.shipping.toFixed(2) %></span>
+        <span style="font-size:0.82rem; font-weight:700;"><%= Number(order.shipping || 0).toFixed(2) === 0 ? 'Free' : '₹' + Number(order.shipping || 0).toFixed(2) %></span>
       </div>
       <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #E6E0DC;">
         <span style="font-size:0.82rem; color:#886e63;">Tax (5%)</span>
-        <span style="font-size:0.82rem; font-weight:700;">₹<%= order.tax.toFixed(2) %></span>
+        <span style="font-size:0.82rem; font-weight:700;">₹<%= Number(order.tax || 0).toFixed(2) %></span>
       </div>
       <div style="display:flex; justify-content:space-between; padding:0.75rem 0; margin-top:0.25rem;">
         <span style="font-size:1rem; font-weight:800; color:#181311;">Total</span>
-        <span style="font-size:1.4rem; font-weight:800; color:#cd4e18; font-family:'Epilogue',sans-serif;">₹<%= order.total.toFixed(2) %></span>
+        <span style="font-size:1.4rem; font-weight:800; color:#cd4e18; font-family:'Epilogue',sans-serif;">₹<%= Number(order.total || 0).toFixed(2) %></span>
       </div>
     </div>
   </div>
