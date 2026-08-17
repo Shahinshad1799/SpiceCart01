@@ -73,37 +73,7 @@
                <%- include("../partials/topbar") %>
               </div>
 
-              <!-- Orders Table -->
-              <div class="p-0">
-                <!-- Search Bar -->
-<!-- <div class="px-6 py-4 border-b border-[#f4f1f0] dark:border-[#3E302A]">
-  <form action="/order" method="GET">
-    <div class="flex gap-2">
-      <div class="relative flex-1">
-        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#886e63] text-sm">search</span>
-        <input 
-          type="text" 
-          name="q" 
-          value="<%= search %>"
-          placeholder="Search by order ID..."
-          class="w-full pl-9 pr-4 py-2.5 text-sm border border-[#E6E0DC] dark:border-[#3E302A] rounded-xl bg-[#f8f6f6] dark:bg-[#261C16] text-[#181311] dark:text-white placeholder-[#886e63] focus:outline-none focus:border-primary transition-colors"
-        />
-      </div>
-      <button 
-        type="submit"
-        class="px-5 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl transition-colors">
-        Search
-      </button>
-      <% if (search) { %>
-        <a href="/order">
-          <button type="button" class="px-4 py-2.5 border border-[#E6E0DC] dark:border-[#3E302A] text-sm font-medium rounded-xl hover:bg-[#f4f1f0] dark:hover:bg-[#3E302A] transition-colors text-[#5C4D46] dark:text-[#A8A29E]">
-            Clear
-          </button>
-        </a>
-      <% } %>
-    </div>
-  </form> -->
-</div>
+        
                 <% if (orders && orders.length > 0) { %>
                 <div class="overflow-x-auto">
                   <table class="w-full text-left border-collapse">
@@ -171,7 +141,7 @@
 
                           <!-- Total -->
                           <td class="py-4 px-6 whitespace-nowrap">
-                            <span class="font-bold text-[#181311] dark:text-white">₹ <%= order.total.toFixed(2) %></span>
+                         <span class="font-bold text-[#181311] dark:text-white">₹ <%= (order.total ?? 0).toFixed(2) %></span>
                           </td>
 
                           <!-- Action -->

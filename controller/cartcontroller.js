@@ -60,7 +60,7 @@ const applyCoupon = async (req, res) => {
         };
 
         const shipping = coupon.discountType === "shipping" ? 0 : 50;
-        const tax = subtotal * 0.05;
+        const tax = 0;
         const total = subtotal + shipping + tax - discount;
 
         return res.json({
@@ -93,7 +93,7 @@ const removeCoupon = async (req, res) => {
         }
 
         const shipping = 50;
-        const tax = subtotal * 0.05;
+        const tax = 0;
         const total = subtotal + shipping + tax;
 
         return res.json({
@@ -179,7 +179,7 @@ const getCartPage = async (req, res) => {
     const appliedCoupon = req.session.appliedCoupon || null;
     const discount = appliedCoupon?.discount || 0;
     const shipping = 0;
-    const tax = Math.round(subtotal * 0.05);
+    const tax = Math.round(0);
     const total = Math.round(subtotal + tax - discount);
 
     res.render("user/cart", {
@@ -364,7 +364,7 @@ const updateCart = async (req, res) => {
     }
 
     const shipping = subtotal > 0 ? 50 : 0;
-    const tax = subtotal * 0.08;
+    const tax = 0;
     const total = subtotal + shipping + tax;
 
     return res.json({

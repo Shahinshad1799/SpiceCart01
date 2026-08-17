@@ -38,7 +38,7 @@ async function calculateOrderTotals(cartItems, appliedCoupon) {
     ? 0
     : (subtotal > 500 ? 0 : 50);
 
-  const tax = Math.round(subtotal * 0.05);
+  const tax = Math.round(0);
 
   const total = Math.round((subtotal + shipping + tax - discount) * 100) / 100;
 

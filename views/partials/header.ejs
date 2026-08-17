@@ -56,7 +56,7 @@ placeholder="Search for saffron, curry..." />
 
 <div class="relative">
 
-<button onclick="toggleProfileMenu()" 
+<button onclick="toggleProfileMenu(event)"
 class="flex items-center justify-center size-10 rounded-full hover:bg-[#f4f1f0] transition-colors">
 <span class="material-symbols-outlined">account_circle</span>
 </button>
@@ -91,28 +91,33 @@ Logout
 </div>
 </header>
 
+
+
 <script>
-  function toggleProfileMenu() {
-    document.getElementById("profileDropdown").classList.toggle("hidden");
+  function toggleProfileMenu(event) {
+    event.stopPropagation();
+
+    const dropdown = document.getElementById("profileDropdown");
+
+    if (!dropdown) return;
+
+    dropdown.classList.toggle("hidden");
   }
 
-  // Close when clicking outside
   document.addEventListener("click", function (event) {
     const dropdown = document.getElementById("profileDropdown");
-    const button = event.target.closest("button");
 
-    if (!event.target.closest("#profileDropdown") && 
-        !event.target.closest("button[onclick='toggleProfileMenu()']")) {
+    if (!dropdown) return;
+
+    // If click is outside dropdown, close it
+    if (!dropdown.contains(event.target)) {
       dropdown.classList.add("hidden");
     }
   });
-</script>
-<script>
-  function toggleProfileMenu() { /* unchanged */ }
-  document.addEventListener("click", function (event) { /* unchanged */ });
 
   function setBadge(el, count) {
     if (!el) return;
+
     if (count > 0) {
       el.textContent = count > 99 ? "99+" : count;
       el.classList.remove("hidden");
@@ -131,24 +136,37 @@ Logout
     setBadge(document.getElementById("cartCountBadge"), count);
   };
 
-  // Generic AJAX helper — call this instead of submitting a form / reloading
-  // Expects your route to respond with JSON like { success: true, cartCount, wishCount }
   window.spiceCartRequest = async function (url, method = "POST", body = null) {
     try {
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
-        body: body ? JSON.stringify(body) : null,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: body ? JSON.stringify(body) : null
       });
+
       const data = await res.json();
 
-      if (typeof data.cartCount !== "undefined") window.updateCartCount(data.cartCount);
-      if (typeof data.wishCount !== "undefined") window.updateWishCount(data.wishCount);
+      if (typeof data.cartCount !== "undefined") {
+        window.updateCartCount(data.cartCount);
+      }
+
+      if (typeof data.wishCount !== "undefined") {
+        window.updateWishCount(data.wishCount);
+      }
 
       return data;
+
     } catch (err) {
       console.error("SpiceCart request failed:", err);
-      Swal.fire("Oops", "Something went wrong. Please try again.", "error");
+
+      Swal.fire(
+        "Oops",
+        "Something went wrong. Please try again.",
+        "error"
+      );
+
       return null;
     }
   };
