@@ -86,7 +86,7 @@ const placeorder = async (req, res) => {
 
         // ── 5. Calculate totals — same helper used at checkout ────────────────
         const appliedCoupon = req.session.appliedCoupon || null;
-        const { subtotal, shipping, tax, discount, total } = calculateOrderTotals(cart.items, appliedCoupon);
+        const { subtotal, shipping, tax, discount, total } = await calculateOrderTotals(cart.items, appliedCoupon);
 
         // ── 6. Create order ───────────────────────────────────────────────────
         const order = await Order.create({
@@ -153,7 +153,7 @@ const onlineorder = async (req, res) => {
 
     // Same helper the checkout page used to display the total the user just saw
     const appliedCoupon = req.session.appliedCoupon || null;
-    const { total, amountInPaise } = calculateOrderTotals(cart.items, appliedCoupon);
+    const { total, amountInPaise } = await  calculateOrderTotals(cart.items, appliedCoupon);
 
     const order = await razorpay.orders.create({
       amount:   amountInPaise,
@@ -219,7 +219,7 @@ const verifyOnlineOrder = async (req, res) => {
 
     // ── 6. Recalculate totals with the SAME helper used to create the Razorpay order ──
     const appliedCoupon = req.session.appliedCoupon || null;
-    const { subtotal, shipping, tax, discount, total, amountInPaise } = calculateOrderTotals(cart.items, appliedCoupon);
+    const { subtotal, shipping, tax, discount, total, amountInPaise } = await calculateOrderTotals(cart.items, appliedCoupon);
 
     // ── 7. Cross-check against what Razorpay actually captured ────────────
     // Guards against the cart/coupon changing between order-creation and payment,
@@ -318,7 +318,7 @@ const placeOrderWallet = async (req, res) => {
 
     // Totals — same helper used at checkout
     const appliedCoupon = req.session.appliedCoupon || null;
-    const { subtotal, shipping, tax, discount, total } = calculateOrderTotals(cart.items, appliedCoupon);
+    const { subtotal, shipping, tax, discount, total } = await calculateOrderTotals(cart.items, appliedCoupon);
 
     // ✅ Check wallet has enough balance
     const wallet = await getOrCreateWallet(userId);
