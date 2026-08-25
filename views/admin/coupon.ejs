@@ -47,7 +47,7 @@
 
   <%- include("../partials/sidebar") %>
 
-  <main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark">
+ <main class="flex-1 lg:pl-64 overflow-y-auto bg-background-light dark:bg-background-dark">
     <div class="max-w-7xl mx-auto p-8 lg:p-12">
 
       <!-- Header -->
@@ -380,6 +380,26 @@
       Swal.fire({ icon: "error", title: "Error", text: "Something went wrong.", confirmButtonColor: "#F97316" });
     }
   }
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("created") === "true") {
+      Swal.fire({
+        icon: "success",
+        title: "Coupon Created",
+        text: "Your new coupon has been added successfully.",
+        timer: 2000,
+        showConfirmButton: false,
+        iconColor: "#16a34a",
+      });
+
+      // clean the URL so refresh/back doesn't re-trigger it
+      params.delete("created");
+      const newUrl = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
+      window.history.replaceState({}, "", newUrl);
+    }
+  });
 </script>
 
 </body>

@@ -33,14 +33,16 @@ function buildOrderItems(cartItems) {
       throw new Error(`Variant not found for "${product.name}"`);
     }
 
+    const unitPrice = cartItem.price ?? variant.price;
+
     items.push({
       productId:    product._id,
       variantId:    variant._id,
       productName:  product.name,
       productImage: product.images?.[0] || "",
-      unitPrice:    variant.price,
+      unitPrice,
       quantity:     cartItem.quantity,
-      lineTotal:    variant.price * cartItem.quantity,
+      lineTotal:    unitPrice * cartItem.quantity,
       itemStatus:   "active",
     });
   }
@@ -396,14 +398,21 @@ const loadordersuccess = async (req, res) => {
             return res.redirect("/")
         }
 
+        // Fix old orders that don't have subtotal/shipping/tax/total
+        const subtotal = order.subtotal ?? order.items.reduce((sum, item) => sum + Number(item.lineTotal || 0), 0);
+        const shipping = order.shipping ?? (subtotal >= 500 ? 0 : 50);
+        const tax      = order.tax ?? 0;
+        const discount = order.discount || 0;
+        const total    = order.total ?? (subtotal + shipping + tax - discount);
+
         // Map to the shape the EJS template expects
         const orderData = {
-            id:       order._id,
-            subtotal: order.subtotal,
-            shipping: order.shipping,
-            tax:      order.tax,
-            discount: order.discount || 0,
-            total:    order.total,
+            id: order._id,
+            subtotal,
+            shipping,
+            tax,
+            discount,
+            total,
             items: order.items.map((item) => ({
                 name:     item.productName,
                 image:    item.productImage,
@@ -422,7 +431,6 @@ const loadordersuccess = async (req, res) => {
         res.redirect("/")
     }
 }
-
 const loadorder = async (req, res) => {
   try {
     const userId = req.session.userId;
