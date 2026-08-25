@@ -31,7 +31,7 @@ route.post("/resendotp", authController.resendOtp);
 route.get("/login", userauth.isLogout, authController.loadlogin);
 route.post("/login", userauth.isLogout, authController.loginuser);
 
-route.get("/home", userauth.isLogin, checkstatus, authController.loadhome);
+route.get("/home", checkstatus, authController.loadhome);
 
 route.get("/forgotpassword", userauth.isLogout, authController.loadforgotpassword);
 route.post("/forgotpassword", userauth.isLogout, authController.forgotpassword);
