@@ -388,9 +388,11 @@
           <h3 class="text-[#181311] text-lg font-bold mb-6">Order Summary</h3>
 
           <div class="flex flex-col gap-4 mb-6 max-h-[300px] overflow-y-auto pr-2">
-     <% if (cartItems && cartItems.length > 0) { %>
+   <% if (cartItems && cartItems.length > 0) { %>
   <% cartItems.forEach(item => {
-    const price = item.price || 0;
+    const variant = item.productId.variants.id(item.variantId);
+    const itemPrice = item.price || 0;
+    const hasOffer = variant && variant.price > itemPrice;
   %>
   <div class="flex gap-3 items-center">
     <div class="w-16 h-16 rounded-lg bg-cover bg-center shrink-0 border border-[#f4f1f0]"
@@ -400,7 +402,12 @@
       <p class="text-[#181311] font-medium text-sm"><%= item.productId.name %></p>
       <p class="text-[#886e63] text-xs">Qty: <%= item.quantity %></p>
     </div>
-    <p class="text-[#181311] font-bold text-sm">₹ <%= (price * item.quantity).toFixed(2) %></p>
+    <div class="text-right">
+      <% if (hasOffer) { %>
+        <p class="text-gray-400 text-xs line-through">₹ <%= (variant.price * item.quantity).toFixed(2) %></p>
+      <% } %>
+      <p class="text-[#181311] font-bold text-sm">₹ <%= (itemPrice * item.quantity).toFixed(2) %></p>
+    </div>
   </div>
   <% }) %>
 <% } else { %>

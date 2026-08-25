@@ -159,21 +159,33 @@ const getCartPage = async (req, res) => {
     let totalItems = 0;
     let hasOutOfStock = false;
 
-    cart.items.forEach(item => {
-      const qty = item.quantity || 0;
-      const price = item.price || 0;
+  
 
-      const variant = item.productId.variants.id(item.variantId);
+// inside getCartPage, replace the forEach block:
+for (const item of cart.items) {
+  const prod = item.productId;
+  const variant = prod.variants.id(item.variantId);
+  if (!variant) continue;
 
-      if (!variant || variant.stock < qty) {
-        item.outOfStock = true;
-        hasOutOfStock = true;
-      }
+  const productWithOffer = await getProductWithOffer(prod);
+  const variantWithOffer = productWithOffer.discountedVariants
+    ? productWithOffer.discountedVariants.find(v => v._id.toString() === item.variantId.toString())
+    : null;
+  const livePrice = variantWithOffer?.discountedPrice ?? variant.price;
 
-      subtotal += price * qty;
-      totalItems += qty;
-    });
+  if (item.price !== livePrice) {
+    item.price = livePrice; // keep cart in sync with current offers
+  }
 
+  const qty = item.quantity || 0;
+  if (!variant || variant.stock < qty) {
+    item.outOfStock = true;
+    hasOutOfStock = true;
+  }
+
+  subtotal += livePrice * qty;
+  totalItems += qty;
+}
     await cart.save();
 
     const appliedCoupon = req.session.appliedCoupon || null;
