@@ -34,9 +34,7 @@ async function calculateOrderTotals(cartItems, appliedCoupon) {
     discount = Math.round(Math.min(discount, subtotal));
   }
 
-  const shipping = appliedCoupon?.discountType === "shipping"
-    ? 0
-    : (subtotal > 500 ? 0 : 50);
+  const shipping = appliedCoupon?.discountType === "shipping" ? 0 : 50; // Free shipping if coupon type is "shipping", else flat 50
 
   const tax = Math.round(0);
 

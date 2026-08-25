@@ -290,14 +290,11 @@ function validateMinPurchase(showError = true) {
   if (raw !== "" && Number(raw) < 0) {
     message = "Cannot be negative";
     valid = false;
-  } else {
+  } else if (raw !== "") {
     const discountAmount = effectiveDiscountAmount();
-    if (discountAmount > 0) {
-      const minVal = raw === "" ? 0 : Number(raw);
-      if (minVal <= discountAmount) {
-        message = `Min. purchase must be greater than the discount amount ($${discountAmount})`;
-        valid = false;
-      }
+    if (discountAmount > 0 && Number(raw) <= discountAmount) {
+      message = `Min. purchase must be greater than the discount amount ($${discountAmount})`;
+      valid = false;
     }
   }
 

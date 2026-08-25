@@ -178,9 +178,11 @@ const getCartPage = async (req, res) => {
 
     const appliedCoupon = req.session.appliedCoupon || null;
     const discount = appliedCoupon?.discount || 0;
-    const shipping = 0;
+  const shipping = appliedCoupon?.discountType === "shipping"
+  ? 0
+  : (subtotal > 0 ? 50 : 0);
     const tax = Math.round(0);
-    const total = Math.round(subtotal + tax - discount);
+    const total = Math.round(subtotal + shipping + tax - discount);
 
     res.render("user/cart", {
         cartItems: cart.items,

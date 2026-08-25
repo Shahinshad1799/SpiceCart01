@@ -75,7 +75,6 @@ const loadAddCoupon = async (req, res) => {
     res.redirect("/admin/pageerror");
   }
 };
-
 const createCoupon = async (req, res) => {
   try {
     const { code, isActive, discountType, discountValue, maxDiscount, minPurchase, usageLimit, expiryDate } = req.body;
@@ -97,14 +96,13 @@ const createCoupon = async (req, res) => {
     });
 
     await newCoupon.save();
-    res.render("admin/addcoupon", { success: "Coupon created successfully" });
+    res.redirect("/admin/coupons?created=true");
 
   } catch (error) {
     console.error(error);
     res.render("admin/addcoupon", { error: "Server error" });
   }
 };
-
 const loadEditCoupon = async (req, res) => {
   try {
     const coupon = await couponmodel.findById(req.params.id).lean();

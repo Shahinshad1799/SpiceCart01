@@ -149,14 +149,23 @@
               </div>
 
               <!-- Unit Price -->
-              <div class="text-right md:col-span-2 text-[#181311] dark:text-white">
-                ₹ <%= itemPrice %>
-              </div>
+              <!-- Unit Price -->
+<div class="text-right md:col-span-2 text-[#181311] dark:text-white">
+  <% if (variant && variant.price > itemPrice) { %>
+    <span class="line-through text-gray-400 text-sm block">₹ <%= variant.price.toFixed(2) %></span>
+    <span class="text-primary font-semibold">₹ <%= itemPrice.toFixed(2) %></span>
+  <% } else { %>
+    ₹ <%= itemPrice.toFixed(2) %>
+  <% } %>
+</div>
 
-              <!-- Item Total -->
-              <div class="text-right md:col-span-2 font-bold item-total text-[#181311] dark:text-white">
-                ₹ <%= (itemPrice * item.quantity).toFixed(2) %>
-              </div>
+<!-- Item Total -->
+<div class="text-right md:col-span-2 font-bold item-total text-[#181311] dark:text-white">
+  <% if (variant && variant.price > itemPrice) { %>
+    <span class="line-through text-gray-400 text-sm font-normal block">₹ <%= (variant.price * item.quantity).toFixed(2) %></span>
+  <% } %>
+  ₹ <%= (itemPrice * item.quantity).toFixed(2) %>
+</div>
 
             </div>
 

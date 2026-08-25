@@ -79,7 +79,7 @@ const loadcheckout = async (req, res) => {
       cartItems: activeItems,
       addresses: addresses || [],
       subtotal,
-      shipping,
+      shipping: shipping || 0,
       tax,
       discount,
       appliedCoupon,

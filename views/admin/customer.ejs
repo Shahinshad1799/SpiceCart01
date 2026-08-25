@@ -94,17 +94,14 @@
       <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
         <!-- Avatar -->
       <td class="px-6 py-4">
-  <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white shadow-sm overflow-hidden">
-    <% if (customer && customer.profileImage) { %>
-      <img alt="Avatar" class="w-full h-full object-cover" src="<%= customer.profileImage 
-      ? '/uploads/profile/' + customer.profileImage 
-      : '/images/default.png' %>" />
-    <% } else { %>
-      <span class="text-gray-400 font-bold">
-        <%= customer && customer.fullname ? customer.fullname.charAt(0) : "?" %>
-      </span>
-    <% } %>
-  </div>
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border overflow-hidden">
+  <img
+    alt="Avatar"
+    class="w-full h-full object-cover"
+    src="<%= customer && customer.profileImage ? '/uploads/profile/' + customer.profileImage : '/images/default.png' %>"
+    onerror="this.onerror=null;this.src='/images/default.png';"
+  />
+</div>
 </td>
 
 

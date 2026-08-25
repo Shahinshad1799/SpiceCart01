@@ -68,7 +68,7 @@ const loadAddOffer = async function (req, res) {
 
 const createOffer = async (req, res) => {
   try {
-    console.log("BODY RECEIVED:", req.body);
+    
     const {
       title,
       description,

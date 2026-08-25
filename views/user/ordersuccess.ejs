@@ -50,13 +50,33 @@
           </div>
 
           <!-- Total -->
-          <div class="border-t border-[#e5e7eb] pt-4 flex justify-between items-center">
-            <span class="text-[#181311] font-bold text-lg">Total</span>
-            <span class="text-[#ea580c] font-bold text-lg">
-              ₹<%= order.items.reduce(function(sum, item) { return sum + item.price * item.quantity; }, 0).toFixed(2) %>
-            </span>
-          </div>
-        </div>
+         <!-- Totals breakdown -->
+<div class="border-t border-[#e5e7eb] pt-4 flex flex-col gap-2">
+  <div class="flex justify-between text-sm text-[#886e63]">
+    <span>Subtotal</span>
+    <span>₹<%= order.subtotal.toFixed(2) %></span>
+  </div>
+  <div class="flex justify-between text-sm text-[#886e63]">
+    <span>Shipping</span>
+    <span><%= order.shipping > 0 ? '₹' + order.shipping.toFixed(2) : 'Free' %></span>
+  </div>
+  <% if (order.tax) { %>
+  <div class="flex justify-between text-sm text-[#886e63]">
+    <span>Tax</span>
+    <span>₹<%= order.tax.toFixed(2) %></span>
+  </div>
+  <% } %>
+  <% if (order.discount) { %>
+  <div class="flex justify-between text-sm text-green-600">
+    <span>Discount</span>
+    <span>-₹<%= order.discount.toFixed(2) %></span>
+  </div>
+  <% } %>
+  <div class="flex justify-between items-center pt-2 border-t border-[#e5e7eb] mt-1">
+    <span class="text-[#181311] font-bold text-lg">Total</span>
+    <span class="text-[#ea580c] font-bold text-lg">₹<%= order.total.toFixed(2) %></span>
+  </div>
+</div>
 
         <!-- CTA -->
        <div class="flex flex-col md:flex-row items-center justify-center gap-4 mt-6">
