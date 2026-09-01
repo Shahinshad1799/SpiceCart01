@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contact Us - Spice Market</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#cd4e18",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211611",
+                        "secondary": "#B89F73", // Muted Gold for stars
+                        "forest": "#4C5E4E", // Forest Green for accents
+                    },
+                    fontFamily: {
+                        "display": ["Epilogue", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+<%- include("../partials/header") %>
+<main class="flex-1">
+<section class="relative px-6 py-12 lg:px-20 xl:px-40 lg:py-20">
+<div class="mx-auto max-w-[1280px]">
+<div class="text-center mb-16 animate-fade-in-up">
+<span class="text-primary font-bold tracking-widest text-sm uppercase mb-2 block">Customer Support</span>
+<h1 class="text-4xl lg:text-5xl font-black tracking-tight text-[#181311] dark:text-white mb-6">
+                            Get in Touch
+                        </h1>
+<p class="text-lg text-[#5C4D46] dark:text-[#A8A29E] font-body leading-relaxed max-w-2xl mx-auto">
+                            Whether you have a question about our spices, need help with an order, or just want to share a recipe, we'd love to hear from you.
+                        </p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
+<div class="flex flex-col gap-10">
+<div>
+<h3 class="text-2xl font-bold text-[#181311] dark:text-white mb-8">Contact Information</h3>
+<div class="flex flex-col gap-8">
+<div class="flex items-start gap-5">
+<div class="size-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+<span class="material-symbols-outlined">storefront</span>
+</div>
+<div>
+<h4 class="font-bold text-[#181311] dark:text-white text-lg">Visit Our Store</h4>
+<p class="text-[#5C4D46] dark:text-[#A8A29E] mt-1 leading-relaxed">
+                                                kerala ,nilambur,<br/>
+                                                Karulai, po 679330
+                                            </p>
+</div>
+</div>
+<div class="flex items-start gap-5">
+<div class="size-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+<span class="material-symbols-outlined">mail</span>
+</div>
+<div>
+<h4 class="font-bold text-[#181311] dark:text-white text-lg">Email Us</h4>
+<p class="text-[#5C4D46] dark:text-[#A8A29E] mt-1">hello@spicemarket.com</p>
+<p class="text-[#5C4D46] dark:text-[#A8A29E]">shahinshad@spicemarket.com</p>
+</div>
+</div>
+<div class="flex items-start gap-5">
+<div class="size-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+<span class="material-symbols-outlined">call</span>
+</div>
+<div>
+<h4 class="font-bold text-[#181311] dark:text-white text-lg">Call Us</h4>
+<p class="text-[#5C4D46] dark:text-[#A8A29E] mt-1">+91 9048471724</p>
+<p class="text-sm text-[#886e63] mt-1">Mon-Fri from 8am to 5pm PST</p>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full h-[300px] bg-[#E6E0DC] dark:bg-[#2C201A] rounded-2xl overflow-hidden shadow-inner relative border border-[#E6E0DC] dark:border-[#3E302A]">
+<iframe allowfullscreen="" height="100%" loading="lazy" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d17566.049988092047!2d76.29034994841038!3d11.289050421538727!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba6249be7b7f675%3A0xba0e3f820374a255!2sKarulai%2C%20Kerala!5e1!3m2!1sen!2sin!4v1788248635222!5m2!1sen!2sin" width="600" height="450" style="border:0;" style="border:0; filter: grayscale(0.4) opacity(0.9);" width="100%">
+</iframe>
+</div>
+</div>
+<div class="bg-white dark:bg-[#211611] rounded-2xl p-8 lg:p-10 shadow-xl shadow-gray-200/50 dark:shadow-black/20 border border-[#E6E0DC] dark:border-[#3E302A]">
+<h3 class="text-2xl font-bold text-[#181311] dark:text-white mb-2">Send a Message</h3>
+<p class="text-[#5C4D46] dark:text-[#A8A29E] text-sm mb-8">We typically respond within 24 hours.</p>
+<form class="flex flex-col gap-6"action="/contact" method="POST">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<label class="flex flex-col gap-2">
+<span class="text-sm font-bold text-[#181311] dark:text-white">Your Name</span>
+<input class="h-12 px-4 rounded-lg bg-[#f8f6f6] dark:bg-[#2C201A] border-transparent focus:border-primary focus:ring-0 transition-colors placeholder-[#886e63]/50" placeholder="e.g. Sarah Jenkins" name="name" type="text"/>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-sm font-bold text-[#181311] dark:text-white">Email Address</span>
+<input class="h-12 px-4 rounded-lg bg-[#f8f6f6] dark:bg-[#2C201A] border-transparent focus:border-primary focus:ring-0 transition-colors placeholder-[#886e63]/50" placeholder="sarah@example.com" name="email" type="email"/>
+</label>
+</div>
+<label class="flex flex-col gap-2">
+<span class="text-sm font-bold text-[#181311] dark:text-white">Subject</span>
+<select class="h-12 px-4 rounded-lg bg-[#f8f6f6] dark:bg-[#2C201A] border-transparent focus:border-primary focus:ring-0 transition-colors text-[#181311] dark:text-white" name="subject">
+<option>General Inquiry</option>
+<option>Order Status</option>
+<option>Wholesale</option>
+<option>Product Question</option>
+<option>Other</option>
+</select>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-sm font-bold text-[#181311] dark:text-white">Message</span>
+<textarea class="h-40 p-4 rounded-lg bg-[#f8f6f6] dark:bg-[#2C201A] border-transparent focus:border-primary focus:ring-0 transition-colors resize-none placeholder-[#886e63]/50" placeholder="How can we help you today?" name="message"></textarea>
+</label>
+
+<button class="h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-transform active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-primary/30 w-full" type="submit">
+<span>Send Message</span>
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</form>
+</div>
+</div>
+</div>
+</section>
+</main>
+<%- include("../partials/footer") %>
+</div>
+
+</body></html>

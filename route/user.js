@@ -19,7 +19,7 @@ const userauth = require("../middleware/userAuth")
 const upload = require("../config/multer")
 const checkstatus = require("../middleware/userstatus")
 
-route.get("/", authController.loadladingpage);
+route.get("/", authController.loadlandingpage);
 
 route.get("/signup", userauth.isLogout, authController.loadsignup);
 route.post("/signup", userauth.isLogout, authController.registeruser);
@@ -31,7 +31,10 @@ route.post("/resendotp", authController.resendOtp);
 route.get("/login", userauth.isLogout, authController.loadlogin);
 route.post("/login", userauth.isLogout, authController.loginuser);
 
-route.get("/home", checkstatus, authController.loadhome);
+route.get("/home", authController.loadhome);
+route.get("/about", authController.loadabout);
+route.get("/contact", authController.loadcontact);
+route.post("/contact", authController.submitContact);
 
 route.get("/forgotpassword", userauth.isLogout, authController.loadforgotpassword);
 route.post("/forgotpassword", userauth.isLogout, authController.forgotpassword);
@@ -60,8 +63,8 @@ route.post("/deleteaddress/:id", userauth.isLogin, addressController.deleteAddre
 route.post("/logout", userauth.isLogin, authController.logout);
 route.post("/delete-profile-image", userauth.isLogin, profileController.deleteProfile);
 
-route.get("/changeemail", profileController.loadchangeemail)
-route.post("/changeemail", profileController.changeemail)
+route.get("/changeemail",userauth.isLogin, profileController.loadchangeemail)
+route.post("/changeemail", userauth.isLogin, profileController.changeemail)
 
 route.get("/shop", shopController.loadshop)
 
@@ -72,18 +75,18 @@ route.get("/cart", cartController.getCartPage);
 route.post("/cart/add", cartController.addToCart);
 route.post("/cart/update", cartController.updateCart);
 route.post("/cart/remove", cartController.removeFromCart);
-route.post("/cart/apply-coupon", cartController.applyCoupon);
-route.post("/cart/remove-coupon", cartController.removeCoupon);
+route.post("/cart/apply-coupon",userauth.isLogin, cartController.applyCoupon);
+route.post("/cart/remove-coupon", userauth.isLogin, cartController.removeCoupon);
 
 route.get('/wishlist', wishlistController.loadWishlist);
 route.post('/wishlist/toggle', wishlistController.toggleWishlist);
 
-route.get("/checkout", checkoutController.loadcheckout)
-route.post("/address/add", addressController.addAddress);
-route.put("/address/edit/:addressId", addressController.editAddress);
+route.get("/checkout", userauth.isLogin, checkoutController.loadcheckout)
+route.post("/address/add", userauth.isLogin, addressController.addAddress);
+route.put("/address/edit/:addressId", userauth.isLogin, addressController.editAddress);
 
-route.get("/ordersuccess", orderController.loadordersuccess)
-route.post("/place-order", orderController.placeorder)
+route.get("/ordersuccess", userauth.isLogin, orderController.loadordersuccess)
+route.post("/place-order", userauth.isLogin, orderController.placeorder)
 route.post('/create-order', orderController.onlineorder)
 route.post('/verify-payment', orderController.verifyOnlineOrder)
 

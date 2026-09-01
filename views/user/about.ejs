@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>About Us - Spice Market</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#cd4e18",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211611",
+                        "secondary": "#B89F73", // Muted Gold for stars
+                        "forest": "#4C5E4E", // Forest Green for accents
+                    },
+                    fontFamily: {
+                        "display": ["Epilogue", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181311] dark:text-[#f4f1f0] antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+<%- include("../partials/header") %>
+<main class="flex-1">
+<section class="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 bg-background-dark">
+<img alt="Atmospheric dark spices background" class="w-full h-full object-cover opacity-40 mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUIWBWulpXFANZEOcYmZ_31c5gAQzcejD0AH6ro-HM_5x0dMwCPD_LvOH8-es1W76XXqMZmmrYto0IisGo5vLmApGP9QSEb6WA-F67o5SofMmL05wDPw9S7r95OKCMkmHeI2PnonWHKLwXbZ_vXC8QspHgDVx_hkw-1MHCSD2oDXyCNUBFh3Fu3PmSxaQ0ajlWK9ngtJD6HCtBPsD4_uEB5j2rtUdmzI046GzOmhezYxrg7AEr908MiF1oubouj1myjU-cS5lBgTc"/>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent to-background-light dark:to-background-dark"></div>
+</div>
+<div class="relative z-10 container mx-auto px-6 lg:px-20 text-center">
+<span class="inline-block py-1 px-3 rounded-full bg-white/10 text-white border border-white/20 text-xs font-bold uppercase tracking-widest mb-6 backdrop-blur-sm">Since 2012</span>
+<h1 class="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight">
+                        Rooted in Culture.<br/>
+<span class="text-primary">Crafted for Flavor.</span>
+</h1>
+<p class="text-lg md:text-xl text-white/80 max-w-2xl mx-auto font-body leading-relaxed">
+                        We travel the globe to bring you single-origin spices that transform your cooking from ordinary to extraordinary.
+                    </p>
+</div>
+</section>
+<section class="py-20 px-6 lg:px-20 xl:px-40 bg-white dark:bg-[#1A120E]">
+<div class="mx-auto max-w-[1280px]">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="relative group">
+<div class="absolute -inset-4 bg-primary/10 rounded-[2rem] -rotate-2 group-hover:rotate-0 transition-transform duration-500"></div>
+<div class="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl">
+<img alt="Close up of whole spices showing texture and quality" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd3Xu7S2sitvbp_EBJsRyxataKV_463ubW3Nq8KQ1XFZPLem6UjFilpFMNhDCO_IW-ZFy6SZPuabGdsrsFuxjmhJOCKs4GVKxaxMsvfdfUWA5BYIyg5PObamyuzERDY-NrH0Vwiw3qjdinn21IIB59BqyHt-ka985LV26OugQ0Sh_NhHP9B0jxmTIl0icnQVDtN5YRlY6BuPbVTbBbY2j73Ofu5qDYmOmxAfzvq21oh-7EocbrSeGAaF396BlwZ6JBoyWrEObiizk"/>
+</div>
+<div class="absolute bottom-8 right-8 bg-white dark:bg-[#2C201A] p-6 rounded-xl shadow-xl border-l-4 border-primary max-w-xs hidden sm:block">
+<p class="font-display font-bold text-lg mb-1 dark:text-white">"Flavor is a journey, not a destination."</p>
+<p class="text-sm text-[#886e63] dark:text-[#9CA3AF] font-body">- Elena, Founder</p>
+</div>
+</div>
+<div class="flex flex-col gap-8">
+<div>
+<h2 class="text-3xl lg:text-5xl font-bold text-[#181311] dark:text-white mb-6">Our Story</h2>
+<div class="w-20 h-1 bg-primary rounded-full mb-8"></div>
+<p class="text-lg text-[#5C4D46] dark:text-[#A8A29E] font-body leading-relaxed mb-6">
+                                Spice Cart began in a small kitchen with a suitcase full of saffron from Iran and cinnamon from Sri Lanka. Our founder, Elena, realized that the spices available in local supermarkets lacked the vibrancy and aroma of those she discovered on her travels.
+                            </p>
+<p class="text-lg text-[#5C4D46] dark:text-[#A8A29E] font-body leading-relaxed">
+                                Driven by a passion for authentic flavors, she set out to build direct relationships with farmers who prioritize quality over quantity. Today, we bridge the gap between small-scale growers and home cooks who care about what they put on their plates.
+                            </p>
+</div>
+<div class="grid grid-cols-2 gap-8 mt-4">
+<div>
+<h3 class="text-3xl font-black text-primary mb-2">15+</h3>
+<p class="font-bold text-[#181311] dark:text-white">Countries Sourced</p>
+</div>
+<div>
+<h3 class="text-3xl font-black text-primary mb-2">50k+</h3>
+<p class="font-bold text-[#181311] dark:text-white">Happy Cooks</p>
+</div>
+<div>
+<h3 class="text-3xl font-black text-primary mb-2">100%</h3>
+<p class="font-bold text-[#181311] dark:text-white">Organic Certified</p>
+</div>
+<div>
+<h3 class="text-3xl font-black text-primary mb-2">0</h3>
+<p class="font-bold text-[#181311] dark:text-white">Middlemen</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-20 px-6 lg:px-20 xl:px-40 bg-[#F5F0EB] dark:bg-background-dark/50">
+<div class="mx-auto max-w-[1280px]">
+<div class="text-center max-w-3xl mx-auto mb-16">
+<h2 class="text-3xl lg:text-4xl font-bold text-[#181311] dark:text-white mb-6">Our Mission &amp; Values</h2>
+<p class="text-lg text-[#5C4D46] dark:text-[#A8A29E] font-body">
+                        We believe that great food starts with great ingredients. Our mission is to make high-quality, ethically sourced spices accessible to everyone while supporting sustainable farming practices.
+                    </p>
+</div>
+<div class="grid md:grid-cols-3 gap-8">
+<div class="bg-white dark:bg-[#2C201A] p-8 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-transparent hover:border-primary/20 group">
+<div class="size-14 rounded-full bg-[#FDF2EC] dark:bg-primary/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">handshake</span>
+</div>
+<h3 class="text-xl font-bold text-[#181311] dark:text-white mb-4">Direct Trade</h3>
+<p class="text-[#5C4D46] dark:text-[#A8A29E] font-body">
+                            We work directly with farmers, cutting out middlemen to ensure fair wages for growers and fresher spices for you.
+                        </p>
+</div>
+<div class="bg-white dark:bg-[#2C201A] p-8 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-transparent hover:border-primary/20 group">
+<div class="size-14 rounded-full bg-[#ECFDF5] dark:bg-forest/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-forest text-3xl">spa</span>
+</div>
+<h3 class="text-xl font-bold text-[#181311] dark:text-white mb-4">Sustainability</h3>
+<p class="text-[#5C4D46] dark:text-[#A8A29E] font-body">
+                            From compostable packaging to carbon-neutral shipping, we are committed to protecting the planet that provides our spices.
+                        </p>
+</div>
+<div class="bg-white dark:bg-[#2C201A] p-8 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-transparent hover:border-primary/20 group">
+<div class="size-14 rounded-full bg-[#FFFBEB] dark:bg-secondary/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-secondary text-3xl">verified</span>
+</div>
+<h3 class="text-xl font-bold text-[#181311] dark:text-white mb-4">Uncompromised Quality</h3>
+<p class="text-[#5C4D46] dark:text-[#A8A29E] font-body">
+                            Our spices are single-origin, non-irradiated, and free from fillers. You get 100% pure flavor in every jar.
+                        </p>
+</div>
+</div>
+</div>
+</section>
+<section class="py-20 px-6 lg:px-20 xl:px-40 bg-white dark:bg-[#1A120E]">
+<div class="mx-auto max-w-[1280px]">
+<div class="flex flex-col md:flex-row gap-12 items-center">
+<div class="flex-1">
+<div class="relative max-w-md mx-auto md:mr-auto">
+<div class="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl bg-gray-200">
+<img alt="Portrait of the founder" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl-aGfZ8oQuV44VqPbS0CK2zYKZrgcjfAHgSWSk1DSMMbAzpkRd4Euu3-y-QgNhX6xZ3sBfWmB0Z-TJdxZUvoe6aR_6SghOURAycGq9xwmyyKuBNTMofd_gO5rBaqyDNKEAcg9kI6XL0sal9Y1JWuKI4jTEf_k8T8ZNHALTxGdY3JfuscgZ44s7t_PGvL3tvl1DhmsxlPLHiEqT9XgQoPu0OU_irZgT0WtlGri1hvcxmhfBxS9QTCMkLbtND4z1add7bvSRN7-Hk4"/>
+</div>
+<div class="absolute -bottom-6 -right-6 bg-primary text-white p-4 rounded-xl shadow-lg">
+<p class="font-bold text-lg">Elena Ross</p>
+<p class="text-sm opacity-90">Founder &amp; Head Scurrier</p>
+</div>
+</div>
+</div>
+<div class="flex-1 text-center md:text-left">
+<span class="text-primary font-bold tracking-widest text-sm uppercase">Meet the Founder</span>
+<h2 class="text-3xl lg:text-5xl font-bold text-[#181311] dark:text-white mt-4 mb-6">A Passion for Purity</h2>
+<p class="text-lg text-[#5C4D46] dark:text-[#A8A29E] font-body leading-relaxed mb-8">
+                            "I started Spice Market because I was tired of flavorless, dusty powders sitting on supermarket shelves for years. I wanted to create a connection between the incredible farmers I met and the home cooks who appreciate true flavor. Every jar we sell is a promise of quality and a tribute to the hard work of our farming partners."
+                        </p>
+<!-- <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+<button class="h-12 px-8 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold transition-transform active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-primary/30">
+                                    Browse Our Collection
+                                </button>
+<button class="h-12 px-8 rounded-lg bg-transparent border border-[#E6E0DC] dark:border-[#3E302A] hover:border-primary text-[#181311] dark:text-white font-bold transition-all flex items-center justify-center gap-2">
+                                    Read Our Blog
+                                </button>
+</div> -->
+</div>
+</div>
+</div>
+</section>
+<section class="px-6 py-20 lg:px-20 xl:px-40 bg-[#F5F0EB] dark:bg-[#211611]">
+<div class="mx-auto max-w-[1280px]">
+<div class="relative rounded-3xl overflow-hidden bg-forest/90">
+<img alt="Spices texture background" class="absolute inset-0 w-full h-full object-cover opacity-20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB57wCUrHqr1bJmfsAcPDN36yftPiNGg_lN0dXp5CwzuwTN2q9nXcYjuDAD8U8jw-mb-HqA7c_5aaTAk-jWY4fuJ8xk1vlZEIt2TS52byXQ-bstINyZRG86-YLqnPCBjrce9UpzfHWeouglKIqmIYqlRLWK-TF6tFN9h6ONx2u656HR6hQ431otQgZ5zNb2uqszjnmIeuVc9-HhhnmyjiVN0jRlR9M999Pxj30WMGYPKn-ii-cIClGUGza5nhp2nchgI8nHOS0OIpU"/>
+<div class="relative z-10 px-6 py-16 md:py-24 text-center">
+<h2 class="text-3xl lg:text-5xl font-bold text-white mb-6">Ready to Taste the Difference?</h2>
+<p class="text-lg text-white/80 max-w-2xl mx-auto mb-10 font-body">
+                            Join thousands of home cooks who have upgraded their pantry with our fresh, potent, and ethically sourced spices.
+                        </p>
+                        <a href="/shop">
+                            <button class="h-14 px-10 rounded-full bg-white text-forest hover:bg-[#f4f1f0] font-bold text-lg transition-colors shadow-xl">
+                                Shop All Spices
+                            </button>
+                        </a>
+</div>
+</div>
+</div>
+</section>
+</main>
+<%- include("../partials/footer") %>
+</div>
+
+</body></html>
