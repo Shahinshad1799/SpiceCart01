@@ -7,13 +7,117 @@ const transporter = require("../utils/emailer");
 const passport = require("passport");
   const { generateReferralCode } = require("../utils/referralHelper");
   const { creditWallet } = require("../utils/walletHelper");
+  const product = require("../model/productmodel");
+   // registered as "Product"
+const Catagory = require("../model/catagorymodel"); 
 
 // =======================
 // Load Views
 // =======================
-const loadladingpage = (req, res) => {
-  res.render("user/landingpage");
+
+const submitContact = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      subject,
+      message,
+      newsletter
+    } = req.body;
+
+    if (!name || !email || !subject || !message) {
+      return res.status(400).send("All fields are required");
+    }
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER,
+      replyTo: email,
+      subject: `SpiceCart Contact: ${subject}`,
+
+      html: `
+        <div style="font-family: Arial, sans-serif;">
+
+          <h2>New Contact Message</h2>
+
+          <p>
+            <strong>Name:</strong> ${name}
+          </p>
+
+          <p>
+            <strong>Email:</strong> ${email}
+          </p>
+
+          <p>
+            <strong>Subject:</strong> ${subject}
+          </p>
+
+          <p>
+            <strong>Newsletter:</strong>
+            ${newsletter === "true" ? "Yes" : "No"}
+          </p>
+
+          <hr>
+
+          <h3>Message</h3>
+
+          <p>
+            ${message}
+          </p>
+
+        </div>
+      `
+    });
+
+    res.redirect("/contact?success=true");
+
+  } catch (error) {
+
+    console.error("Contact email error:", error);
+
+    res.status(500).send(
+      "Unable to send message. Please try again later."
+    );
+  }
 };
+const loadlandingpage = async (req, res) => {
+  try {
+    const search= req.query.q || "";
+ 
+    const filter = { status: "Active" };
+    if (search) {
+      filter.productName = { $regex: search , $options: "i" }; // adjust field name if your Product schema doesn't use `productName`
+    }
+ 
+    const products = await product
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean();
+ 
+    const categories = await Catagory
+      .find({ status: "Active" })
+      .lean();
+
+    ;
+ 
+    // Optional — wire this up once you have a Review/Testimonial model.
+    const testimonials = [];
+ 
+    return res.render("user/landingpage", {
+      products,
+      categories,
+      testimonials,
+      search
+    
+    });
+  } catch (err) {
+    console.error("Error loading landing page:", err);
+    return res.status(500).render("user/error", { message: "Something went wrong" });
+  }     
+}
+
+ 
 
 const loadsignup = (req, res) => {
   res.render("user/signup", { referralCode: req.session.referralCode || "" });
@@ -23,9 +127,61 @@ const loadlogin = (req, res) => {
   res.render("user/login");
 };
 
-const loadhome = (req, res) => {
-  res.render("user/home");
+const loadabout = (req, res) => {
+  res.render("user/about");
+}
+
+const loadcontact = (req, res) => {
+  res.render("user/contact");
+}
+
+// Example: controllers/user/homeController.js
+// Adjust the require paths and field names to match your actual project structure.
+
+   // catagorymodel
+
+const loadhome = async (req, res) => {
+  try {
+    // Categories to feature on the homepage
+    const categories = await Catagory
+      .find({ status: "Active" })   // adjust flag name to whatever you use for "active" categories
+      .limit(10)
+      .lean();
+
+    // Newest active, non-blocked products with stock
+    const products = await product
+      .find({status: "Active", "variants.stock": { $gt: 0 }})
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean();
+
+    // Optional — wire this up once you have a Review/Testimonial model.
+    // For now it's left undefined so the template falls back to a static quote.
+    const testimonials = [];
+
+    // Optional — lets you edit the hero copy without touching the template.
+    const hero = {
+      badgeText: "New Harvest",
+      title: "Awaken Your Senses with",
+      highlight: "Authentic Flavors",
+      subtitle:
+        "Hand-sourced, single-origin spices delivered fresh from the farm to your pantry. Experience the true taste of nature with our curated collections.",
+      image: "/images/hero-default.jpg",
+      newsletterImage: "/images/newsletter-default.jpg",
+    };
+
+    return res.render("user/home", {
+      categories,
+      products,
+      testimonials,
+      hero,
+    });
+  } catch (err) {
+    console.error("Error loading home page:", err);
+    return res.status(500).render("user/error", { message: "Something went wrong" });
+  }
 };
+
 
 const loadforgotpassword = (req, res) => {
   res.render("user/forgotpasword");
@@ -451,8 +607,11 @@ const logout = function (req, res) {
 };
 
 module.exports = {
-  loadladingpage,
+  loadlandingpage,
+  submitContact,
   loadsignup,
+  loadabout,
+  loadcontact,
   loadlogin,
   loadhome,
   loadforgotpassword,
