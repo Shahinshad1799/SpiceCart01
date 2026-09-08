@@ -234,8 +234,13 @@
       <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
     </span>
   </td>
-  <td class="px-6 py-4 text-sm font-bold text-right dark:text-white">₹<%= order.amount %></td>
-</tr>
+<td class="px-6 py-4 text-sm font-bold text-right dark:text-white">
+  <% if (order.status === 'cancelled' || order.status === 'returned') { %>
+    <span class="text-[#63887d] dark:text-white/40 line-through">₹<%= order.refundedAmount %></span>
+  <% } else { %>
+    ₹<%= order.amount %>
+  <% } %>
+</td></tr>
 <% }) %>
           </tbody>
         </table>
