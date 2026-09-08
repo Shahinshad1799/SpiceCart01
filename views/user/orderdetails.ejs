@@ -206,6 +206,9 @@
 
                 // Determine if this is a paid online order (eligible for wallet refund)
                 const isOnlinePaid = order.paymentMethod === 'online' && order.paymentStatus === 'paid';
+
+                // Whether there's still at least one fully-active item left to return as a whole order
+                const hasReturnableItems = order.items.some(i => i.itemStatus === 'active');
               %>
 
               <!-- Header -->
@@ -244,8 +247,8 @@
                     </button>
                     <% } %>
 
-                    <!-- Return button — delivered orders only -->
-                    <% if (order.status === 'delivered') { %>
+                    <!-- Return button — delivered orders only, and only if something's still active to return -->
+                    <% if (order.status === 'delivered' && hasReturnableItems) { %>
                     <button
                       onclick="openReturnModal('<%= order._id %>')"
                       class="px-5 py-2.5 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20 rounded-xl transition-all flex items-center gap-2">
@@ -337,9 +340,16 @@
     <div class="space-y-4">
 
       <% order.items.forEach(item => {
-        const itemCancelled = item.itemStatus === 'cancelled';
+        const itemCancelled   = item.itemStatus === 'cancelled';
+        const returnRequested = item.itemStatus === 'return_requested';
+        const itemReturned    = item.itemStatus === 'returned';
+        const returnRejected  = item.itemStatus === 'return_rejected';
+        const itemInactive    = itemCancelled || returnRequested || itemReturned;
+
         const canCancelItem =
-          ['pending', 'processing'].includes(order.status) && !itemCancelled;
+          ['pending', 'processing'].includes(order.status) && item.itemStatus === 'active';
+        const canReturnItem =
+          order.status === 'delivered' && item.itemStatus === 'active';
       %>
 
         <div class="
@@ -350,7 +360,7 @@
           rounded-2xl
           transition-all
           border
-          <%= itemCancelled
+          <%= itemInactive
             ? 'opacity-50 bg-red-50/40 dark:bg-red-950/10 border-red-100 dark:border-red-900/30'
             : 'hover:bg-[#fcfbfb] dark:hover:bg-[#32241E] border-border-subtle/50 dark:border-[#3E302A]/50'
           %>
@@ -364,7 +374,7 @@
               <img
                 src="/uploads/product/<%= item.productImage %>"
                 alt="<%= item.productName %>"
-                class="w-full h-full object-cover <%= itemCancelled ? 'grayscale' : '' %>"
+                class="w-full h-full object-cover <%= itemInactive ? 'grayscale' : '' %>"
               />
 
             <% } else { %>
@@ -381,6 +391,18 @@
               <div class="absolute inset-0 bg-red-500/10 flex items-center justify-center">
                 <span class="material-symbols-outlined text-red-400 text-3xl">
                   cancel
+                </span>
+              </div>
+            <% } else if (itemReturned) { %>
+              <div class="absolute inset-0 bg-red-500/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-red-400 text-3xl">
+                  keyboard_return
+                </span>
+              </div>
+            <% } else if (returnRequested) { %>
+              <div class="absolute inset-0 bg-amber-500/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-amber-500 text-3xl">
+                  hourglass_top
                 </span>
               </div>
             <% } %>
@@ -406,7 +428,7 @@
               <p class="
                 font-bold text-base sm:text-lg
                 flex-shrink-0
-                <%= itemCancelled
+                <%= itemInactive
                   ? 'line-through text-text-muted'
                   : 'text-text-main dark:text-white'
                 %>
@@ -442,7 +464,7 @@
 
             </div>
 
-            <!-- Status + Cancel -->
+            <!-- Status + Actions -->
             <div class="
               mt-4
               flex flex-wrap
@@ -451,7 +473,7 @@
               gap-3
             ">
 
-              <!-- Cancelled Status -->
+              <!-- Status badges -->
               <% if (itemCancelled) { %>
 
                 <span class="
@@ -484,49 +506,182 @@
 
                 </span>
 
+              <% } else if (returnRequested) { %>
+
+                <span class="
+                  inline-flex
+                  items-center
+                  gap-1
+                  text-[11px]
+                  font-bold
+                  text-amber-600
+                  bg-amber-50
+                  dark:bg-amber-950/30
+                  px-2.5 py-1
+                  rounded-lg
+                  border
+                  border-amber-100
+                  dark:border-amber-900/40
+                  max-w-full
+                ">
+
+                  <span class="material-symbols-outlined text-sm">
+                    hourglass_top
+                  </span>
+
+                  <span>
+                    Return Requested — Pending Review
+                  </span>
+
+                </span>
+
+              <% } else if (itemReturned) { %>
+
+                <span class="
+                  inline-flex
+                  items-center
+                  gap-1
+                  text-[11px]
+                  font-bold
+                  text-red-500
+                  bg-red-50
+                  dark:bg-red-950/30
+                  px-2.5 py-1
+                  rounded-lg
+                  border
+                  border-red-100
+                  dark:border-red-900/40
+                  max-w-full
+                ">
+
+                  <span class="material-symbols-outlined text-sm">
+                    keyboard_return
+                  </span>
+
+                  <span>
+                    Item Returned
+                    <% if (isOnlinePaid) { %>
+                      · Refunded to Wallet
+                    <% } %>
+                  </span>
+
+                </span>
+
+              <% } else if (returnRejected) { %>
+
+                <span class="
+                  inline-flex
+                  items-center
+                  gap-1
+                  text-[11px]
+                  font-bold
+                  text-text-muted
+                  bg-surface-muted
+                  dark:bg-[#3E302A]
+                  px-2.5 py-1
+                  rounded-lg
+                  border
+                  border-border-subtle
+                  dark:border-[#3E302A]
+                  max-w-full
+                ">
+
+                  <span class="material-symbols-outlined text-sm">
+                    block
+                  </span>
+
+                  <span>
+                    Return Rejected
+                  </span>
+
+                </span>
+
               <% } %>
 
-              <!-- Cancel Button -->
-              <% if (canCancelItem) { %>
+              <!-- Action buttons -->
+              <div class="sm:ml-auto flex items-center gap-4">
 
-                <button
-                  type="button"
-                  onclick="cancelItem(
+                <% if (canCancelItem) { %>
+
+                  <button
+                    type="button"
+                    onclick="cancelItem(
   '<%= order._id %>',
   '<%= item.productId %>',
   '<%= item.productName.replace(/'/g, "\\'") %>',
   <%= isOnlinePaid %>,
   <%= item.lineTotal ?? 0 %>
 )"
-                  class="
-                    sm:ml-auto
-                    shrink-0
-                    text-xs
-                    font-bold
-                    text-red-400
-                    hover:text-red-600
-                    dark:hover:text-red-400
-                    flex items-center
-                    gap-1
-                    transition-colors
-                    group
-                  "
-                >
+                    class="
+                      shrink-0
+                      text-xs
+                      font-bold
+                      text-red-400
+                      hover:text-red-600
+                      dark:hover:text-red-400
+                      flex items-center
+                      gap-1
+                      transition-colors
+                      group
+                    "
+                  >
 
-                  <span class="
-                    material-symbols-outlined
-                    text-base
-                    group-hover:scale-110
-                    transition-transform
-                  ">
-                    remove_shopping_cart
-                  </span>
+                    <span class="
+                      material-symbols-outlined
+                      text-base
+                      group-hover:scale-110
+                      transition-transform
+                    ">
+                      remove_shopping_cart
+                    </span>
 
-                  Cancel Item
+                    Cancel Item
 
-                </button>
+                  </button>
 
-              <% } %>
+                <% } %>
+
+                <% if (canReturnItem) { %>
+
+                  <button
+                    type="button"
+                    onclick="returnItem(
+  '<%= order._id %>',
+  '<%= item.productId %>',
+  '<%= item.productName.replace(/'/g, "\\'") %>',
+  <%= isOnlinePaid %>,
+  <%= item.lineTotal ?? 0 %>
+)"
+                    class="
+                      shrink-0
+                      text-xs
+                      font-bold
+                      text-amber-600
+                      hover:text-amber-700
+                      dark:hover:text-amber-400
+                      flex items-center
+                      gap-1
+                      transition-colors
+                      group
+                    "
+                  >
+
+                    <span class="
+                      material-symbols-outlined
+                      text-base
+                      group-hover:scale-110
+                      transition-transform
+                    ">
+                      keyboard_return
+                    </span>
+
+                    Return Item
+
+                  </button>
+
+                <% } %>
+
+              </div>
 
             </div>
 
@@ -578,18 +733,20 @@
                       </div>
                     </div>
 
-                    <!-- Wallet Refund Notice — show if online paid and order/items were cancelled -->
+                    <!-- Wallet Refund Notice — show if online paid and order/items were cancelled or returned -->
                     <%
                       const hasCancelledItems = order.items.some(i => i.itemStatus === 'cancelled');
+                      const hasReturnedItems  = order.items.some(i => i.itemStatus === 'returned');
                       const orderWasCancelled = order.status === 'cancelled';
+                      const orderWasReturned  = order.status === 'returned';
                     %>
-                    <% if (isOnlinePaid && (hasCancelledItems || orderWasCancelled)) { %>
+                    <% if (isOnlinePaid && (hasCancelledItems || hasReturnedItems || orderWasCancelled || orderWasReturned)) { %>
                     <div class="p-5 rounded-2xl border border-green-200 dark:border-green-900/40 bg-green-50 dark:bg-green-950/20 flex items-start gap-3">
                       <span class="material-symbols-outlined text-green-600 text-xl flex-shrink-0 mt-0.5">account_balance_wallet</span>
                       <div>
                         <p class="text-sm font-bold text-green-800 dark:text-green-400 mb-1">Refund Credited to Wallet</p>
                         <p class="text-xs text-green-700 dark:text-green-500 leading-relaxed">
-                          The refund for cancelled item(s) has been added to your SpiceCart wallet. You can use it on your next order.
+                          The refund for cancelled/returned item(s) has been added to your SpiceCart wallet. You can use it on your next order.
                         </p>
                         <a href="/wallet" class="inline-flex items-center gap-1 mt-2 text-xs font-bold text-green-700 dark:text-green-400 hover:underline">
                           <span class="material-symbols-outlined text-sm">open_in_new</span>
@@ -701,17 +858,23 @@
       </tr>
     </thead>
     <tbody>
-      <% order.items.forEach((item, i) => { %>
+      <% order.items.forEach((item, i) => {
+        const rowInactive = ['cancelled', 'returned'].includes(item.itemStatus);
+      %>
       <tr style="border-bottom:1px solid #E6E0DC; background:<%= i % 2 === 0 ? '#fff' : '#fbf9f8' %>;">
-        <td style="padding:0.85rem 1rem; font-size:0.85rem; font-weight:600; color:<%= item.itemStatus === 'cancelled' ? '#886e63' : '#181311' %>;">
+        <td style="padding:0.85rem 1rem; font-size:0.85rem; font-weight:600; color:<%= rowInactive ? '#886e63' : '#181311' %>;">
           <%= item.productName %>
           <% if (item.itemStatus === 'cancelled') { %>
           <span style="margin-left:0.5rem; font-size:0.65rem; font-weight:700; background:#fee2e2; color:#ef4444; padding:0.1rem 0.4rem; border-radius:0.25rem;">CANCELLED</span>
+          <% } else if (item.itemStatus === 'returned') { %>
+          <span style="margin-left:0.5rem; font-size:0.65rem; font-weight:700; background:#fee2e2; color:#ef4444; padding:0.1rem 0.4rem; border-radius:0.25rem;">RETURNED</span>
+          <% } else if (item.itemStatus === 'return_requested') { %>
+          <span style="margin-left:0.5rem; font-size:0.65rem; font-weight:700; background:#fef3c7; color:#b45309; padding:0.1rem 0.4rem; border-radius:0.25rem;">RETURN PENDING</span>
           <% } %>
         </td>
         <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:center; color:#886e63;"><%= Number(item.quantity || 0).toFixed(2) %></td>
         <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:right; color:#886e63;">₹<%= Number(item.unitPrice || 0).toFixed(2) %></td>
-        <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:right; font-weight:700; color:<%= item.itemStatus === 'cancelled' ? '#886e63' : '#181311' %>; text-decoration:<%= item.itemStatus === 'cancelled' ? 'line-through' : 'none' %>;">
+        <td style="padding:0.85rem 1rem; font-size:0.85rem; text-align:right; font-weight:700; color:<%= rowInactive ? '#886e63' : '#181311' %>; text-decoration:<%= rowInactive ? 'line-through' : 'none' %>;">
           ₹<%= Number(item.lineTotal || 0).toFixed(2) %>
         </td>
       </tr>
@@ -724,9 +887,9 @@
     <div style="width:260px;">
       <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #E6E0DC;">
         <span style="font-size:0.82rem; color:#886e63;">Subtotal</span>
-      <span style="font-size:0.82rem; font-weight:700;">
-  ₹<%= Number(order.subtotal || 0).toFixed(2) %>
-</span>
+        <span style="font-size:0.82rem; font-weight:700;">
+          ₹<%= Number(order.subtotal || 0).toFixed(2) %>
+        </span>
       </div>
       <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #E6E0DC;">
         <span style="font-size:0.82rem; color:#886e63;">Shipping</span>
@@ -734,8 +897,14 @@
       </div>
       <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #E6E0DC;">
         <span style="font-size:0.82rem; color:#886e63;">Tax (5%)</span>
-        <span style="font-size:0.82rem; font-weight:700;">₹<%= Number(order.tax || 0).toFixed(2) %></span>
+        <span style="font-size:0.82rem; font-weight:700;">₹ 0</span>
       </div>
+      <% if (order.discount && order.discount > 0) { %>
+      <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #E6E0DC;">
+        <span style="font-size:0.82rem; color:#886e63;">Discount</span>
+        <span style="font-size:0.82rem; font-weight:700; color:#16a34a;">-₹<%= Number(order.discount || 0).toFixed(2) %></span>
+      </div>
+      <% } %>
       <div style="display:flex; justify-content:space-between; padding:0.75rem 0; margin-top:0.25rem;">
         <span style="font-size:1rem; font-weight:800; color:#181311;">Total</span>
         <span style="font-size:1.4rem; font-weight:800; color:#cd4e18; font-family:'Epilogue',sans-serif;">₹<%= Number(order.total || 0).toFixed(2) %></span>
@@ -970,6 +1139,105 @@
         Swal.fire({
           title: 'Failed',
           text: data.message || 'Could not cancel this item.',
+          icon: 'error',
+          confirmButtonText: 'Close'
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Something went wrong. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'Close'
+      });
+    }
+  }
+
+
+  /* ─────────────────────────────
+     RETURN SINGLE ITEM — SweetAlert2
+  ───────────────────────────── */
+  async function returnItem(orderId, productId, productName, isOnlinePaid, lineTotal) {
+
+    // ── Step 1: Pick a return reason ──
+    const { value: reason, isConfirmed: pickedReason } = await Swal.fire({
+      title: `Return "${productName}"?`,
+      html: `
+        <p style="margin-bottom:0.75rem;font-size:0.875rem;color:#886e63;">
+          Please select a reason for returning this item.
+        </p>
+        <select id="swal-cancel-reason">
+          <option value="" disabled selected>Select a reason…</option>
+          <option value="damaged_product">Damaged Product</option>
+          <option value="wrong_item">Wrong Item Delivered</option>
+          <option value="quality_issue">Quality Issue</option>
+          <option value="not_needed">No Longer Needed</option>
+          <option value="other">Other</option>
+        </select>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Continue',
+      cancelButtonText: 'Go Back',
+      preConfirm: () => {
+        const val = document.getElementById('swal-cancel-reason').value;
+        if (!val) {
+          Swal.showValidationMessage('Please select a reason.');
+          return false;
+        }
+        return val;
+      }
+    });
+
+    if (!pickedReason) return;
+
+    // ── Step 2: Confirm ──
+    const { isConfirmed } = await Swal.fire({
+      title: 'Submit return request?',
+      html: `
+        <p style="font-size:0.875rem;color:#886e63;line-height:1.6;">
+          Only <strong style="color:#181311;">${productName}</strong> will be returned.<br/>
+          Your request will be reviewed before a refund is issued.
+        </p>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Request Return',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+    });
+
+    if (!isConfirmed) return;
+
+    // ── Step 3: API call ──
+    Swal.fire({
+      title: 'Submitting return request…',
+      text: 'Please wait.',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    try {
+      const res = await fetch(`/orders/${orderId}/return-item`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, reason })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        await Swal.fire({
+          title: 'Return Requested',
+          text: `Your return request for "${productName}" is pending review.`,
+          icon: 'success',
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false
+        });
+        window.location.reload();
+      } else {
+        Swal.fire({
+          title: 'Failed',
+          text: data.message || 'Could not submit return request.',
           icon: 'error',
           confirmButtonText: 'Close'
         });

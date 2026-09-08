@@ -118,26 +118,62 @@ const loadSalesReport = async function (req, res) {
     const searchTrimmed = search.trim();
 
     // ── Aggregation: summary metrics (always over the full date range, ignoring search/status for the KPI cards) ──
-    const [summaryRaw] = await ordermodel.aggregate([
-      { $match: baseFilter },
-      {
-        $group: {
-          _id:              null,
-          totalOrders:      { $sum: 1 },
-          totalRevenue:     { $sum: { $cond: [{ $in: ["$status", NON_REVENUE_STATUSES] }, 0, "$total"] } },
-          totalItemsSold:   {
-            $sum: {
-              $cond: [
-                { $in: ["$status", NON_REVENUE_STATUSES] },
-                0,
-                { $sum: "$items.quantity" }
-              ]
+   const [summaryRaw] = await ordermodel.aggregate([
+  { $match: baseFilter },
+  {
+    $addFields: {
+      refundedFromItems: {
+        $sum: {
+          $map: {
+            input: { $filter: {
+              input: "$items",
+              as: "i",
+              cond: { $in: ["$$i.itemStatus", NON_REVENUE_ITEM_STATUSES] }
+            }},
+            as: "ri",
+            in: "$$ri.lineTotal"
+          }
+        }
+      }
+    }
+  },
+  {
+    $addFields: {
+      netTotal: {
+        $cond: [
+          { $in: ["$status", NON_REVENUE_STATUSES] },
+          0,
+          { $subtract: ["$total", "$refundedFromItems"] }
+        ]
+      }
+    }
+  },
+  {
+    $group: {
+      _id:              null,
+      totalOrders:      { $sum: 1 },
+      totalRevenue:     { $sum: "$netTotal" },
+      totalItemsSold: {
+        $sum: {
+          $cond: [
+            { $in: ["$status", NON_REVENUE_STATUSES] },
+            0,
+            {
+              $sum: {
+                $map: {
+                  input: { $filter: { input: "$items", as: "i", cond: { $not: { $in: ["$$i.itemStatus", NON_REVENUE_ITEM_STATUSES] } } } },
+                  as: "ai",
+                  in: "$$ai.quantity"
+                }
+              }
             }
-          },
-          cancelledOrders:  { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
-        },
+          ]
+        }
       },
-    ]);
+      cancelledOrders:  { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
+    },
+  },
+]);
     const summary = summaryRaw || {
       totalOrders:     0,
       totalRevenue:    0,
@@ -175,27 +211,25 @@ const loadSalesReport = async function (req, res) {
     const paginatedOrders = allOrders.slice(skip, skip + pageSize);
 
     // ── Shape orders for the view ─────────────────────────────────────────
-    const orders = paginatedOrders.map((o) => ({
-      _id:           o._id.toString(),
-      shortId:       "#SC-" + o._id.toString().slice(-4).toUpperCase(),
-      date:          formatDate(o.createdAt),
-      customerName:  o.userId?.fullname  || "Unknown",
-      customerEmail: o.userId?.email     || "",
-      initials:      (o.userId?.fullname || "?")
-                       .split(" ")
-                       .map((w) => w[0])
-                       .join("")
-                       .slice(0, 2)
-                       .toUpperCase(),
-      itemCount:     (o.items || []).reduce((s, i) => s + (i.quantity || 1), 0),
-      paymentMethod: o.paymentMethod === "online" ? "Online" : (o.paymentMethod === "wallet" ? "Wallet" : "Cash on Delivery"),
-      paymentStatus: o.paymentStatus || "pending",
-      status:        o.status || "pending",
-      amount:        (o.total || 0).toFixed(2),
-      // first item's image for a thumbnail preview
-      productImage:  o.items?.[0]?.productImage || null,
-      productName:   o.items?.[0]?.productName || "",
-    }));
+   const orders = paginatedOrders.map((o) => {
+  const netAmount = computeNetAmount(o);
+  return {
+    _id:           o._id.toString(),
+    shortId:       "#SC-" + o._id.toString().slice(-4).toUpperCase(),
+    date:          formatDate(o.createdAt),
+    customerName:  o.userId?.fullname  || "Unknown",
+    customerEmail: o.userId?.email     || "",
+    initials:      (o.userId?.fullname || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
+    itemCount:     (o.items || []).reduce((s, i) => s + (i.quantity || 1), 0),
+    paymentMethod: o.paymentMethod === "online" ? "Online" : (o.paymentMethod === "wallet" ? "Wallet" : "Cash on Delivery"),
+    paymentStatus: o.paymentStatus || "pending",
+    status:        o.status || "pending",
+    amount:        netAmount.toFixed(2),
+    refundedAmount: ((o.total || 0) - netAmount).toFixed(2), // optional, for a "Refunded" column
+    productImage:  o.items?.[0]?.productImage || null,
+    productName:   o.items?.[0]?.productName || "",
+  };
+});
 
     // ── Pagination helpers for EJS ────────────────────────────────────────
     const pagination = {
@@ -226,6 +260,23 @@ const loadSalesReport = async function (req, res) {
 
 // ─── CSV Export ──────────────────────────────────────────────────────────────
 
+// Add this once near NON_REVENUE_STATUSES at the top of the file (not duplicated per-function)
+const NON_REVENUE_ITEM_STATUSES = ["cancelled", "returned"];
+
+/**
+ * Net amount actually retained for an order: total minus any line items
+ * that were individually cancelled or returned (even if the order itself
+ * is still active, e.g. status "delivered" with one returned item).
+ */
+function computeNetAmount(order) {
+  const refunded = (order.items || [])
+    .filter((i) => NON_REVENUE_ITEM_STATUSES.includes(i.itemStatus))
+    .reduce((sum, i) => sum + (i.lineTotal || 0), 0);
+  return Math.max(0, (order.total || 0) - refunded);
+}
+
+// ─── CSV Export ──────────────────────────────────────────────────────────────
+
 const exportSalesCSV = async function (req, res) {
   try {
     const { preset = "month", startDate: rawStart, endDate: rawEnd, status = "" } = req.query;
@@ -251,7 +302,7 @@ const exportSalesCSV = async function (req, res) {
         (o.items || []).reduce((s, i) => s + (i.quantity || 1), 0),  // was o.orderedItems
         o.paymentMethod === "online" ? "Online" : (o.paymentMethod === "wallet" ? "Wallet" : "Cash on Delivery"),
         o.status || "pending",
-        (o.total || 0).toFixed(2),                    // was o.totalAmount
+        computeNetAmount(o).toFixed(2),                // was (o.total || 0).toFixed(2) — now net of item-level refunds
       ]),
     ];
 
@@ -309,7 +360,7 @@ const exportSalesPDF = async (req, res) => {
     // ── Summary KPIs ──────────────────────────────────────────────
     const totalRevenue  = orders
       .filter(o => !NON_REVENUE_STATUSES.includes(o.status))
-      .reduce((sum, o) => sum + (o.total || 0), 0);
+      .reduce((sum, o) => sum + computeNetAmount(o), 0);   // was sum + (o.total || 0) — now net of item-level refunds
     const totalCancelled = orders.filter(o => o.status === "cancelled").length;
 
     const kpiY = 90;
@@ -366,7 +417,7 @@ const exportSalesPDF = async (req, res) => {
       const itemCount = (order.items || []).reduce((s, i) => s + (i.quantity || 1), 0);
       const method    = (order.paymentMethod || "").replace("_", " ");
       const status    = order.status || "pending";
-      const amount    = `Rs.${(order.total || 0).toLocaleString("en-IN")}`;
+      const amount    = `Rs.${computeNetAmount(order).toLocaleString("en-IN")}`;  // was (order.total || 0) — now net of item-level refunds
 
       doc.fillColor("#111");
       doc.text(`#${shortId}`, cols.id,       y, { width: 65 });

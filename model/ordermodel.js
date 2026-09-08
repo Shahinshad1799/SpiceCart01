@@ -32,10 +32,22 @@ const orderItemSchema = new mongoose.Schema({
     },
     itemStatus: {
         type: String,
-        enum: ["active", "cancelled"],
+        enum: ["active", "cancelled", "return_requested", "returned", "return_rejected"],
         default: "active"
     },
     cancelReason: {
+        type: String,
+        default: null
+    },
+    returnReason: {
+        type: String,
+        default: null
+    },
+    returnRequestedAt: {
+        type: Date,
+        default: null
+    },
+    returnAdminNote: {
         type: String,
         default: null
     }

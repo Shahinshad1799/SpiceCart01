@@ -139,7 +139,7 @@
       <div>
 
         <p class="text-sm font-bold text-amber-700 mb-2">
-          Return Request
+          Return Request (Whole Order)
         </p>
 
         <div class="space-y-1 text-sm text-amber-600">
@@ -203,6 +203,24 @@
 
 <% } %>
 
+<!-- Per-item return requests summary banner — only if any item is pending review -->
+<%
+  const pendingItemReturns = order.items.filter(i => i.itemStatus === 'return_requested');
+%>
+<% if (pendingItemReturns.length > 0) { %>
+<div class="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-4">
+  <span class="material-symbols-outlined text-amber-500 mt-0.5">hourglass_top</span>
+  <div>
+    <p class="text-sm font-bold text-amber-700 mb-1">
+      <%= pendingItemReturns.length %> Item Return Request<%= pendingItemReturns.length > 1 ? 's' : '' %> Pending
+    </p>
+    <p class="text-sm text-amber-600">
+      Review and approve/reject individual item returns below in the Items Ordered table.
+    </p>
+  </div>
+</div>
+<% } %>
+
 <!-- Also fix the status badge in the h2 line — replace the hardcoded "Processing" span -->
 <%
   const badgeStyles = {
@@ -243,17 +261,21 @@
 <tbody class="divide-y divide-slate-50 dark:divide-white/5">
 
 <% order.items.forEach(item => {
-  const itemCancelled = item.itemStatus === 'cancelled';
+  const itemCancelled   = item.itemStatus === 'cancelled';
+  const returnRequested = item.itemStatus === 'return_requested';
+  const itemReturned    = item.itemStatus === 'returned';
+  const returnRejected  = item.itemStatus === 'return_rejected';
+  const itemInactive    = itemCancelled || itemReturned;
 %>
 
-<tr class="hover:bg-slate-50 transition-colors <%= itemCancelled ? 'opacity-50 bg-red-50/40' : '' %>">
+<tr class="hover:bg-slate-50 transition-colors <%= itemInactive ? 'opacity-50 bg-red-50/40' : (returnRequested ? 'bg-amber-50/40' : '') %>">
 
 <td class="px-6 py-4">
 <div class="flex items-center gap-4">
 
 <div class="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 relative">
 <img
-  class="w-full h-full object-cover <%= itemCancelled ? 'grayscale' : '' %>"
+  class="w-full h-full object-cover <%= itemInactive ? 'grayscale' : '' %>"
   src="/uploads/product/<%= item.productImage %>"
   alt=""
 >
@@ -261,11 +283,19 @@
 <div class="absolute inset-0 bg-red-500/10 flex items-center justify-center">
   <span class="material-symbols-outlined text-red-400 text-xl">cancel</span>
 </div>
+<% } else if (itemReturned) { %>
+<div class="absolute inset-0 bg-red-500/10 flex items-center justify-center">
+  <span class="material-symbols-outlined text-red-400 text-xl">keyboard_return</span>
+</div>
+<% } else if (returnRequested) { %>
+<div class="absolute inset-0 bg-amber-500/10 flex items-center justify-center">
+  <span class="material-symbols-outlined text-amber-500 text-xl">hourglass_top</span>
+</div>
 <% } %>
 </div>
 
 <div>
-<p class="font-bold text-sm <%= itemCancelled ? 'text-slate-400' : '' %>">
+<p class="font-bold text-sm <%= itemInactive ? 'text-slate-400' : '' %>">
   <%= item.productName %>
 </p>
 
@@ -279,21 +309,64 @@ Variant ID: <%= item.variantId %>
   Cancelled
   <% if (item.cancelReason) { %> · <%= item.cancelReason %><% } %>
 </span>
+<% } else if (itemReturned) { %>
+<span class="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100">
+  <span class="material-symbols-outlined text-xs">keyboard_return</span>
+  Returned
+  <% if (item.returnReason) { %> · <%= item.returnReason %><% } %>
+</span>
+<% } else if (returnRequested) { %>
+<div class="mt-1.5 flex items-center gap-2 flex-wrap">
+
+  <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
+    <span class="material-symbols-outlined text-xs">hourglass_top</span>
+    Return Requested
+    <% if (item.returnReason) { %> · <%= item.returnReason %><% } %>
+  </span>
+
+  <form action="/admin/orders/<%= order._id %>/approve-return-item" method="POST" class="inline">
+    <input type="hidden" name="productId" value="<%= item.productId %>">
+    <button
+      type="submit"
+      class="px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-[10px] font-bold flex items-center gap-1"
+    >
+      <span class="material-symbols-outlined text-xs">check_circle</span>
+      Approve
+    </button>
+  </form>
+
+  <form action="/admin/orders/<%= order._id %>/reject-return-item" method="POST" class="inline">
+    <input type="hidden" name="productId" value="<%= item.productId %>">
+    <button
+      type="submit"
+      class="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-[10px] font-bold flex items-center gap-1"
+    >
+      <span class="material-symbols-outlined text-xs">cancel</span>
+      Reject
+    </button>
+  </form>
+
+</div>
+<% } else if (returnRejected) { %>
+<span class="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+  <span class="material-symbols-outlined text-xs">block</span>
+  Return Rejected
+</span>
 <% } %>
 </div>
 
 </div>
 </td>
 
-<td class="px-6 py-4 text-center font-medium <%= itemCancelled ? 'text-slate-400' : '' %>">
+<td class="px-6 py-4 text-center font-medium <%= itemInactive ? 'text-slate-400' : '' %>">
 <%= item.quantity %>
 </td>
 
-<td class="px-6 py-4 text-right font-medium <%= itemCancelled ? 'text-slate-400' : '' %>">
+<td class="px-6 py-4 text-right font-medium <%= itemInactive ? 'text-slate-400' : '' %>">
 ₹<%= item.unitPrice %>
 </td>
 
-<td class="px-6 py-4 text-right font-bold <%= itemCancelled ? 'text-slate-400 line-through' : 'text-primary' %>">
+<td class="px-6 py-4 text-right font-bold <%= itemInactive ? 'text-slate-400 line-through' : 'text-primary' %>">
 ₹<%= item.lineTotal %>
 </td>
 
@@ -402,6 +475,12 @@ Variant ID: <%= item.variantId %>
 <span class="text-[#67837a]">Shipping</span>
 <span class="font-medium">₹<%= order.shipping %></span>
 </div>
+<% if (order.discount && order.discount > 0) { %>
+<div class="flex justify-between text-sm">
+<span class="text-[#67837a]">Discount</span>
+<span class="font-medium text-green-600">-₹<%= order.discount %></span>
+</div>
+<% } %>
 </div>
 <div class="pt-4 border-t border-primary/20 flex justify-between items-end">
 <span class="text-sm font-bold uppercase tracking-widest text-primary">Total Amount</span>

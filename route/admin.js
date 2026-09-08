@@ -106,6 +106,8 @@ adminroute.get("/orders/:id", adminauth.requireAdminLogin, orderController.loado
 adminroute.post("/orders/:id/status", adminauth.requireAdminLogin, orderController.updateOrderStatus)
 adminroute.post("/orders/:id/approve-return", adminauth.requireAdminLogin, orderController.approveReturn)
 adminroute.post("/orders/:id/reject-return", adminauth.requireAdminLogin, orderController.rejectReturn)
+adminroute.post("/orders/:id/approve-return-item", adminauth.requireAdminLogin, orderController.approveReturnItem)
+adminroute.post("/orders/:id/reject-return-item", adminauth.requireAdminLogin, orderController.rejectReturnItem)
 
 // Dashboard
 adminroute.get("/dashboard", adminauth.requireAdminLogin, dashboardController.loadDashboard)
