@@ -49,5 +49,15 @@ async function calculateOrderTotals(cartItems, appliedCoupon) {
     amountInPaise: Math.round(total * 100),
   };
 }
+// ── 3. Per-item refund amount (prorated coupon deduction) ──
+function getItemRefundAmount({ itemPrice, itemQuantity, subtotal, discount }) {
+  if (subtotal <= 0) return itemPrice * itemQuantity;
 
-module.exports = { calculateOrderTotals };
+  const itemTotal = itemPrice * itemQuantity;
+  const itemShare = itemTotal / subtotal;
+  const proratedDeduction = discount * itemShare;
+
+  return Math.round(itemTotal - proratedDeduction);
+}
+
+module.exports = { calculateOrderTotals, getItemRefundAmount };

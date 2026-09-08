@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const { getOrCreateWallet, creditWallet, debitWallet } = require('../utils/walletHelper');
 const { calculateOrderTotals } = require('../utils/Orderpricing');
+const { getItemRefundAmount } = require('../utils/Orderpricing');
 
 const razorpay = new Razorpay({
   key_id:     process.env.RAZORPAY_KEY_ID,
@@ -523,14 +524,11 @@ const loadorderdetails = async (req, res) => {
         if (order.total == null) {
             order.total =
                 Number(order.subtotal || 0) +
-                Number(order.shipping || 0) +
-                Number(order.tax || 0) -
+                Number(order.shipping || 0) -
                 Number(order.discount || 0);
         }
 
-        console.log("ORDER:", order);
-        console.log("SUBTOTAL:", order.subtotal);
-        console.log("TOTAL:", order.total);
+
 
         res.render("user/orderdetails", {
             user,
@@ -592,6 +590,74 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+
+const cancelOrderItem = async (req, res) => {
+  try {
+    const { id }              = req.params;
+    const { productId, reason } = req.body;
+    const userId              = req.session.userId;
+
+    const order = await Order.findOne({ _id: id, userId });
+    if (!order) return res.json({ success: false, message: 'Order not found' });
+
+    if (!['pending', 'processing'].includes(order.status)) {
+      return res.json({ success: false, message: 'Items cannot be cancelled at this stage' });
+    }
+
+    const item = order.items.find(i => i.productId.toString() === productId);
+    if (!item)                        return res.json({ success: false, message: 'Item not found' });
+    if (item.itemStatus === 'cancelled') return res.json({ success: false, message: 'Item already cancelled' });
+
+    // Restore stock
+    await productmodel.findOneAndUpdate(
+      { _id: item.productId, 'variants._id': item.variantId },
+      { $inc: { 'variants.$.stock': item.quantity } }
+    );
+
+    // Compute refund BEFORE mutating order.subtotal/discount —
+    // uses the ORIGINAL subtotal/discount as they stood at checkout
+    let refundAmount = 0;
+    if ((order.paymentMethod === 'online' || order.paymentMethod === 'wallet') && order.paymentStatus === 'paid') {
+      refundAmount = getItemRefundAmount({
+        itemPrice:    item.unitPrice,
+        itemQuantity: item.quantity,
+        subtotal:     order.subtotal,
+        discount:     order.discount,
+      });
+
+      await creditWallet(
+        userId,
+        refundAmount,
+        `Refund for cancelled item "${item.productName}" in order #${order._id.toString().slice(-6).toUpperCase()}`,
+        order._id
+      );
+    }
+
+    item.itemStatus   = 'cancelled';
+    item.cancelReason = reason;
+
+    // ✅ Recalculate totals — scale discount down proportionally, don't drop it
+    const originalSubtotal = order.subtotal; // before this cancellation
+    const activeItems = order.items.filter(i => i.itemStatus !== 'cancelled');
+    const newSubtotal  = activeItems.reduce((sum, i) => sum + i.lineTotal, 0);
+    const remainingRatio = originalSubtotal > 0 ? newSubtotal / originalSubtotal : 0;
+
+    order.discount = Math.round((order.discount || 0) * remainingRatio);
+    order.subtotal = newSubtotal;
+    order.tax      = parseFloat((order.subtotal * 0.05).toFixed(2));
+    order.shipping = order.subtotal >= 500 ? 0 : 50;
+    order.total    = parseFloat((order.subtotal + order.tax + order.shipping - order.discount).toFixed(2));
+
+    if (activeItems.length === 0) order.status = 'cancelled';
+
+    await order.save();
+    res.json({ success: true, refundAmount });
+
+  } catch (err) {
+    console.error('cancelOrderItem error:', err);
+    res.json({ success: false, message: err.message });
+  }
+};
 const returnorder = async (req, res) => {
 
   try {
@@ -639,61 +705,7 @@ const returnorder = async (req, res) => {
   }
 };
 
-const cancelOrderItem = async (req, res) => {
-  try {
-    const { id }              = req.params;
-    const { productId, reason } = req.body;
-    const userId              = req.session.userId;
 
-    const order = await Order.findOne({ _id: id, userId });
-    if (!order) return res.json({ success: false, message: 'Order not found' });
-
-    if (!['pending', 'processing'].includes(order.status)) {
-      return res.json({ success: false, message: 'Items cannot be cancelled at this stage' });
-    }
-
-    const item = order.items.find(i => i.productId.toString() === productId);
-    if (!item)                        return res.json({ success: false, message: 'Item not found' });
-    if (item.itemStatus === 'cancelled') return res.json({ success: false, message: 'Item already cancelled' });
-
-    item.itemStatus   = 'cancelled';
-    item.cancelReason = reason;
-
-    // Restore stock
-    await productmodel.findOneAndUpdate(
-      { _id: item.productId, 'variants._id': item.variantId },
-      { $inc: { 'variants.$.stock': item.quantity } }
-    );
-
-    // ✅ Wallet refund using separate Wallet model
-    let refundAmount = 0;
-    if ((order.paymentMethod === 'online' || order.paymentMethod === 'wallet') && order.paymentStatus === 'paid') {
-      refundAmount = item.lineTotal;
-      await creditWallet(
-        userId,
-        refundAmount,
-        `Refund for cancelled item "${item.productName}" in order #${order._id.toString().slice(-6).toUpperCase()}`,
-        order._id
-      );
-    }
-
-    // Recalculate totals
-    const activeItems = order.items.filter(i => i.itemStatus !== 'cancelled');
-    order.subtotal    = activeItems.reduce((sum, i) => sum + i.lineTotal, 0);
-    order.tax         = parseFloat((order.subtotal * 0.05).toFixed(2));
-    order.shipping    = order.subtotal >= 500 ? 0 : 50;
-    order.total       = parseFloat((order.subtotal + order.tax + order.shipping).toFixed(2));
-
-    if (activeItems.length === 0) order.status = 'cancelled';
-
-    await order.save();
-    res.json({ success: true, refundAmount });
-
-  } catch (err) {
-    console.error('cancelOrderItem error:', err);
-    res.json({ success: false, message: err.message });
-  }
-};
 
 /**
  * Retry payment for a failed/pending online order.
@@ -786,6 +798,39 @@ const verifyRetryPayment = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+// user.order.controller.js
+const requestReturnItem = async (req, res) => {
+  try {
+    const { id } = req.params;               // order id
+    const { productId, reason } = req.body;
+    const userId = req.session.userId;
+
+    const order = await Order.findOne({ _id: id, userId });
+    if (!order) return res.json({ success: false, message: 'Order not found' });
+
+    if (order.status !== 'delivered') {
+      return res.json({ success: false, message: 'Only delivered orders can be returned' });
+    }
+
+    const item = order.items.find(i => i.productId.toString() === productId);
+    if (!item) return res.json({ success: false, message: 'Item not found' });
+    if (item.itemStatus !== 'active') {
+      return res.json({ success: false, message: 'This item cannot be returned' });
+    }
+
+    item.itemStatus        = 'return_requested';
+    item.returnReason      = reason;
+    item.returnRequestedAt = new Date();
+
+    await order.save();
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('requestReturnItem error:', err);
+    res.json({ success: false, message: err.message });
+  }
+};
+
 
 module.exports = {
   placeorder,
@@ -797,6 +842,7 @@ module.exports = {
   loadorderdetails,
   cancelOrder,
   returnorder,
+  requestReturnItem,
   cancelOrderItem,
   retryPayment,
   verifyRetryPayment,

@@ -99,6 +99,7 @@ route.get("/orders/:id", orderController.loadorderdetails)
 route.patch("/orders/:id/cancel", orderController.cancelOrder)
 route.patch('/orders/:id/cancel-item', orderController.cancelOrderItem);
 route.patch("/orders/:id/return", orderController.returnorder);
+route.patch("/orders/:id/return-item", orderController.requestReturnItem);
 
 route.get("/wallet", walletController.loadWallet)
 route.get("/referrals", userauth.isLogin,referralController.loadreferrals)

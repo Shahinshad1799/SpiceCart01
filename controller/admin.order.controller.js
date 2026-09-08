@@ -222,8 +222,99 @@ const rejectReturn = async (req, res) => {
 
 };
 
-module.exports = { approveReturn, rejectReturn };
-module.exports = { approveReturn, rejectReturn };
+// admin.order.controller.js
+const { getItemRefundAmount } = require('../utils/Orderpricing');
+
+const approveReturnItem = async (req, res) => {
+  try {
+    const { id } = req.params;          // order id
+    const { productId } = req.body;
+
+    const order = await ordermodel.findById(id);
+    if (!order) return res.json({ success: false, message: 'Order not found' });
+
+    const item = order.items.find(i => i.productId.toString() === productId);
+    if (!item) return res.json({ success: false, message: 'Item not found' });
+    if (item.itemStatus !== 'return_requested') {
+      return res.json({ success: false, message: 'This item has no pending return request' });
+    }
+
+    // Restore stock
+    await productmodel.findOneAndUpdate(
+      { _id: item.productId, 'variants._id': item.variantId },
+      { $inc: { 'variants.$.stock': item.quantity } }
+    );
+
+    // Refund — computed BEFORE mutating order.subtotal/discount,
+    // using the order's current (pre-this-return) subtotal/discount
+    let refundAmount = 0;
+    if (order.paymentStatus === 'paid') {
+      refundAmount = getItemRefundAmount({
+        itemPrice:    item.unitPrice,
+        itemQuantity: item.quantity,
+        subtotal:     order.subtotal,
+        discount:     order.discount,
+      });
+
+      await creditWallet(
+        order.userId,
+        refundAmount,
+        `Refund for returned item "${item.productName}" in order #${order._id.toString().slice(-6).toUpperCase()}`,
+        order._id
+      );
+    }
+
+    item.itemStatus = 'returned';
+
+    // Recalculate order totals — same proration pattern as cancelOrderItem
+    const originalSubtotal = order.subtotal;
+    const activeItems = order.items.filter(i => !['cancelled', 'returned'].includes(i.itemStatus));
+    const newSubtotal  = activeItems.reduce((sum, i) => sum + i.lineTotal, 0);
+    const remainingRatio = originalSubtotal > 0 ? newSubtotal / originalSubtotal : 0;
+
+    order.discount = Math.round((order.discount || 0) * remainingRatio);
+    order.subtotal = newSubtotal;
+    order.tax      = parseFloat((order.subtotal * 0.05).toFixed(2));
+    order.shipping = order.subtotal >= 500 ? 0 : 50;
+    order.total    = parseFloat((order.subtotal + order.tax + order.shipping - order.discount).toFixed(2));
+
+    // If nothing active/returned-pending is left, mark whole order returned
+    const remainingActive = order.items.filter(i => i.itemStatus === 'active' || i.itemStatus === 'return_requested');
+    if (remainingActive.length === 0) order.status = 'returned';
+
+    await order.save();
+    res.json({ success: true, refundAmount });
+
+  } catch (err) {
+    console.error('approveReturnItem error:', err);
+    res.json({ success: false, message: err.message });
+  }
+};
+
+const rejectReturnItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { productId } = req.body;
+
+    const order = await ordermodel.findById(id);
+    if (!order) return res.json({ success: false, message: 'Order not found' });
+
+    const item = order.items.find(i => i.productId.toString() === productId);
+    if (!item || item.itemStatus !== 'return_requested') {
+      return res.json({ success: false, message: 'No pending return request for this item' });
+    }
+
+    item.itemStatus = 'return_rejected';
+    await order.save();
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('rejectReturnItem error:', err);
+    res.json({ success: false, message: err.message });
+  }
+};
+
+
 
 module.exports = {
   loadorder,
@@ -231,4 +322,6 @@ module.exports = {
   updateOrderStatus,
   approveReturn,
   rejectReturn,
+  approveReturnItem,
+  rejectReturnItem
 };
