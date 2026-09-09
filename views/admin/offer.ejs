@@ -49,7 +49,7 @@
 
   <%- include("../partials/sidebar") %>
 
-  <main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark">
+  <main class="flex-1 overflow-y-auto p-8 ml-64">
     <div class="max-w-7xl mx-auto p-8 lg:p-12">
 
       <!-- Header -->
@@ -175,7 +175,7 @@
                     <div class="flex justify-end gap-2">
 
                       <!-- Edit -->
-                      <a href="/admin/offers/edit/<%= offer._id %>">
+                      <a href="/admin/offer/edit/<%= offer._id %>">
                         <button class="p-2 rounded-lg hover:bg-primary/20 transition-colors" title="Edit offer">
                           <span class="material-symbols-outlined text-lg">edit</span>
                         </button>

@@ -283,7 +283,7 @@ const approveReturnItem = async (req, res) => {
     if (remainingActive.length === 0) order.status = 'returned';
 
     await order.save();
-    res.json({ success: true, refundAmount });
+    res.redirect(`/admin/orders/${order._id}?success=true&refundAmount=${refundAmount}`);
 
   } catch (err) {
     console.error('approveReturnItem error:', err);
@@ -306,7 +306,7 @@ const rejectReturnItem = async (req, res) => {
 
     item.itemStatus = 'return_rejected';
     await order.save();
-    res.json({ success: true });
+    res.redirect(`/admin/orders/${order._id}?success=true`);
 
   } catch (err) {
     console.error('rejectReturnItem error:', err);

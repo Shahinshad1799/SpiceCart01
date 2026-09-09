@@ -211,13 +211,13 @@ const loadEditOffer = async (req, res) => {
     const offer = await Offer.findById(offerId).lean();
 
     if (!offer) {
-      return res.redirect("/admin/offers");
+      return res.redirect("/admin/offer");
     }
 
     const products = await productmodel.find({ status: 'Active' }).select('_id name').lean();
     const categories = await catagorymodel.find({ status: 'Active' }).select('_id name').lean();
 
-    res.render("admin/editOffer", {
+    res.render("admin/editoffer", {
       offer,
       products,
       categories,
@@ -225,7 +225,7 @@ const loadEditOffer = async (req, res) => {
 
   } catch (error) {
     console.log("Error loading edit offer page:", error);
-    res.redirect("/admin/offers");
+    res.redirect("/admin/offer");
   }
 };
 
