@@ -4,6 +4,7 @@ const Cart = require("../model/cartmodel");
 const couponmodel = require("../model/couponmodel");
 const { getOrCreateWallet } = require('../utils/walletHelper');
 const { calculateOrderTotals } = require('../utils/Orderpricing');
+const productmodel = require("../model/productmodel");
 
 const loadcheckout = async (req, res) => {
   try {
@@ -17,6 +18,7 @@ const loadcheckout = async (req, res) => {
 
     const cart = await Cart.findOne({ user: userId }).populate("items.productId");
     const addresses = await addressmodel.find({ userId: userId });
+
 
     const emptyRender = (extra = {}) => res.render("user/checkout", {
       cartItems: [],

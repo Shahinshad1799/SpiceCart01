@@ -102,10 +102,11 @@
     </header>
 
     <!-- ── KPI Cards ───────────────────────────────────────────────────── -->
-    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
       <% const cards = [
         { label: 'Total Orders',     value: summary.totalOrders.toLocaleString(),                         icon: 'shopping_cart', color: 'primary' },
         { label: 'Total Revenue',    value: '₹' + Number(summary.totalRevenue).toLocaleString('en-IN'), icon: 'payments',      color: 'primary' },
+        { label: 'Total Discount',   value: '₹' + Number(summary.totalDiscount).toLocaleString('en-IN'), icon: 'sell',          color: 'saffron' },
         { label: 'Total Items Sold', value: summary.totalItemsSold.toLocaleString(),                      icon: 'inventory',     color: 'primary' },
         { label: 'Cancelled Orders', value: summary.cancelledOrders.toLocaleString(),                     icon: 'cancel',        color: 'red-500'  },
       ]; %>
@@ -143,7 +144,7 @@
           <select name="status" onchange="this.form.submit()"
                   class="bg-white dark:bg-white/5 border border-[#dce5e2] dark:border-white/10 rounded-lg px-3 py-2.5 text-sm font-medium focus:ring-primary focus:border-primary">
             <option value="">All Statuses</option>
-            <% ['pending','confirmed','processing','shipped','delivered','cancelled','returned'].forEach(s => { %>
+            <% ['pending','confirmed','processing','shipped','delivered'].forEach(s => { %>
               <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
             <% }) %>
           </select>
@@ -165,6 +166,7 @@
     <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider">Customer</th>
     <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider">Items</th>
     <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider">Payment</th>
+    <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider text-right">Discount</th>
     <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider text-center">Payment Status</th>
     <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider text-center">Order Status</th>
     <th class="px-6 py-4 text-xs font-bold text-[#63887d] uppercase tracking-wider text-right">Amount</th>
@@ -173,7 +175,7 @@
           <tbody class="divide-y divide-[#dce5e2] dark:divide-white/10">
             <% if (orders.length === 0) { %>
               <tr>
-                <td colspan="7" class="px-6 py-16 text-center text-[#63887d] dark:text-white/40">
+                <td colspan="8" class="px-6 py-16 text-center text-[#63887d] dark:text-white/40">
                   <span class="material-symbols-outlined text-5xl block mb-3 opacity-40">inbox</span>
                   No orders found for the selected filters.
                 </td>
@@ -186,8 +188,6 @@
      confirmed:  'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
      processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
      pending:    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-     cancelled:  'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-     returned:   'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
    };
    const badge = statusColors[order.status] || statusColors.pending;
 
@@ -224,6 +224,18 @@
     </div>
   </td>
   <td class="px-6 py-4 text-sm dark:text-white/80"><%= order.paymentMethod %></td>
+  <td class="px-6 py-4 text-sm text-right">
+    <% if (order.discountAmount && order.discountAmount > 0) { %>
+      <div class="flex flex-col items-end">
+        <span class="text-saffron font-bold">-₹<%= order.discountAmount %></span>
+        <% if (order.couponCode) { %>
+          <span class="text-xs text-[#63887d] dark:text-white/40"><%= order.couponCode %></span>
+        <% } %>
+      </div>
+    <% } else { %>
+      <span class="text-[#63887d] dark:text-white/40">—</span>
+    <% } %>
+  </td>
   <td class="px-6 py-4 text-center">
     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <%= paymentBadge %>">
       <%= order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) %>
@@ -235,11 +247,7 @@
     </span>
   </td>
 <td class="px-6 py-4 text-sm font-bold text-right dark:text-white">
-  <% if (order.status === 'cancelled' || order.status === 'returned') { %>
-    <span class="text-[#63887d] dark:text-white/40 line-through">₹<%= order.refundedAmount %></span>
-  <% } else { %>
-    ₹<%= order.amount %>
-  <% } %>
+  ₹<%= order.amount %>
 </td></tr>
 <% }) %>
           </tbody>

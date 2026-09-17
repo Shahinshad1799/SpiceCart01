@@ -11,6 +11,7 @@ const Razorpay = require('razorpay');
 const { getOrCreateWallet, creditWallet, debitWallet } = require('../utils/walletHelper');
 const { calculateOrderTotals } = require('../utils/Orderpricing');
 const { getItemRefundAmount } = require('../utils/Orderpricing');
+const { processReferralReward } = require('../utils/referralHelper'); 
 
 const razorpay = new Razorpay({
   key_id:     process.env.RAZORPAY_KEY_ID,
@@ -147,99 +148,30 @@ const placeorder = async (req, res) => {
 const onlineorder = async (req, res) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.session.userId);
+    const { addressId } = req.body;
 
-    //  Calculate amount from cart — never trust client-sent amount
+    if (!addressId) return res.json({ success: false, message: 'Please select a delivery address' });
+
+    const address = await addressmodel.findOne({ _id: addressId, userId });
+    if (!address) return res.json({ success: false, message: 'Address not found' });
+
     const cart = await Cart.findOne({ user: userId }).populate('items.productId');
     if (!cart || cart.items.length === 0) {
       return res.json({ success: false, message: 'Cart is empty' });
     }
 
-    // Same helper the checkout page used to display the total the user just saw
-    const appliedCoupon = req.session.appliedCoupon || null;
-    const { total, amountInPaise } = await  calculateOrderTotals(cart.items, appliedCoupon);
-
-    const order = await razorpay.orders.create({
-      amount:   amountInPaise,
-      currency: 'INR',
-      receipt:  `receipt_${Date.now()}`,
-    });
-
-    // Remember what we expect to be charged so verification can cross-check
-    // the amount Razorpay actually captured against it.
-    req.session.expectedPaymentAmount = amountInPaise;
-
-    res.json({ success: true, order, total });
-
-  } catch (err) {
-    console.error('onlineorder error:', err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-const verifyOnlineOrder = async (req, res) => {
-  try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, addressId } = req.body;
-    const userId = new mongoose.Types.ObjectId(req.session.userId);
-
-    // ── 1. Verify signature ───────────────────────────────────────────────
-    const body = razorpay_order_id + '|' + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(body)
-      .digest('hex');
-
-    if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ success: false, message: 'Invalid payment signature' });
-    }
-
-    // ── 2. Validate ───────────────────────────────────────────────────────
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'Please login to continue' });
-    }
-    if (!addressId) {
-      return res.status(400).json({ success: false, message: 'Please select a delivery address' });
-    }
-
-    // ── 3. Fetch address ──────────────────────────────────────────────────
-    const address = await addressmodel.findOne({ _id: addressId, userId });
-    if (!address) {
-      return res.status(404).json({ success: false, message: 'Address not found' });
-    }
-
-    // ── 4. Fetch cart ─────────────────────────────────────────────────────
-    const cart = await Cart.findOne({ user: userId }).populate('items.productId');
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ success: false, message: 'Your cart is empty' });
-    }
-
-    // ── 5. Build order items ──────────────────────────────────────────────
     let items;
     try {
       items = buildOrderItems(cart.items);
     } catch (e) {
-      return res.status(400).json({ success: false, message: e.message });
+      return res.json({ success: false, message: e.message });
     }
 
-    // ── 6. Recalculate totals with the SAME helper used to create the Razorpay order ──
     const appliedCoupon = req.session.appliedCoupon || null;
-    const { subtotal, shipping, tax, discount, total, amountInPaise } = await calculateOrderTotals(cart.items, appliedCoupon);
+    const { subtotal, shipping, tax, discount, total, amountInPaise } =
+      await calculateOrderTotals(cart.items, appliedCoupon);
 
-    // ── 7. Cross-check against what Razorpay actually captured ────────────
-    // Guards against the cart/coupon changing between order-creation and payment,
-    // and against any client-side tampering with the amount.
-    const payment = await razorpay.payments.fetch(razorpay_payment_id);
-
-    if (payment.amount !== amountInPaise) {
-      console.error(
-        `Payment amount mismatch — captured ${payment.amount}, expected ${amountInPaise}`
-      );
-      return res.status(400).json({
-        success: false,
-        message: 'Payment amount does not match your cart total. Please contact support before retrying — your card has not been charged again.'
-      });
-    }
-
-    // ── 8. Create order ───────────────────────────────────────────────────
+    // ── Create the order doc up front — this is what makes it show in history ──
     const order = await Order.create({
       userId,
       shippingAddress: {
@@ -250,47 +182,110 @@ const verifyOnlineOrder = async (req, res) => {
         appartment:  address.appartment,
         city:        address.city,
         state:       address.state,
-        zipcode:     address.zipcode
+        zipcode:     address.zipcode,
       },
       items,
       paymentMethod: 'online',
-      paymentStatus: 'paid',
+      paymentStatus: 'pending',
       status:        'pending',
-      subtotal,
-      shipping,
-      tax,
-      discount,
+      subtotal, shipping, tax, discount,
       couponCode: appliedCoupon?.code || null,
       total,
-      razorpayOrderId:   razorpay_order_id,
-      razorpayPaymentId: razorpay_payment_id,
     });
 
-    // ── 9. Deduct stock ───────────────────────────────────────────────────
-    for (const item of items) {
+    const razorpayOrder = await razorpay.orders.create({
+      amount:   amountInPaise,
+      currency: 'INR',
+      receipt:  `receipt_${order._id}`,
+    });
+
+    order.razorpayOrderId = razorpayOrder.id;
+    await order.save();
+
+    req.session.expectedPaymentAmount = amountInPaise;
+    req.session.pendingOrderId = order._id; // so we can mark it failed if the user bails
+
+    res.json({ success: true, order: razorpayOrder, total, orderId: order._id });
+
+  } catch (err) {
+    console.error('onlineorder error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+const verifyOnlineOrder = async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
+    const userId = new mongoose.Types.ObjectId(req.session.userId);
+
+    const body = razorpay_order_id + '|' + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest('hex');
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+    }
+
+    const order = await Order.findOne({ _id: orderId, userId, razorpayOrderId: razorpay_order_id });
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+    const payment = await razorpay.payments.fetch(razorpay_payment_id);
+    const expectedPaise = Math.round(order.total * 100);
+
+    if (payment.amount !== expectedPaise) {
+      console.error(`Payment amount mismatch — captured ${payment.amount}, expected ${expectedPaise}`);
+      return res.status(400).json({
+        success: false,
+        message: 'Payment amount does not match your order. Please contact support before retrying.'
+      });
+    }
+
+    // Deduct stock only now, on confirmed payment
+    for (const item of order.items) {
       await Product.findOneAndUpdate(
         { _id: item.productId, 'variants._id': item.variantId },
         { $inc: { 'variants.$.stock': -item.quantity } }
       );
     }
 
-    // ── 10. Save orderId to session, clear coupon ─────────────────────────
+    order.paymentStatus     = 'paid';
+    order.razorpayPaymentId = razorpay_payment_id;
+    await order.save();
+
+    await processReferralReward(order.userId, order._id);  
+
     req.session.lastOrderId = order._id;
     req.session.appliedCoupon = null;
     req.session.expectedPaymentAmount = null;
+    req.session.pendingOrderId = null;
 
-    // ── 11. Clear cart ────────────────────────────────────────────────────
-    await Cart.findOneAndUpdate(
-      { user: userId },
-      { $set: { items: [] } }
-    );
+    await Cart.findOneAndUpdate({ user: userId }, { $set: { items: [] } });
 
     return res.status(201).json({ success: true, orderId: order._id });
 
   } catch (err) {
     console.error('Verify payment error:', err.message);
-    console.error(err.stack);
     return res.status(500).json({ success: false, message: err.message || 'Something went wrong' });
+  }
+};
+
+const markPaymentFailed = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { orderId } = req.body;
+
+    const order = await Order.findOne({ _id: orderId, userId, paymentStatus: 'pending' });
+    if (!order) return res.json({ success: false, message: 'Order not found' });
+
+    order.paymentStatus = 'failed';
+    await order.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('markPaymentFailed error:', err);
+    res.json({ success: false, message: err.message });
   }
 };
 
@@ -363,6 +358,7 @@ const placeOrderWallet = async (req, res) => {
       `Payment for order #${order._id.toString().slice(-6).toUpperCase()}`,
       order._id
     );
+    await processReferralReward(userId, order._id); 
 
     // Deduct stock
     for (const item of items) {
@@ -836,6 +832,7 @@ module.exports = {
   placeorder,
   onlineorder,
   verifyOnlineOrder,
+  markPaymentFailed,
   placeOrderWallet,
   loadordersuccess,
   loadorder,
