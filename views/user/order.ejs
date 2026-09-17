@@ -133,11 +133,27 @@
                           </td>
 
                           <!-- Status badge -->
-                          <td class="py-4 px-6 whitespace-nowrap">
+                          <!-- <td class="py-4 px-6 whitespace-nowrap">
                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold <%= badge.bg %> <%= badge.text %>">
                               <%= badge.label %>
                             </span>
-                          </td>
+                          </td> -->
+                          <!-- Status badge -->
+<td class="py-4 px-6 whitespace-nowrap">
+  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold <%= badge.bg %> <%= badge.text %>">
+    <%= badge.label %>
+  </span>
+
+  <% if (order.paymentMethod === 'online' && order.paymentStatus === 'failed') { %>
+    <span class="ml-1 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+      Payment Failed
+    </span>
+  <% } else if (order.paymentMethod === 'online' && order.paymentStatus === 'pending') { %>
+    <span class="ml-1 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+      Payment Pending
+    </span>
+  <% } %>
+</td>
 
                           <!-- Total -->
                           <td class="py-4 px-6 whitespace-nowrap">
@@ -145,13 +161,30 @@
                           </td>
 
                           <!-- Action -->
-                          <td class="py-4 px-6 whitespace-nowrap text-right">
+                          <!-- <td class="py-4 px-6 whitespace-nowrap text-right">
                             <a href="/orders/<%= order._id %>">
                               <button class="text-xs font-bold text-primary hover:text-primary/80 transition-colors border border-primary/30 rounded-lg px-3 py-1.5 hover:bg-primary/5">
                                 View Details
                               </button>
                             </a>
-                          </td>
+                          </td> -->
+                          <!-- Action -->
+<td class="py-4 px-6 whitespace-nowrap text-right">
+ <% if (order.paymentMethod === 'online' && (order.paymentStatus === 'failed' || order.paymentStatus === 'pending')) { %>
+  <button
+    type="button"
+    onclick="retryPayment('<%= order._id %>', <%= order.total %>)"
+    class="text-xs font-bold text-white bg-primary hover:bg-primary/90 rounded-lg px-3 py-1.5 mr-2">
+    Retry Payment
+  </button>
+<% } %>
+
+  <a href="/orders/<%= order._id %>">
+    <button class="text-xs font-bold text-primary hover:text-primary/80 transition-colors border border-primary/30 rounded-lg px-3 py-1.5 hover:bg-primary/5">
+      View Details
+    </button>
+  </a>
+</td>
 
                         </tr>
                       <% }) %>
@@ -214,4 +247,66 @@
   <%- include("../partials/footer") %>
 </div>
 </body>
+<script>
+async function retryPayment(orderId, amount) {
+  try {
+    const res = await fetch(`/orders/${orderId}/retry-payment`, { method: 'POST' });
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.message || 'Could not start payment retry');
+      return;
+    }
+
+    const options = {
+      key: "<%= process.env.RAZORPAY_KEY_ID %>",
+      amount: data.order.amount,
+      currency: "INR",
+      name: "Spice Market",
+      order_id: data.order.id,
+      handler: async function (response) {
+        const verifyRes = await fetch('/order/verify-retry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            orderId: data.orderId
+          })
+        });
+        const verifyData = await verifyRes.json();
+        if (verifyData.success) {
+          window.location.reload();
+        } else {
+          alert(verifyData.message || 'Payment verification failed');
+        }
+      },
+      modal: {
+        ondismiss: function () {
+          fetch('/order/payment-failed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: data.orderId })
+          });
+        }
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function () {
+      fetch('/order/payment-failed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: data.orderId })
+      });
+    });
+    rzp.open();
+
+  } catch (err) {
+    console.error(err);
+    alert('Something went wrong retrying payment');
+  }
+}
+</script>
 </html>

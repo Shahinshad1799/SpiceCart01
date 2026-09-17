@@ -25,7 +25,10 @@ const loadorder = async (req, res) => {
     }
 
     // 2. Status dropdown filter
-    if (status) {
+    if (status === "returnrequest") {
+      // Return requests live on a nested field, not the top-level status
+      query["returnRequest.status"] = "requested";
+    } else if (status) {
       query.status = status;
     }
 
@@ -41,13 +44,13 @@ const loadorder = async (req, res) => {
 
       query.createdAt = { $gte: start };
     }
-    const returnRequests = await ordermodel.find({ "returnRequest.status": "requested" });
+
     // ── DB calls ──────────────────────────────────────────────────
     const [orders, totalOrders] = await Promise.all([
       ordermodel
         .find(query)
         .populate("userId", "name email")
-        .sort({ returnRequests: -1, createdAt: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),

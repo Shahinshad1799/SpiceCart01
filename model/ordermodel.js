@@ -123,7 +123,7 @@ returnRequest: {
   reason:      String,
   details:     String,
   refundMethod: String,  // original_payment | store_credit | bank_transfer
-  status:      { type: String, enum: ['requested', 'approved', 'rejected', 'completed'], default: 'requested' },
+  status:      { type: String, enum: ['requested', 'approved', 'rejected', 'completed'] },
   requestedAt: Date,
   adminNote:   String,   // filled by admin when rejecting
 },

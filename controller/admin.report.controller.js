@@ -1,9 +1,14 @@
 const ordermodel = require("../model/ordermodel");
 const PDFDocument = require("pdfkit");
 
-// Statuses that should NOT count toward revenue / items-sold KPIs.
+// Statuses that should NOT count toward revenue / items-sold KPIs, and should
+// NOT appear in the report table, CSV, or PDF at all.
 // Kept in one place so the report page, CSV export, and PDF export can never disagree.
 const NON_REVENUE_STATUSES = ["cancelled", "returned"];
+
+// Item-level statuses that represent a refunded/returned line within an
+// otherwise-active order (e.g. one item returned out of a delivered order).
+const NON_REVENUE_ITEM_STATUSES = ["cancelled", "returned"];
 
 // Must match the actual Order schema status enum exactly, or filtering silently
 // breaks for statuses this list is missing (e.g. "delivered" used to be absent
@@ -82,6 +87,18 @@ function buildPageNumbers(current, total) {
   return result;
 }
 
+/**
+ * Net amount actually retained for an order: total minus any line items
+ * that were individually cancelled or returned (even if the order itself
+ * is still active, e.g. status "delivered" with one returned item).
+ */
+function computeNetAmount(order) {
+  const refunded = (order.items || [])
+    .filter((i) => NON_REVENUE_ITEM_STATUSES.includes(i.itemStatus))
+    .reduce((sum, i) => sum + (i.lineTotal || 0), 0);
+  return Math.max(0, (order.total || 0) - refunded);
+}
+
 // ─── Main Controller ─────────────────────────────────────────────────────────
 
 const loadSalesReport = async function (req, res) {
@@ -102,81 +119,87 @@ const loadSalesReport = async function (req, res) {
 
     const { startDate, endDate } = resolveDateRange(preset, rawStart, rawEnd);
 
-    // ── Base filter (date range) ──────────────────────────────────────────
+    // ── Base filter (date range only) ─────────────────────────────────────
+    // Used for the SUMMARY aggregation. This intentionally still includes
+    // cancelled/returned orders, because "Cancelled Orders" KPI needs to
+    // count them and the revenue math needs to see them to zero them out.
     const baseFilter = {
       createdAt: { $gte: startDate, $lte: endDate },
     };
 
-    // ── Optional status filter ────────────────────────────────────────────
-    if (status && ALLOWED_STATUSES.includes(status.toLowerCase())) {
-      baseFilter.status = status.toLowerCase();
-    }
-
-    // ── Optional search (Order ID or customer name) ───────────────────────
-    // We search after populate, so we use $expr / $lookup approach via aggregation.
-    // Simple approach: if search looks like an order ID prefix, add to filter.
-    const searchTrimmed = search.trim();
-
     // ── Aggregation: summary metrics (always over the full date range, ignoring search/status for the KPI cards) ──
-   const [summaryRaw] = await ordermodel.aggregate([
-  { $match: baseFilter },
-  {
-    $addFields: {
-      refundedFromItems: {
-        $sum: {
-          $map: {
-            input: { $filter: {
-              input: "$items",
-              as: "i",
-              cond: { $in: ["$$i.itemStatus", NON_REVENUE_ITEM_STATUSES] }
-            }},
-            as: "ri",
-            in: "$$ri.lineTotal"
-          }
-        }
-      }
-    }
-  },
-  {
-    $addFields: {
-      netTotal: {
-        $cond: [
-          { $in: ["$status", NON_REVENUE_STATUSES] },
-          0,
-          { $subtract: ["$total", "$refundedFromItems"] }
-        ]
-      }
-    }
-  },
-  {
-    $group: {
-      _id:              null,
-      totalOrders:      { $sum: 1 },
-      totalRevenue:     { $sum: "$netTotal" },
-      totalItemsSold: {
-        $sum: {
-          $cond: [
-            { $in: ["$status", NON_REVENUE_STATUSES] },
-            0,
-            {
-              $sum: {
-                $map: {
-                  input: { $filter: { input: "$items", as: "i", cond: { $not: { $in: ["$$i.itemStatus", NON_REVENUE_ITEM_STATUSES] } } } },
-                  as: "ai",
-                  in: "$$ai.quantity"
-                }
+    const [summaryRaw] = await ordermodel.aggregate([
+      { $match: baseFilter },
+      {
+        $addFields: {
+          refundedFromItems: {
+            $sum: {
+              $map: {
+                input: { $filter: {
+                  input: "$items",
+                  as: "i",
+                  cond: { $in: ["$$i.itemStatus", NON_REVENUE_ITEM_STATUSES] }
+                }},
+                as: "ri",
+                in: "$$ri.lineTotal"
               }
             }
-          ]
+          }
         }
       },
-      cancelledOrders:  { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
-    },
-  },
-]);
+      {
+        $addFields: {
+          netTotal: {
+            $cond: [
+              { $in: ["$status", NON_REVENUE_STATUSES] },
+              0,
+              { $subtract: ["$total", "$refundedFromItems"] }
+            ]
+          }
+        }
+      },
+      {
+        $group: {
+          _id:              null,
+          totalOrders:      { $sum: 1 },
+          totalRevenue:     { $sum: "$netTotal" },
+          // ASSUMPTION: discount lives on `order.discountAmount` (Number).
+          // Confirm the real field name against your schema — if it's
+          // named differently this will just silently sum to 0.
+          totalDiscount: {
+            $sum: {
+              $cond: [
+                { $in: ["$status", NON_REVENUE_STATUSES] },
+                0,
+                { $ifNull: ["$discountAmount", 0] }
+              ]
+            }
+          },
+          totalItemsSold: {
+            $sum: {
+              $cond: [
+                { $in: ["$status", NON_REVENUE_STATUSES] },
+                0,
+                {
+                  $sum: {
+                    $map: {
+                      input: { $filter: { input: "$items", as: "i", cond: { $not: { $in: ["$$i.itemStatus", NON_REVENUE_ITEM_STATUSES] } } } },
+                      as: "ai",
+                      in: "$$ai.quantity"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          cancelledOrders:  { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
+        },
+      },
+    ]);
     const summary = summaryRaw || {
       totalOrders:     0,
       totalRevenue:    0,
+      totalDiscount:   0,
       totalItemsSold:  0,
       cancelledOrders: 0,
     };
@@ -185,6 +208,10 @@ const loadSalesReport = async function (req, res) {
     const tableFilter = { ...baseFilter };
     if (status && ALLOWED_STATUSES.includes(status.toLowerCase())) {
       tableFilter.status = status.toLowerCase();
+    } else {
+      // No explicit status chosen — default to excluding cancelled/returned
+      // from the table entirely (the dropdown doesn't even offer them).
+      tableFilter.status = { $nin: NON_REVENUE_STATUSES };
     }
 
     // ── Fetch orders with populate ────────────────────────────────────────
@@ -196,6 +223,7 @@ const loadSalesReport = async function (req, res) {
     // For large datasets consider a denormalised customerName field on Order.
     let allOrders = await ordersQuery.lean();
 
+    const searchTrimmed = search.trim();
     if (searchTrimmed) {
       const lower = searchTrimmed.toLowerCase();
       allOrders = allOrders.filter((o) => {
@@ -211,25 +239,27 @@ const loadSalesReport = async function (req, res) {
     const paginatedOrders = allOrders.slice(skip, skip + pageSize);
 
     // ── Shape orders for the view ─────────────────────────────────────────
-   const orders = paginatedOrders.map((o) => {
-  const netAmount = computeNetAmount(o);
-  return {
-    _id:           o._id.toString(),
-    shortId:       "#SC-" + o._id.toString().slice(-4).toUpperCase(),
-    date:          formatDate(o.createdAt),
-    customerName:  o.userId?.fullname  || "Unknown",
-    customerEmail: o.userId?.email     || "",
-    initials:      (o.userId?.fullname || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
-    itemCount:     (o.items || []).reduce((s, i) => s + (i.quantity || 1), 0),
-    paymentMethod: o.paymentMethod === "online" ? "Online" : (o.paymentMethod === "wallet" ? "Wallet" : "Cash on Delivery"),
-    paymentStatus: o.paymentStatus || "pending",
-    status:        o.status || "pending",
-    amount:        netAmount.toFixed(2),
-    refundedAmount: ((o.total || 0) - netAmount).toFixed(2), // optional, for a "Refunded" column
-    productImage:  o.items?.[0]?.productImage || null,
-    productName:   o.items?.[0]?.productName || "",
-  };
-});
+    const orders = paginatedOrders.map((o) => {
+      const netAmount = computeNetAmount(o);
+      return {
+        _id:            o._id.toString(),
+        shortId:        "#SC-" + o._id.toString().slice(-4).toUpperCase(),
+        date:           formatDate(o.createdAt),
+        customerName:   o.userId?.fullname  || "Unknown",
+        customerEmail:  o.userId?.email     || "",
+        initials:       (o.userId?.fullname || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
+        itemCount:      (o.items || []).reduce((s, i) => s + (i.quantity || 1), 0),
+        paymentMethod:  o.paymentMethod === "online" ? "Online" : (o.paymentMethod === "wallet" ? "Wallet" : "Cash on Delivery"),
+        paymentStatus:  o.paymentStatus || "pending",
+        status:         o.status || "pending",
+        amount:         netAmount.toFixed(2),
+        refundedAmount: ((o.total || 0) - netAmount).toFixed(2), // optional, for a "Refunded" column
+        discountAmount: o.discountAmount || 0,   // ASSUMPTION — confirm schema field name
+        couponCode:     o.couponCode || null,     // ASSUMPTION — confirm schema field name
+        productImage:   o.items?.[0]?.productImage || null,
+        productName:    o.items?.[0]?.productName || "",
+      };
+    });
 
     // ── Pagination helpers for EJS ────────────────────────────────────────
     const pagination = {
@@ -260,23 +290,6 @@ const loadSalesReport = async function (req, res) {
 
 // ─── CSV Export ──────────────────────────────────────────────────────────────
 
-// Add this once near NON_REVENUE_STATUSES at the top of the file (not duplicated per-function)
-const NON_REVENUE_ITEM_STATUSES = ["cancelled", "returned"];
-
-/**
- * Net amount actually retained for an order: total minus any line items
- * that were individually cancelled or returned (even if the order itself
- * is still active, e.g. status "delivered" with one returned item).
- */
-function computeNetAmount(order) {
-  const refunded = (order.items || [])
-    .filter((i) => NON_REVENUE_ITEM_STATUSES.includes(i.itemStatus))
-    .reduce((sum, i) => sum + (i.lineTotal || 0), 0);
-  return Math.max(0, (order.total || 0) - refunded);
-}
-
-// ─── CSV Export ──────────────────────────────────────────────────────────────
-
 const exportSalesCSV = async function (req, res) {
   try {
     const { preset = "month", startDate: rawStart, endDate: rawEnd, status = "" } = req.query;
@@ -285,24 +298,27 @@ const exportSalesCSV = async function (req, res) {
     const filter = { createdAt: { $gte: startDate, $lte: endDate } };
     if (status && ALLOWED_STATUSES.includes(status.toLowerCase())) {
       filter.status = status.toLowerCase();
+    } else {
+      filter.status = { $nin: NON_REVENUE_STATUSES };
     }
 
     const orders = await ordermodel.find(filter)
-      .populate("userId", "fullname email")   // was "name email" — schema field is fullname
+      .populate("userId", "fullname email")
       .sort({ createdAt: -1 })
       .lean();
 
     const rows = [
-      ["Order ID", "Date", "Customer", "Email", "Items", "Payment Method", "Status", "Amount (Rs.)"],
+      ["Order ID", "Date", "Customer", "Email", "Items", "Payment Method", "Discount (Rs.)", "Status", "Amount (Rs.)"],
       ...orders.map((o) => [
         o._id.toString(),
         formatDate(o.createdAt),
-        o.userId?.fullname || "Unknown",              // was o.userId?.name
+        o.userId?.fullname || "Unknown",
         o.userId?.email    || "",
-        (o.items || []).reduce((s, i) => s + (i.quantity || 1), 0),  // was o.orderedItems
+        (o.items || []).reduce((s, i) => s + (i.quantity || 1), 0),
         o.paymentMethod === "online" ? "Online" : (o.paymentMethod === "wallet" ? "Wallet" : "Cash on Delivery"),
+        (o.discountAmount || 0).toFixed(2),
         o.status || "pending",
-        computeNetAmount(o).toFixed(2),                // was (o.total || 0).toFixed(2) — now net of item-level refunds
+        computeNetAmount(o).toFixed(2),
       ]),
     ];
 
@@ -332,6 +348,8 @@ const exportSalesPDF = async (req, res) => {
     const query = { createdAt: { $gte: start, $lte: end } };
     if (status && ALLOWED_STATUSES.includes(status.toLowerCase())) {
       query.status = status.toLowerCase();
+    } else {
+      query.status = { $nin: NON_REVENUE_STATUSES };
     }
 
     const orders = await ordermodel.find(query)
@@ -360,30 +378,37 @@ const exportSalesPDF = async (req, res) => {
     // ── Summary KPIs ──────────────────────────────────────────────
     const totalRevenue  = orders
       .filter(o => !NON_REVENUE_STATUSES.includes(o.status))
-      .reduce((sum, o) => sum + computeNetAmount(o), 0);   // was sum + (o.total || 0) — now net of item-level refunds
+      .reduce((sum, o) => sum + computeNetAmount(o), 0);
+    const totalDiscount = orders
+      .filter(o => !NON_REVENUE_STATUSES.includes(o.status))
+      .reduce((sum, o) => sum + (o.discountAmount || 0), 0); // ASSUMPTION — confirm schema field name
     const totalCancelled = orders.filter(o => o.status === "cancelled").length;
 
     const kpiY = 90;
     const kpis = [
       { label: "Total Orders",     value: orders.length },
       { label: "Total Revenue",    value: `Rs.${totalRevenue.toLocaleString("en-IN")}` },
+      { label: "Total Discount",   value: `Rs.${totalDiscount.toLocaleString("en-IN")}` },
       { label: "Cancelled Orders", value: totalCancelled },
     ];
 
+    const kpiCardWidth = 118;
+    const kpiPitch      = 128;
+
     kpis.forEach((kpi, i) => {
-      const x = 40 + i * 175;
-      doc.rect(x, kpiY, 160, 55).fillAndStroke("#FFF7ED", "#F97316");
+      const x = 40 + i * kpiPitch;
+      doc.rect(x, kpiY, kpiCardWidth, 55).fillAndStroke("#FFF7ED", "#F97316");
       doc.fillColor("#EA580C").fontSize(9).font("Helvetica-Bold")
-         .text(kpi.label, x + 10, kpiY + 10, { width: 140 });
-      doc.fillColor("#111").fontSize(16).font("Helvetica-Bold")
-         .text(String(kpi.value), x + 10, kpiY + 26, { width: 140 });
+         .text(kpi.label, x + 8, kpiY + 10, { width: kpiCardWidth - 16 });
+      doc.fillColor("#111").fontSize(14).font("Helvetica-Bold")
+         .text(String(kpi.value), x + 8, kpiY + 26, { width: kpiCardWidth - 16 });
     });
 
     doc.moveDown(5);
 
     // ── Table Header ──────────────────────────────────────────────
     const tableTop = kpiY + 75;
-    const cols = { id: 40, date: 110, customer: 210, items: 340, method: 390, status: 450, amount: 510 };
+    const cols = { id: 40, date: 100, customer: 165, items: 255, method: 290, discount: 345, status: 405, amount: 465 };
 
     doc.rect(40, tableTop, doc.page.width - 80, 22).fill("#F97316");
     doc.fillColor("#fff").fontSize(8).font("Helvetica-Bold");
@@ -392,6 +417,7 @@ const exportSalesPDF = async (req, res) => {
     doc.text("CUSTOMER",  cols.customer, tableTop + 7);
     doc.text("ITEMS",     cols.items,    tableTop + 7);
     doc.text("PAYMENT",   cols.method,   tableTop + 7);
+    doc.text("DISCOUNT",  cols.discount, tableTop + 7);
     doc.text("STATUS",    cols.status,   tableTop + 7);
     doc.text("AMOUNT",    cols.amount,   tableTop + 7);
 
@@ -411,22 +437,24 @@ const exportSalesPDF = async (req, res) => {
         doc.rect(40, y - 4, doc.page.width - 80, 18).fill("#FFF7ED");
       }
 
-      const shortId   = order._id.toString().slice(-6).toUpperCase();
+      const shortId   = order._id.toString().slice(-4).toUpperCase();
       const date      = new Date(order.createdAt).toLocaleDateString("en-IN");
       const customer  = order.userId?.fullname || "N/A";
       const itemCount = (order.items || []).reduce((s, i) => s + (i.quantity || 1), 0);
       const method    = (order.paymentMethod || "").replace("_", " ");
+      const discount  = order.discountAmount ? `-Rs.${order.discountAmount.toLocaleString("en-IN")}` : "—"; // ASSUMPTION
       const status    = order.status || "pending";
-      const amount    = `Rs.${computeNetAmount(order).toLocaleString("en-IN")}`;  // was (order.total || 0) — now net of item-level refunds
+      const amount    = `Rs.${computeNetAmount(order).toLocaleString("en-IN")}`;
 
       doc.fillColor("#111");
-      doc.text(`#${shortId}`, cols.id,       y, { width: 65 });
-      doc.text(date,           cols.date,     y, { width: 95 });
-      doc.text(customer,       cols.customer, y, { width: 125, ellipsis: true });
-      doc.text(`${itemCount}`, cols.items,    y, { width: 45 });
-      doc.text(method,         cols.method,   y, { width: 55 });
-      doc.text(status,         cols.status,   y, { width: 55 });
-      doc.text(amount,         cols.amount,   y, { width: 60 });
+      doc.text(`#SC-${shortId}`, cols.id,       y, { width: 55 });
+      doc.text(date,             cols.date,     y, { width: 60 });
+      doc.text(customer,         cols.customer, y, { width: 85, ellipsis: true });
+      doc.text(`${itemCount}`,   cols.items,    y, { width: 30 });
+      doc.text(method,           cols.method,   y, { width: 50 });
+      doc.text(discount,         cols.discount, y, { width: 55 });
+      doc.text(status,           cols.status,   y, { width: 55 });
+      doc.text(amount,           cols.amount,   y, { width: 60 });
 
       y += 18;
     });
